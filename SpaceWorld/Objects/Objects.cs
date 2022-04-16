@@ -7,11 +7,11 @@ using Geometry;
 
 namespace Objects
 {
-    class ObjectMass
+    public class ObjectMass
     {
-        double mass;
+        public double mass;
         double energy;
-        Point3d_GL position;
+        public Point3d_GL position;
         Point3d_GL rotation;
         Point3d_GL translation_velocity;
         Point3d_GL rotation_velocity;
@@ -22,9 +22,9 @@ namespace Objects
 
     }
 
-    class NativeObjs :ObjectMass
+    public class NativeObj :ObjectMass
     {
-        NativeObjs()
+        public NativeObj()
         {
            
         }

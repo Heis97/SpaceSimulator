@@ -1,7 +1,4 @@
-﻿uniform mat4 MVP;
-uniform mat4 M;
-uniform mat4 V;
-uniform vec3 LightPosition_world;
+﻿uniform vec3 LightPosition_world;
 uniform mat4 MVPs[4];
 uniform mat4 Ms[4];
 uniform mat4 Vs[4];
@@ -114,17 +111,13 @@ void main()
 	vec4 positGL[4];
 	for (int i = 0; i < gl_in.length(); i++)
     { 
-		positGL[i] = matrVecMul(MVPs[glID], vec4(vs_out[i].vertexPosition_model, 1.0));
+		positGL[i] = matrVecMul(MVPs[glID],matrVecMul(Ms[glID], vec4(vs_out[i].vertexPosition_model, 1.0)));
 	}
 	if(gl_in.length() == 3)
 	{
-		checkCursore = checkPointInTriangle(
-		vs_out[0].vertexTexture,
-		vs_out[1].vertexTexture,
-		vs_out[2].vertexTexture,
-		MouseLoc);
+		//checkCursore = checkPointInTriangle(vs_out[0].vertexTexture,vs_out[1].vertexTexture,vs_out[2].vertexTexture,MouseLoc);
 
-		checkCursoreGL = checkPointInTriangle(positGL[0].xy/positGL[0].w, positGL[1].xy/positGL[1].w, positGL[2].xy/positGL[2].w ,MouseLocGL);
+		//checkCursoreGL = checkPointInTriangle(positGL[0].xy/positGL[0].w, positGL[1].xy/positGL[1].w, positGL[2].xy/positGL[2].w ,MouseLocGL);
 
 	}
     for (int i = 0; i < gl_in.length(); i++)
@@ -133,7 +126,7 @@ void main()
 	    fs_in.Position_world = gl_Position.xyz;
 
 		vec4 pos_cam = matrVecMul( Vs[glID] , gl_Position);
-	    vec3 vertexPosition_camera = (matrVecMul( Vs[glID] , gl_Position)).xyz;       //model matrix!
+	    vec3 vertexPosition_camera = (matrVecMul( Vs[glID] ,matrVecMul( Ms[glID],gl_Position))).xyz;       //model matrix!
 	    fs_in.EyeDirection_camera= vec3(0,0,0) - vertexPosition_camera;
 	    vec3 LightPosition_camera = matrVecMul(Vs[gl_InvocationID] , vec4(LightPosition_world,1.0)).xyz;
 

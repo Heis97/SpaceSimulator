@@ -13,7 +13,6 @@ using Emgu.CV.Structure;
 using Emgu.Util;
 using Geometry;
 
-
 namespace Graphic
 {   
     public enum modeGL { Paint, View}
@@ -24,26 +23,21 @@ namespace Graphic
         static float PI = 3.1415926535f;
         public int startGen = 0;
         public int saveImagesLen = 0;
-        public int renderdelim = 15;
+        public int renderdelim = 1500;
         public int rendercout = 0;
         public viewType typeProj = viewType.Perspective;
         Size sizeControl;
         Point lastPos;
-        uint buff_pos;
-        uint buff_color;
-        uint buff_normal;
         uint buff_texture;
-        uint buff_UV;
         uint programID_ps;
         uint programID_trs;
         uint programID_lns;
+        uint programID_comp;
+        uint vert;
         int[] LocationMVPs = new int[4];
         int[] LocationMs = new int[4];
         int[] LocationVs = new int[4];
         int[] LocationPs = new int[4];
-        int LocationMVP;
-        int LocationV;
-        int LocationM;
         int LightID;
         int textureVisID;
         int LightPowerID;
@@ -54,8 +48,9 @@ namespace Graphic
         int TextureID;
         int MouseLocID;
         int MouseLocGLID;
-        public int textureVis = 1;
-        float LightPower = 500000000.0f;
+        int translMeshID;
+        public int textureVis = 0;
+        float LightPower = 500000.0f;
         Label Label_cor;
         Label Label_cor_cur;
         Label Label_trz_cur;
@@ -71,9 +66,10 @@ namespace Graphic
         public Matrix4x4f[] Ps;
         public Vertex2f MouseLoc;
         public Vertex2f MouseLocGL;
-        Vertex3f lightPos = new Vertex3f(0.0f, 0.0f, 1000.0f);
-        Vertex3f MaterialDiffuse = new Vertex3f(0.1f, 0.1f, 0.1f);
-        Vertex3f MaterialAmbient = new Vertex3f(0.1f, 0.1f, 0.1f);
+        Vertex3f translMesh = new Vertex3f(0.0f, 0.0f, 0.0f);
+        Vertex3f lightPos = new Vertex3f(0.0f, 0.0f, 50.0f);
+        Vertex3f MaterialDiffuse = new Vertex3f(0.5f, 0.5f, 0.5f);
+        Vertex3f MaterialAmbient = new Vertex3f(0.2f, 0.2f, 0.2f);
         Vertex3f MaterialSpecular = new Vertex3f(0.1f, 0.1f, 0.1f);
         
         public modeGL modeGL = modeGL.View;
@@ -89,9 +85,17 @@ namespace Graphic
         byte[] textureB;
         Size textureSize;
         public Bitmap bmp;
-        #endregion
 
-        public void glControl_Render(object sender, GlControlEventArgs e)
+        float[] data = {
+        -1.0f, -1.0f, 0.0f,
+        -1.0f, 1.0f,0.0f,
+        1.0f, -1.0f,0.0f,
+        1.0f, 1.0f,0.0f
+    };
+
+        #endregion 
+
+        public void glControl_Render1(object sender, GlControlEventArgs e)
         {
             MVPs = new Matrix4x4f[4];
             Ms = new Matrix4x4f[4];
@@ -119,17 +123,25 @@ namespace Graphic
             }
            
             Gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            addCams();
 
-            if (buffersGl.objs_out!=null)
+            if (buffersGl.objs_static!=null)
             {
-                if (buffersGl.objs_out.Count!=0)
+                if (buffersGl.objs_static.Count!=0)
                 {
-                    foreach (var opgl_obj in buffersGl.objs_out)
+                    foreach(var opglObj in buffersGl.objs_static)
                     {
+                        renderGlobj(opglObj);   
+                    }
+                }
+            }
 
-                        renderGlobj(opgl_obj);  
-                        
+            if (buffersGl.objs_dynamic != null)
+            {
+                if (buffersGl.objs_dynamic.Count != 0)
+                {
+                    foreach (var opglObj in buffersGl.objs_dynamic)
+                    {
+                        renderGlobj(opglObj);
                     }
                 }
             }
@@ -140,17 +152,35 @@ namespace Graphic
                 rendercout = 0;
             }
         }
-
-        void addCams()
+        public void glControl_Render(object sender, GlControlEventArgs e)
         {
-           foreach(var trz in transRotZooms)
-            {
-                addCamView(trz.id);
-            }
+           // Gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
+            rendercout++;
+            for(int i = 0;i<1024;i++)
+            {
+                updateTex(i);
+                draw();
+            }
+            //updateTex(rendercout);
+           // draw();
+        }
+        void updateTex(int frame)
+        {
+            Gl.UseProgram(programID_comp);
+            Gl.Uniform1f(Gl.GetUniformLocation(programID_comp, "roll"),1, (float)frame * 0.01f);
+            Gl.DispatchCompute(512 / 16, 512 / 16, 1);
+        }
+        void draw()
+        {
+            Gl.UseProgram(programID_lns);
+            useBuffer(vert, 0, 3);
+          
+            Gl.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
         }
         void renderGlobj(openGlobj opgl_obj)
         {
+
             if(opgl_obj.visible)
             {
                 try
@@ -168,13 +198,10 @@ namespace Graphic
                     {
                         prog = programID_lns;
                     }
-                    load_vars_gl(prog);
-                    load_buff_gl(opgl_obj.vertex_buffer_data, opgl_obj.normal_buffer_data, opgl_obj.color_buffer_data,opgl_obj.texture_buffer_data);
-                    Gl.DrawArrays(opgl_obj.tp, 0, (int)(opgl_obj.vertex_buffer_data.Length / 3));
-                    Gl.DeleteBuffers(buff_color);
-                    Gl.DeleteBuffers(buff_pos);
-                    Gl.DeleteBuffers(buff_normal);
-                    Gl.DeleteBuffers(buff_UV);
+                    load_vars_gl(prog,opgl_obj);
+                    use_buff_gl(opgl_obj);
+                    Gl.DrawArrays(opgl_obj.tp, 0, opgl_obj.vert_len);
+                    disableVert(opgl_obj);
                 }
                 catch
                 {
@@ -182,19 +209,25 @@ namespace Graphic
             }
             
         }
-        string[] stringAdd(string[] st1, string[] st2)
+
+        public void glControl_ContextDestroying(object sender, GlControlEventArgs e)
         {
-            var st_ret = new string[st1.Length+st2.Length];
-            for(int i=0; i<st1.Length;i++)
+            foreach (var opglObj in buffersGl.objs_static)
             {
-                st_ret[i] = st1[i];
+                Gl.DeleteBuffers(opglObj.buff_color);
+                Gl.DeleteBuffers(opglObj.buff_pos);
+                Gl.DeleteBuffers(opglObj.buff_normal);
+                Gl.DeleteBuffers(opglObj.buff_UV);
             }
-            for (int i = 0; i < st2.Length; i++)
+            foreach (var opglObj in buffersGl.objs_dynamic)
             {
-                st_ret[st1.Length+i] = st2[i];
+                Gl.DeleteBuffers(opglObj.buff_color);
+                Gl.DeleteBuffers(opglObj.buff_pos);
+                Gl.DeleteBuffers(opglObj.buff_normal);
+                Gl.DeleteBuffers(opglObj.buff_UV);
             }
-            return st_ret;
         }
+
         public void glControl_ContextCreated(object sender, GlControlEventArgs e)
         {
             sizeControl = ((Control)sender).Size;
@@ -202,127 +235,103 @@ namespace Graphic
             Gl.Enable(EnableCap.Multisample);
             Gl.ClearColor(0.9f, 0.9f, 0.95f, 0.0f);
             Gl.PointSize(2f);
+            Gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
+            var ComputeSourceGL = assembCode(new string[] { @"Graphic\Shaders\Comp\CompSh.txt" });
             var VertexSourceGL = assembCode(new string[] { @"Graphic\Shaders\Vert\VertexSh.txt" });
             var FragmentSourceGL = assembCode(new string[] { @"Graphic\Shaders\Frag\FragmSh.txt" });
             var GeometryShaderPointsGL = assembCode(new string[] { @"Graphic\Shaders\Geom_R\GeomShP_head.txt", @"Graphic\Shaders\Geom_R\GeomSh_body.txt" });
             var GeometryShaderLinesGL = assembCode(new string[] { @"Graphic\Shaders\Geom_R\GeomShL_head.txt", @"Graphic\Shaders\Geom_R\GeomSh_body.txt" });
             var GeometryShaderTrianglesGL = assembCode(new string[] { @"Graphic\Shaders\Geom_R\GeomShT_head.txt", @"Graphic\Shaders\Geom_R\GeomSh_body.txt" });
 
-            programID_lns = createShader(VertexSourceGL, GeometryShaderLinesGL, FragmentSourceGL);
-            programID_ps = createShader(VertexSourceGL, GeometryShaderPointsGL, FragmentSourceGL);
-            programID_trs = createShader(VertexSourceGL, GeometryShaderTrianglesGL , FragmentSourceGL);
 
-            init_vars_gl(programID_lns);
-            init_vars_gl(programID_ps);
-            init_vars_gl(programID_trs);
-            //Gl.Enable(EnableCap.CullFace);
+            VertexSourceGL = assembCode(new string[] { @"Graphic\Shaders\Vert\TestSh.txt" });
+            FragmentSourceGL = assembCode(new string[] { @"Graphic\Shaders\Frag\TestSh.txt" });
+           //programID_lns = createShader(VertexSourceGL, GeometryShaderLinesGL, FragmentSourceGL);
+            //programID_ps = createShader(VertexSourceGL, GeometryShaderPointsGL, FragmentSourceGL);
+            //programID_trs = createShader(VertexSourceGL, GeometryShaderTrianglesGL , FragmentSourceGL);
+            programID_lns = createShader(VertexSourceGL, null, FragmentSourceGL);
+            Console.WriteLine("comp");
+            programID_comp = createShaderCompute(ComputeSourceGL);
+            // init_vars_gl(programID_lns);
+            //init_vars_gl(programID_ps);
+            //init_vars_gl(programID_trs);
+
+            buff_texture = genTexture();
+            // Gl.Enable(EnableCap.CullFace);
             Gl.Enable(EnableCap.DepthTest);
             //pict = new Mat("cube2.png");
-            pict = new Mat("Model.png");
-            CvInvoke.Resize(pict, pict, new Size(3800,3800));
-            
-           // pict.Save("Model_small.png");
-            textureB = textureLoad(pict);
+            //pict = new Mat("Model.png");
+            //CvInvoke.Resize(pict, pict, new Size(3800,3800));
+
+            // pict.Save("Model_small.png");
+            // textureB = textureLoad(pict);
             //bmp = byteToBitmap(textureB, textureSize);
-            
-            bindTexture(textureB);
 
-        }
-        byte[] textureLoad(Mat mat)
-        {
-            
-            var bytearr = (byte[,,])mat.GetData();
-            var bytetext = new byte[bytearr.GetLength(0) * bytearr.GetLength(1) * bytearr.GetLength(2)];
-            Console.WriteLine(bytearr.GetLength(0));
-            Console.WriteLine(bytearr.GetLength(1));
-            Console.WriteLine(bytearr.GetLength(0)*bytearr.GetLength(1)*3);
-            Console.WriteLine("___");
-            int ind = 0;
-            
-            for(int i=0; i< bytearr.GetLength(0);i++)
-            {
-                for (int j = 0; j < bytearr.GetLength(1); j++)
-                {
-                    bytetext[ind] = bytearr[bytearr.GetLength(0) - i-1, j, 0];ind++;
-                    bytetext[ind] = bytearr[bytearr.GetLength(0) - i - 1, j, 1]; ind++;
-                    bytetext[ind] = bytearr[bytearr.GetLength(0) - i - 1, j, 2]; ind++;                
-                }
-            }
-            Console.WriteLine(ind);
-            textureSize = new Size(mat.Width, mat.Height);
-            return bytetext;
+            //bindTexture(textureB);
+            vert = bindBuffer(data);
         }
 
-        Bitmap byteToBitmap(byte[] arr, Size size)
+    
+
+        #region addBuffer
+        private void load_buffs_gl(List<openGlobj> opgl_obj)
         {
-            var bmp = new Bitmap(size.Width, size.Height);
-            for(int i=0; i<size.Width;i++)
+            for(int i = 0; i < opgl_obj.Count; i++)
             {
-                for (int j = 0; j < size.Height; j++)
-                {
-                   // Console.WriteLine(3 * (j * size.Width + j));
-                    var color = Color.FromArgb(
-                        arr[3 * (j * size.Width + i)],
-                        arr[3 * (j * size.Width + i) + 1],
-                        arr[3 * (j * size.Width + i) + 2]
-                        );
-                    bmp.SetPixel(i, j, color);
-                }
+                opgl_obj[i] = load_buff_gl(opgl_obj[i]);
             }
-            return bmp;
-        }
-        string[] assembCode(string[] paths)
-        {
-            var text = "";
-            foreach (var path in paths)
-                text += File.ReadAllText(path);
-            return new string[] { text };
-        }
-        
-        private void load_buff_gl(float[] vertex_buffer_dat, float[] normal_buffer_dat, float[] color_buffer_dat, float[] texture_buffer_dat=null)
-        {
-            buff_pos = bindBuffer(0, 3, vertex_buffer_dat);
-            buff_normal = bindBuffer(1, 3, normal_buffer_dat);
-            buff_color = bindBuffer(2, 3, color_buffer_dat);
-            buff_UV = bindBuffer(3, 2, texture_buffer_dat);
-           // Console.WriteLine(vertex_buffer_dat[0] + " " + vertex_buffer_dat[1]);
         }
 
-        private uint bindBuffer(uint lvl, int strip, float[] data)
+        private openGlobj load_buff_gl(openGlobj opgl_obj)
         {
-           if(data == null)
-            {
-                return 0;
-            }
+            var buff_pos = bindBuffer(opgl_obj.vertex_buffer_data);
+            var buff_normal = bindBuffer(opgl_obj.normal_buffer_data);
+            var buff_color = bindBuffer(opgl_obj.color_buffer_data);
+            var buff_UV = bindBuffer(opgl_obj.texture_buffer_data);
+            return opgl_obj.setBuffers(buff_pos, buff_normal, buff_color, buff_UV);           
+        }
+        private void use_buff_gl(openGlobj opgl_obj)
+        {
+            useBuffer(opgl_obj.buff_pos,0, 3);
+            useBuffer(opgl_obj.buff_normal, 1, 3);
+            useBuffer(opgl_obj.buff_color, 2, 3);
+            useBuffer(opgl_obj.buff_UV, 3, 2);
+        }
+
+        private void disableVert(openGlobj openGlobj)
+        {
+            Gl.DisableVertexAttribArray(openGlobj.buff_pos);
+            Gl.DisableVertexAttribArray(openGlobj.buff_normal);
+            Gl.DisableVertexAttribArray(openGlobj.buff_color);
+            Gl.DisableVertexAttribArray(openGlobj.buff_UV);
+        }
+        private uint bindBuffer(float[] data)
+        {
             var buff = Gl.GenBuffer();
             Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
             Gl.BufferData(BufferTarget.ArrayBuffer, (uint)(4 * data.Length), data, BufferUsage.StaticDraw);
-            Gl.VertexAttribPointer(lvl, strip, VertexAttribType.Float, false, 0, IntPtr.Zero);
-            Gl.EnableVertexAttribArray(lvl);
             return buff;
         }
-
-        private uint bindTexture(byte[] arrB)
+        private void useBuffer(uint buff, uint lvl, int strip)
         {
-            buff_texture = Gl.GenTexture();
-            Gl.ActiveTexture(TextureUnit.Texture0);
-            Gl.BindTexture(TextureTarget.Texture2d, buff_texture);
-            // Gl.TexParameter(TextureTarget.Texture2d, TextureParameterName.TextureWrapS, Gl.REPEAT);
-
-            Gl.TexImage2D(TextureTarget.Texture2d, 0, InternalFormat.Rgb, textureSize.Width, textureSize.Height, 0, PixelFormat.Bgr, PixelType.UnsignedByte, arrB);
-            
-            Gl.GenerateMipmap(TextureTarget.Texture2d);
-
-            return buff_texture;
+            Gl.EnableVertexAttribArray(lvl);
+            Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
+            Gl.VertexAttribPointer(lvl, strip, VertexAttribType.Float, false, 0, IntPtr.Zero);
         }
 
-        private void useTexture()
+        public void SortObj()
         {
-            Gl.ActiveTexture(TextureUnit.Texture0);
-            Gl.BindTexture(TextureTarget.Texture2d, buff_texture);
+            buffersGl.sortObj();
+            if (buffersGl.objs_static != null)
+            {
+                if (buffersGl.objs_static.Count != 0)
+                {
+                    load_buffs_gl(buffersGl.objs_static);
+                }
+            }
         }
-
+        #endregion
         private void init_vars_gl(uint prog)
         {
             Gl.UseProgram(prog);
@@ -335,9 +344,6 @@ namespace Graphic
                 LocationPs[i] = Gl.GetUniformLocation(prog, "Ps[" + i + "]");
             }
             TextureID = Gl.GetUniformLocation(prog, "textureSample");
-            LocationMVP = Gl.GetUniformLocation(prog, "MVP");
-            LocationV = Gl.GetUniformLocation(prog, "V");
-            LocationM = Gl.GetUniformLocation(prog, "M");
             MaterialDiffuseID = Gl.GetUniformLocation(prog, "MaterialDiffuse");
             MaterialAmbientID = Gl.GetUniformLocation(prog, "MaterialAmbient");
             MaterialSpecularID = Gl.GetUniformLocation(prog, "MaterialSpecular");
@@ -348,24 +354,28 @@ namespace Graphic
             MouseLocGLID = Gl.GetUniformLocation(prog, "MouseLocGL");
 
         }
-        private void load_vars_gl(uint prog)
+        private void load_vars_gl(uint prog, openGlobj openGlobj)
         {
 
             Gl.UseProgram(prog);
 
+            var ModelMatr =new Matrix4x4f(( Transmatr((float)openGlobj.transl.x, (float)openGlobj.transl.y, (float)openGlobj.transl.z)
+                * RotXmatr(openGlobj.rotate.x) * RotYmatr(openGlobj.rotate.y) * RotZmatr(openGlobj.rotate.z)* Scalematr(openGlobj.scale)).data);
+           // Console.WriteLine(ModelMatr);
 
             for (int i = 0; i < 4; i++)
             {
+
                 Gl.UniformMatrix4f(LocationMVPs[i], 1, false, MVPs[i]);
-                Gl.UniformMatrix4f(LocationMs[i], 1, false, Ms[i]);
+                Gl.UniformMatrix4f(LocationMs[i], 1, false, ModelMatr);
                 Gl.UniformMatrix4f(LocationVs[i], 1, false, Vs[i]);
                 Gl.UniformMatrix4f(LocationPs[i], 1, false, Ps[i]);
             }
 
             
-            Gl.UniformMatrix4f(LocationMVP, 1, false, MVP);
-            Gl.UniformMatrix4f(LocationM, 1, false, Mm);
-            Gl.UniformMatrix4f(LocationV, 1, false, Vm);
+           // Gl.UniformMatrix4f(LocationMVP, 1, false, MVP);
+           // Gl.UniformMatrix4f(LocationM, 1, false, Mm);
+           // Gl.UniformMatrix4f(LocationV, 1, false, Vm);
 
             Gl.Uniform3f(MaterialDiffuseID, 1, MaterialDiffuse);
             Gl.Uniform3f(MaterialAmbientID, 1, MaterialAmbient);
@@ -379,23 +389,87 @@ namespace Graphic
             Gl.Uniform1i(textureVisID, 1, textureVis);         
         }
 
-        public void SortObj()
+        
+   
+        #region texture
+
+        byte[] textureLoad(Mat mat)
         {
-            buffersGl.sortObj();
-            if (buffersGl.objs_out != null)
+
+            var bytearr = (byte[,,])mat.GetData();
+            var bytetext = new byte[bytearr.GetLength(0) * bytearr.GetLength(1) * bytearr.GetLength(2)];
+            Console.WriteLine(bytearr.GetLength(0));
+            Console.WriteLine(bytearr.GetLength(1));
+            Console.WriteLine(bytearr.GetLength(0) * bytearr.GetLength(1) * 3);
+            Console.WriteLine("___");
+            int ind = 0;
+
+            for (int i = 0; i < bytearr.GetLength(0); i++)
             {
-                if (buffersGl.objs_out.Count != 0)
+                for (int j = 0; j < bytearr.GetLength(1); j++)
                 {
-                    foreach (var opgl_obj in buffersGl.objs_out)
-                    {
-
-                        renderGlobj(opgl_obj);
-
-                    }
+                    bytetext[ind] = bytearr[bytearr.GetLength(0) - i - 1, j, 0]; ind++;
+                    bytetext[ind] = bytearr[bytearr.GetLength(0) - i - 1, j, 1]; ind++;
+                    bytetext[ind] = bytearr[bytearr.GetLength(0) - i - 1, j, 2]; ind++;
                 }
             }
+            Console.WriteLine(ind);
+            textureSize = new Size(mat.Width, mat.Height);
+            return bytetext;
         }
-        
+
+        Bitmap byteToBitmap(byte[] arr, Size size)
+        {
+            var bmp = new Bitmap(size.Width, size.Height);
+            for (int i = 0; i < size.Width; i++)
+            {
+                for (int j = 0; j < size.Height; j++)
+                {
+                    // Console.WriteLine(3 * (j * size.Width + j));
+                    var color = Color.FromArgb(
+                        arr[3 * (j * size.Width + i)],
+                        arr[3 * (j * size.Width + i) + 1],
+                        arr[3 * (j * size.Width + i) + 2]
+                        );
+                    bmp.SetPixel(i, j, color);
+                }
+            }
+            return bmp;
+        }
+
+        private uint bindTexture(byte[] arrB)
+        {
+            buff_texture = Gl.GenTexture();
+            Gl.ActiveTexture(TextureUnit.Texture0);
+            Gl.BindTexture(TextureTarget.Texture2d, buff_texture);
+            // Gl.TexParameter(TextureTarget.Texture2d, TextureParameterName.TextureWrapS, Gl.REPEAT);
+
+            Gl.TexImage2D(TextureTarget.Texture2d, 0, InternalFormat.Rgb, textureSize.Width, textureSize.Height, 0, PixelFormat.Bgr, PixelType.UnsignedByte, arrB);
+
+            Gl.GenerateMipmap(TextureTarget.Texture2d);
+
+            return buff_texture;
+        }
+
+        private void useTexture()
+        {
+            Gl.ActiveTexture(TextureUnit.Texture0);
+            Gl.BindTexture(TextureTarget.Texture2d, buff_texture);
+        }
+        private uint genTexture()
+        {
+            buff_texture = Gl.GenTexture();
+            Gl.ActiveTexture(TextureUnit.Texture0);
+            Gl.BindTexture(TextureTarget.Texture2d, buff_texture);
+            // Gl.TexParameter(TextureTarget.Texture2d, TextureParameterName.TextureWrapS, Gl.REPEAT);
+            Gl.TexParameter(TextureTarget.Texture2d, TextureParameterName.TextureMinFilter, Gl.LINEAR);
+            Gl.TexParameter(TextureTarget.Texture2d, TextureParameterName.TextureMagFilter, Gl.LINEAR);
+
+            Gl.TexImage2D(TextureTarget.Texture2d, 0, InternalFormat.R32f, 512, 512, 0, PixelFormat.Red, PixelType.Float,null);
+            Gl.BindImageTexture(0, buff_texture, 0, false, 0, BufferAccess.WriteOnly, InternalFormat.R32f);
+            return buff_texture;
+        }
+        #endregion
 
         #region util
 
@@ -531,7 +605,7 @@ namespace Graphic
             var zRot = trz.zRot;
             if (trz.viewType_ == viewType.Perspective)
             {
-                var _Pm = ProjmatrF(53f);              
+                var _Pm = ProjmatrF(53f,(float)trz.rect.Width/ trz.rect.Height);              
                 var _Vm = Transmatr((float)off_x, -(float)off_y, (float)zoom * (float)off_z) * RotXmatr(xRot) * RotYmatr(yRot) * RotZmatr(zRot);
                 Pm = new Matrix4x4f((_Pm).data);
                 Vm = new Matrix4x4f((_Vm).data);
@@ -572,7 +646,7 @@ namespace Graphic
                  0, 0, 0, 1  };
             return new Matr4x4f(data);
         }
-        static public Matr4x4f ProjmatrF(float fx = 1, float aspec = 1, float n =0.1f ,float f = 3000f)
+        static public Matr4x4f ProjmatrF(float fx = 1, float aspec = 1, float n =0.1f ,float f = 300000f)
         {
             var fy = fx / aspec;
             var a = (f + n) / (f - n);
@@ -587,7 +661,7 @@ namespace Graphic
             return new Matr4x4f(data);
         }
 
-        static public Matr4x4f OrthoF(float fx = 1, float aspec = 1, float n = 0.1f, float f = 3000f)
+        static public Matr4x4f OrthoF(float fx = 1, float aspec = 1, float n = 0.1f, float f = 30000f)
         {
             var fy = fx / aspec;
             var a = (f + n) / (f - n);
@@ -639,7 +713,16 @@ namespace Graphic
                  0, 0, 0, 1  };
             return new Matr4x4f(data);
         }
-
+        static public Matr4x4f Scalematr(double scale)
+        {
+            float scalef = (float)scale; 
+            var data = new float[] {
+                scalef,0,0,0,
+                0, scalef, 0, 0,
+                0, 0, scalef, 0,
+                 0, 0, 0, 1  };
+            return new Matr4x4f(data);
+        }
 
         /// <summary>
         /// 3dGL->2dIm
@@ -679,7 +762,17 @@ namespace Graphic
         public void printDebug(RichTextBox box)
         {
             string txt = "";
-            foreach(var ob in buffersGl.objs_out)
+            txt += "\n______DYNAMIC_________\n";
+            foreach (var ob in buffersGl.objs_dynamic)
+            {
+                txt += toStringBuf(ob.vertex_buffer_data, 3, "vert");
+                txt += toStringBuf(ob.color_buffer_data, 3, "color");
+                txt += toStringBuf(ob.normal_buffer_data, 3, "normal");
+                txt += toStringBuf(ob.texture_buffer_data, 2, "textUV");
+                txt += "\n________________________\n";
+            }
+            txt += "\n______STATIC_________\n";
+            foreach (var ob in buffersGl.objs_static)
             {
                 txt += toStringBuf(ob.vertex_buffer_data, 3, "vert");
                 txt += toStringBuf(ob.color_buffer_data, 3, "color");
@@ -772,6 +865,7 @@ namespace Graphic
         }
         public void glControl_MouseMove(object sender, MouseEventArgs e)
         {
+
             var cont = (Control)sender;
             MouseLocGL = new Vertex2f((float)e.X / (0.5f * (float)cont.Width) - 1f, -((float)e.Y / (0.5f * (float)cont.Height) - 1f));
             int sel_trz = selectTRZ(e);
@@ -1011,75 +1105,7 @@ namespace Graphic
         #endregion
         #region mesh
  
-        void addCamView(int id)
-        {
-            var trz = transRotZooms[selectTRZ_id(id)].getInfo(transRotZooms.ToArray());
-            if (trz.visible == true)
-            {
-                if (trz.viewType_ == viewType.Perspective)
-                {
-                   /* var p1 = new Vertex4f(0, 0, 0.01f, 1f);
-                    double _z = 1000;
-                    double _x = _z * Math.Tan(toRad(53 / 2)), _y = _z * Math.Tan(toRad(53 / 2));
-                    float x = (float)_x; float y = (float)_y; float z = (float)_z;
-                    var p2 = new Vertex4f(-x, -y, z, 1);
-                    var p3 = new Vertex4f(-x, y, z, 1);
-                    var p4 = new Vertex4f(x, -y, z, 1);
-                    var p5 = new Vertex4f(x, y, z, 1);
-                    p1 = Vs[id].Inverse.Transposed * p1;
-                    p2 = Vs[id].Inverse.Transposed * p2;
-                    p3 = Vs[id].Inverse.Transposed * p3;
-                    p4 = Vs[id].Inverse.Transposed * p4;
-                    p5 = Vs[id].Inverse.Transposed * p5;
-                    var verts = new Vertex4f[16]
-                    {
-                p1,p2, p1,p3, p1,p4, p1,p5, p2,p3, p3,p5, p5,p4, p4,p2
-                    };
-                    add_buff_gl_lines_id(toFloat(verts), id,true);*/
-                   
-                }
-                else if (trz.viewType_ == viewType.Ortho)
-                {
-                    
-                    double _z = -2000;
-                    double _z0 = 0.1;
-                    double _x = 100 * trz.zoom;
-                    double _y = 100 * trz.zoom;
-                    float x = (float)_x; float y = (float)_y; float z = (float)_z; float z0 = (float)_z0;
-
-                    var p = new Vertex4f[8]
-                    {
-                        new Vertex4f(-x, -y, z0, 1),
-                        new Vertex4f(-x, y, z0, 1),
-                        new Vertex4f(x, y, z0, 1),
-                        new Vertex4f(x, -y, z0, 1),
-
-                        new Vertex4f(-x, -y, z, 1),
-                        new Vertex4f(-x, y, z, 1),
-                        new Vertex4f(x, y, z, 1),
-                         new Vertex4f(x, -y, z, 1)
-                    };
-                    for (int i = 0; i < p.Length; i++)
-                    {
-                        p[i] = Vs[id].Inverse * p[i];
-                    }
-
-                    var verts = new Vertex4f[24]
-                    {
-                p[0],p[1], p[1],p[2], p[2],p[3], p[3],p[0],
-                p[4],p[5], p[5],p[6], p[6],p[6], p[7],p[4],
-                p[0],p[4], p[1],p[5], p[2],p[6], p[3],p[7]
-                    };
-                    add_buff_gl_lines_id(toFloat(verts), id, true);
-                }
-            }
-            else
-            {
-                var verts = new float[1] { 0 };
-                add_buff_gl_lines_id(verts, id, false);
-            }
-            
-        }
+        
         float[] toFloat(Point3d_GL[] points)
         {
             var fl = new float[points.Length * 3];
@@ -1103,7 +1129,7 @@ namespace Graphic
             return fl;
         }
 
-        public void add_buff_gl_obj(float[] data_v, float[] data_t, float[] data_n, PrimitiveType tp)
+        void add_buff_gl_obj(float[] data_v, float[] data_t, float[] data_n, PrimitiveType tp)
         {
             buffersGl.add_obj(new openGlobj(data_v, null, data_n, data_t, tp));
         }
@@ -1111,19 +1137,21 @@ namespace Graphic
         {            
             buffersGl.add_obj(new openGlobj(data_v, data_c, data_n,null,  tp));
         }
-        public void add_buff_gl_id(float[] data_v, float[] data_c, float[] data_n, PrimitiveType tp,int id)
+        public int addSTL(float[] data_v, PrimitiveType tp, Point3d_GL trans, Point3d_GL rotate, double scale = 1)
+        {
+            var data_n = computeNormals(data_v);
+            var glObj = new openGlobj(data_v, null, data_n, null, tp,1);
+            glObj.scale = scale;
+            glObj.transl = trans;
+            glObj.rotate = rotate;       
+            return buffersGl.add_obj(load_buff_gl(glObj));
+        }
+       void add_buff_gl_id(float[] data_v, float[] data_c, float[] data_n, PrimitiveType tp,int id)
         {
             buffersGl.add_obj(new openGlobj(data_v, data_c, data_n, null,tp,id));
         }
-        public void add_buff_gl_lines_id(float[] data_v, int id, bool visible)
-        {
-            buffersGl.add_obj_id(data_v,id, visible, PrimitiveType.Lines);
-        }
-        public void add_buff_gl_mesh_id(float[] data_v, int id, bool visible)
-        {
-            buffersGl.add_obj_id(data_v, id, visible, PrimitiveType.Triangles);
-        }
-        public void remove_buff_gl_id(int id)
+
+        void remove_buff_gl_id(int id)
         {
             buffersGl.removeObj(id);
         }
@@ -1170,7 +1198,7 @@ namespace Graphic
             }
             return mesh;
         }
-        public void addPointMesh(Point3d_GL[] points, float r = 0.1f, float g = 0.1f, float b = 0.1f)
+        void addPointMesh(Point3d_GL[] points, float r = 0.1f, float g = 0.1f, float b = 0.1f)
         {
             var mesh = new List<float>();
             foreach (var p in points)
@@ -1181,7 +1209,7 @@ namespace Graphic
             }
             addMeshWithoutNorm(mesh.ToArray(), PrimitiveType.Points, r, g, b);
         }
-        public void addLineFanMesh(float[] startpoint, float[] points, float r = 0.1f, float g = 0.1f, float b = 0.1f)
+        void addLineFanMesh(float[] startpoint, float[] points, float r = 0.1f, float g = 0.1f, float b = 0.1f)
         {
             var mesh = new float[points.Length * 2];
             var j = 0;
@@ -1207,7 +1235,7 @@ namespace Graphic
             }
             addMeshWithoutNorm(mesh.ToArray(), PrimitiveType.Lines, r, g, b);
         }
-        public void addLineMesh(Vertex4f[] points, float r = 0.1f, float g = 0.1f, float b = 0.1f)
+        void addLineMesh(Vertex4f[] points, float r = 0.1f, float g = 0.1f, float b = 0.1f)
         {
             var mesh = new float[points.Length * 3];
             int ind = 0;
@@ -1235,7 +1263,7 @@ namespace Graphic
             }
             add_buff_gl(gl_vertex_buffer_data, color_buffer_data, normal_buffer_data, primitiveType);
         }
-        public void addMeshColor(float[] gl_vertex_buffer_data, float[] gl_color_buffer_data, PrimitiveType primitiveType, float r = 0.1f, float g = 0.1f, float b = 0.1f)
+        void addMeshColor(float[] gl_vertex_buffer_data, float[] gl_color_buffer_data, PrimitiveType primitiveType, float r = 0.1f, float g = 0.1f, float b = 0.1f)
         {
             var normal_buffer_data = new float[gl_vertex_buffer_data.Length];
             Point3d_GL p1, p2, p3, U, V, Norm1, Norm;
@@ -1268,8 +1296,21 @@ namespace Graphic
         }
         public void addMesh(float[] gl_vertex_buffer_data, PrimitiveType primitiveType, float r = 0.1f, float g = 0.1f, float b = 0.1f)
         {
+            var normal_buffer_data = computeNormals(gl_vertex_buffer_data);
+            var color_buffer_data = new float[gl_vertex_buffer_data.Length];
+            for (int i = 0; i < color_buffer_data.Length; i += 3)
+            {
+                color_buffer_data[i] = r;
+                color_buffer_data[i + 1] = g;
+                color_buffer_data[i + 2] = b;
+            }
+            add_buff_gl(gl_vertex_buffer_data, color_buffer_data, normal_buffer_data, primitiveType);
+        }
+
+        float[] computeNormals(float[] gl_vertex_buffer_data)
+        {
             var normal_buffer_data = new float[gl_vertex_buffer_data.Length];
-            Point3d_GL p1,p2,p3,U,V,Norm1,Norm;
+            Point3d_GL p1, p2, p3, U, V, Norm1, Norm;
             for (int i = 0; i < normal_buffer_data.Length; i += 9)
             {
                 p1 = new Point3d_GL(gl_vertex_buffer_data[i], gl_vertex_buffer_data[i + 1], gl_vertex_buffer_data[i + 2]);
@@ -1294,19 +1335,21 @@ namespace Graphic
                 normal_buffer_data[i + 7] = (float)Norm1.y;
                 normal_buffer_data[i + 8] = (float)Norm1.z;
             }
-            var color_buffer_data = new float[gl_vertex_buffer_data.Length];
-            for (int i = 0; i < color_buffer_data.Length; i += 3)
-            {
-                color_buffer_data[i] = r;
-                color_buffer_data[i + 1] = g;
-                color_buffer_data[i + 2] = b;
-            }
-            add_buff_gl(gl_vertex_buffer_data, color_buffer_data, normal_buffer_data, primitiveType);
+            return normal_buffer_data;
         }
+
+
         #endregion
 
 
         #region shader
+        string[] assembCode(string[] paths)
+        {
+            var text = "";
+            foreach (var path in paths)
+                text += File.ReadAllText(path);
+            return new string[] { text };
+        }
         void debugShaderComp(uint ShaderName)
         {
             int compiled;
@@ -1339,15 +1382,26 @@ namespace Graphic
         }
         private uint createShader(string[] VertexSourceGL, string[] GeometryShaderGL, string[] FragmentSourceGL)
         {
-
+            bool geom = false;
+            uint GeometryShaderID = 0;
+            if (GeometryShaderGL!=null)
+            {
+                geom = true;
+            }
             var VertexShaderID = compileShader(VertexSourceGL, ShaderType.VertexShader);
-            var GeometryShaderID = compileShader(GeometryShaderGL, ShaderType.GeometryShader);
             var FragmentShaderID = compileShader(FragmentSourceGL, ShaderType.FragmentShader);
+            if (geom)
+            {
+                GeometryShaderID = compileShader(GeometryShaderGL, ShaderType.GeometryShader);
+            }
 
             uint ProgrammID = Gl.CreateProgram();
             Gl.AttachShader(ProgrammID, VertexShaderID);
-            Gl.AttachShader(ProgrammID, GeometryShaderID);
             Gl.AttachShader(ProgrammID, FragmentShaderID);
+            if(geom)
+            {
+                Gl.AttachShader(ProgrammID, GeometryShaderID);
+            }
             Gl.LinkProgram(ProgrammID);
 
             int linked;
@@ -1367,12 +1421,42 @@ namespace Graphic
             }
 
             Gl.DeleteShader(VertexShaderID);
-            Gl.DeleteShader(GeometryShaderID);
             Gl.DeleteShader(FragmentShaderID);
+            if(geom)
+            {
+                Gl.DeleteShader(GeometryShaderID);
+            }
+            return ProgrammID;
+        }
+        private uint createShaderCompute(string[] ComputeSourceGL)
+        {
+
+            var ComputeShaderID = compileShader(ComputeSourceGL, ShaderType.ComputeShader);
+
+            uint ProgrammID = Gl.CreateProgram();
+            Gl.AttachShader(ProgrammID, ComputeShaderID);
+            Gl.LinkProgram(ProgrammID);
+
+            int linked;
+
+            Gl.GetProgram(ProgrammID, ProgramProperty.LinkStatus, out linked);
+
+            if (linked == 0)
+            {
+                const int logMaxLength = 1024;
+
+                StringBuilder infolog = new StringBuilder(logMaxLength);
+                int infologLength;
+
+                Gl.GetProgramInfoLog(ProgrammID, 1024, out infologLength, infolog);
+
+                throw new InvalidOperationException($"unable to link program: {infolog}");
+            }
+
+            Gl.DeleteShader(ComputeShaderID);
             return ProgrammID;
         }
 
-        
         #endregion
     }
 
