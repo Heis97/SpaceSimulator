@@ -116,9 +116,7 @@ void main()
 	if(gl_in.length() == 3)
 	{
 		//checkCursore = checkPointInTriangle(vs_out[0].vertexTexture,vs_out[1].vertexTexture,vs_out[2].vertexTexture,MouseLoc);
-
 		//checkCursoreGL = checkPointInTriangle(positGL[0].xy/positGL[0].w, positGL[1].xy/positGL[1].w, positGL[2].xy/positGL[2].w ,MouseLocGL);
-
 	}
     for (int i = 0; i < gl_in.length(); i++)
     { 			

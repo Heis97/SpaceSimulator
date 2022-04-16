@@ -18,7 +18,7 @@ vec2 TextureUV;
 }fs_in;
 out vec4 color;
 void main() {
-	vec3 LightColor = vec3(1,1,1);
+	vec3 LightColor = vec3(1.0, 1.0, 1.0);
 	float LightPower = lightPower;
 	vec3 MaterialDiffuseColor = fs_in.Color;
 	vec3 MaterialAmbientColor = MaterialAmbient;
@@ -37,7 +37,8 @@ void main() {
 	else
 	{
 	    color.xyz = MaterialAmbientColor + MaterialDiffuseColor * LightColor * LightPower * cosTheta / (distance*distance) +MaterialSpecularColor * LightColor * LightPower * pow(cosAlpha,5) / (distance*distance);
-	    color.w = 1.0;
+	    //color.xyz = vec3(0.5,0,0.5);
+		color.w = 1.0;
 	}
 	
 }

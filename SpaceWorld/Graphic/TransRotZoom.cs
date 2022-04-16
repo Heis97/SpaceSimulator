@@ -31,7 +31,7 @@ namespace Graphic
 
         public TransRotZoom(Rectangle _rect, int _id)
         {
-            zoom = 1;
+            zoom = 0.1;
             xRot = 0;
             yRot = 0;
             zRot = 0;
@@ -48,13 +48,13 @@ namespace Graphic
 
         public TransRotZoom(Rectangle _rect, int _id, Vertex3d rotVer, Vertex3d transVer, int _idMast)
         {
-            zoom = 1;
+            zoom = 0.1;
             xRot = 0;
             yRot = 0;
             zRot = 0;
             off_x = 0;
             off_y = 0;
-            off_z = 400;
+            off_z = 4;
             rect = _rect;
             id = _id;
             id_m = _idMast;
