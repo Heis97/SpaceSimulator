@@ -31,13 +31,13 @@ namespace Graphic
 
         public TransRotZoom(Rectangle _rect, int _id)
         {
-            zoom = 0.1;
+            zoom = 1.0;
             xRot = 0;
             yRot = 0;
             zRot = 0;
             off_x = 0;
             off_y = 0;
-            off_z = 400;
+            off_z = -400;
             rect = _rect;
             id = _id;
             type = TRZtype.Master;

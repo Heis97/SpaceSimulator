@@ -11,6 +11,7 @@ vec3 vertexPosition_model;
 vec3 vertexNormal_model;
 vec3 vertexColor;
 vec2 vertexTexture;
+int InstanceID;
 } vs_out;
 
 void main() 
@@ -20,5 +21,5 @@ void main()
 	vs_out.vertexNormal_model = _vertexNormal_model;
 	vs_out.vertexColor = _vertexColor;
 	vs_out.vertexTexture = _vertexTexture;
-
+	vs_out.InstanceID  = gl_InstanceID;
 }

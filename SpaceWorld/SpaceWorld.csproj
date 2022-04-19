@@ -102,6 +102,24 @@
     <None Include="Graphic\Shaders\Comp\CompSh_N2_gravitation.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Graphic\Shaders\Space\FragmSh.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\Space\Geom_Space\GeomShL_head.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\Space\Geom_Space\GeomShP_head.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\Space\Geom_Space\GeomShT_head.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\Space\Geom_Space\GeomSh_body.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\Space\VertexSh.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -125,48 +143,48 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Graphic\Shaders\Comp\CompSh_Test1.txt">
+    <None Include="Graphic\Shaders\Comp\CompSh_Test1.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Graphic\Shaders\Comp\CompSh.txt">
+    </None>
+    <None Include="Graphic\Shaders\Comp\CompSh.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Graphic\Shaders\Frag\FragmSh.txt">
+    </None>
+    <None Include="Graphic\Shaders\Frag\FragmSh.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Graphic\Shaders\Frag\TestSh.txt">
+    </None>
+    <None Include="Graphic\Shaders\Frag\TestSh.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Graphic\Shaders\Geom\GeomShL_head.txt">
+    </None>
+    <None Include="Graphic\Shaders\Geom\GeomShL_head.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Graphic\Shaders\Geom\GeomShP_head.txt">
+    </None>
+    <None Include="Graphic\Shaders\Geom\GeomShP_head.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Graphic\Shaders\Geom\GeomShT_head.txt">
+    </None>
+    <None Include="Graphic\Shaders\Geom\GeomShT_head.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Graphic\Shaders\Geom\GeomSh_body.txt">
+    </None>
+    <None Include="Graphic\Shaders\Geom\GeomSh_body.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Graphic\Shaders\Geom_R\GeomShL_head.txt">
+    </None>
+    <None Include="Graphic\Shaders\Geom_R\GeomShL_head.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Graphic\Shaders\Geom_R\GeomShP_head.txt">
+    </None>
+    <None Include="Graphic\Shaders\Geom_R\GeomShP_head.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Graphic\Shaders\Geom_R\GeomShT_head.txt">
+    </None>
+    <None Include="Graphic\Shaders\Geom_R\GeomShT_head.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Graphic\Shaders\Geom_R\GeomSh_body.txt">
+    </None>
+    <None Include="Graphic\Shaders\Geom_R\GeomSh_body.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Graphic\Shaders\Vert\TestSh.txt">
+    </None>
+    <None Include="Graphic\Shaders\Vert\TestSh.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Graphic\Shaders\Vert\VertexSh.txt">
+    </None>
+    <None Include="Graphic\Shaders\Vert\VertexSh.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </None>
     <Content Include="x64\concrt140.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -28,7 +28,14 @@ namespace Graphic
         public TextureGL(int _binding, int _w, int _h = 1, PixelFormat _pixelFormat = PixelFormat.Red, float[] _data = null)
         {
             Console.WriteLine("genTexture");    
-            data = (float[])_data.Clone();
+            if(_data!=null)
+            {
+                data = (float[])_data.Clone();
+            }
+            else
+            {
+                data = null;
+            }
             var buff = genTexture(_binding, _w, _h, _pixelFormat,data);
             id = buff;
             binding = _binding;
@@ -174,7 +181,7 @@ namespace Graphic
         public Bitmap bmp;
         IDs gluints = new IDs();
 
-        TextureGL posData, velData, massData;
+        TextureGL posData, velData, massData,acsData;
         public List<float[]> dataComputeShader = new List<float[]>();
         bool initComputeShader = false;
         public float[] resultComputeShader;
@@ -195,7 +202,7 @@ namespace Graphic
                     transRotZooms[i].rect.Y,
                     transRotZooms[i].rect.Width,
                     transRotZooms[i].rect.Height);
-                var retM = compMVPmatrix(transRotZooms[i]);               
+                var retM = compMVPmatrix_left(transRotZooms[i]);               
                 MVPs[i] = retM[3];
                 Ms[i] = retM[2];
                 Vs[i] = retM[1];
@@ -242,14 +249,7 @@ namespace Graphic
 
         
 
-        void bufferToCompute(float[] data, int locat)
-        {
-            var dat_buff = Gl.GenBuffer();
-            Gl.BindBuffer(BufferTarget.ShaderStorageBuffer, dat_buff);
-            Gl.BufferData(BufferTarget.ShaderStorageBuffer, (uint)(4 * data.Length), data, BufferUsage.StaticDraw);
-            Gl.BindBufferBase(BufferTarget.ShaderStorageBuffer, (uint)locat, dat_buff);
-            // Gl.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);
-        }
+    
         void renderGlobj(openGlobj opgl_obj)
         {
 
@@ -270,9 +270,10 @@ namespace Graphic
                     {
                         prog = gluints.programID_lns;
                     }
-                    load_vars_gl(prog,opgl_obj);
+                    load_vars_gl_left(prog,opgl_obj);
                     use_buff_gl(opgl_obj);
-                    Gl.DrawArrays(opgl_obj.tp, 0, opgl_obj.vert_len);
+                   // Gl.DrawArrays(opgl_obj.tp, 0, opgl_obj.vert_len);
+                    Gl.DrawArraysInstanced(opgl_obj.tp, 0, opgl_obj.vert_len, 10);
                     disableVert(opgl_obj);
                 }
                 catch
@@ -310,11 +311,11 @@ namespace Graphic
             Gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             var ComputeSourceGL = assembCode(new string[] { @"Graphic\Shaders\Comp\CompSh_N2_gravitation.glsl" });
-            var VertexSourceGL = assembCode(new string[] { @"Graphic\Shaders\Vert\VertexSh.txt" });
-            var FragmentSourceGL = assembCode(new string[] { @"Graphic\Shaders\Frag\FragmSh.txt" });
-            var GeometryShaderPointsGL = assembCode(new string[] { @"Graphic\Shaders\Geom_R\GeomShP_head.txt", @"Graphic\Shaders\Geom_R\GeomSh_body.txt" });
-            var GeometryShaderLinesGL = assembCode(new string[] { @"Graphic\Shaders\Geom_R\GeomShL_head.txt", @"Graphic\Shaders\Geom_R\GeomSh_body.txt" });
-            var GeometryShaderTrianglesGL = assembCode(new string[] { @"Graphic\Shaders\Geom_R\GeomShT_head.txt", @"Graphic\Shaders\Geom_R\GeomSh_body.txt" });
+            var VertexSourceGL = assembCode(new string[] { @"Graphic\Shaders\Vert\VertexSh.glsl" });
+            var FragmentSourceGL = assembCode(new string[] { @"Graphic\Shaders\Frag\FragmSh.glsl" });
+            var GeometryShaderPointsGL = assembCode(new string[]    { @"Graphic\Shaders\Geom\GeomShP_head.glsl", @"Graphic\Shaders\Geom\GeomSh_body.glsl" });
+            var GeometryShaderLinesGL = assembCode(new string[]     { @"Graphic\Shaders\Geom\GeomShL_head.glsl", @"Graphic\Shaders\Geom\GeomSh_body.glsl" });
+            var GeometryShaderTrianglesGL = assembCode(new string[] { @"Graphic\Shaders\Geom\GeomShT_head.glsl", @"Graphic\Shaders\Geom\GeomSh_body.glsl" });
 
 
             gluints.programID_lns = createShader(VertexSourceGL, GeometryShaderLinesGL, FragmentSourceGL);
@@ -381,6 +382,14 @@ namespace Graphic
             Gl.BufferData(BufferTarget.ArrayBuffer, (uint)(4 * data.Length), data, BufferUsage.StaticDraw);
             return buff;
         }
+        void bufferToCompute(float[] data, int locat)
+        {
+            var dat_buff = Gl.GenBuffer();
+            Gl.BindBuffer(BufferTarget.ShaderStorageBuffer, dat_buff);
+            Gl.BufferData(BufferTarget.ShaderStorageBuffer, (uint)(4 * data.Length), data, BufferUsage.StaticDraw);
+            Gl.BindBufferBase(BufferTarget.ShaderStorageBuffer, (uint)locat, dat_buff);
+            // Gl.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);
+        }
         private void useBuffer(uint buff, uint lvl, int strip)
         {
             Gl.EnableVertexAttribArray(lvl);
@@ -414,6 +423,7 @@ namespace Graphic
             posData = new TextureGL(0, pos3.Length, 1, PixelFormat.Rgb, pos3);
             velData = new TextureGL(2, vel3.Length, 1, PixelFormat.Rgb, vel3);
             massData = new TextureGL(3, mass1.Length, 1, PixelFormat.Red, mass1);
+            acsData = new TextureGL(4, pos3.Length, 1, PixelFormat.Rgb, null);
             Console.WriteLine(posData.w + " " + posData.h + " " + posData.ch + " " + posData.data.Length);
             return true;
         }
@@ -472,7 +482,41 @@ namespace Graphic
         
         }
 
+        private void load_vars_gl_left(uint prog, openGlobj openGlobj)
+        {
 
+            Gl.UseProgram(prog);
+
+            var ModelMatr = Matrix4x4f.Translated((float)openGlobj.transl.x, (float)openGlobj.transl.y, (float)openGlobj.transl.z) *
+                Matrix4x4f.RotatedX((float)openGlobj.rotate.x) *
+                Matrix4x4f.RotatedY((float)openGlobj.rotate.y) *
+                Matrix4x4f.RotatedZ((float)openGlobj.rotate.z) *
+                Matrix4x4f.Scaled((float)openGlobj.scale, (float)openGlobj.scale, (float)openGlobj.scale);
+
+
+            for (int i = 0; i < 4; i++)
+            {
+
+                Gl.UniformMatrix4f(gluints.LocationMVPs[i], 1, false, MVPs[i]);
+                Gl.UniformMatrix4f(gluints.LocationMs[i], 1, false, ModelMatr);
+                Gl.UniformMatrix4f(gluints.LocationVs[i], 1, false, Vs[i]);
+                Gl.UniformMatrix4f(gluints.LocationPs[i], 1, false, Ps[i]);
+            }
+
+
+            // Gl.UniformMatrix4f(LocationMVP, 1, false, MVP);
+            // Gl.UniformMatrix4f(LocationM, 1, false, Mm);
+            // Gl.UniformMatrix4f(LocationV, 1, false, Vm);
+
+            Gl.Uniform3f(gluints.MaterialDiffuseID, 1, MaterialDiffuse);
+            Gl.Uniform3f(gluints.MaterialAmbientID, 1, MaterialAmbient);
+            Gl.Uniform3f(gluints.MaterialSpecularID, 1, MaterialSpecular);
+            Gl.Uniform3f(gluints.LightID, 1, lightPos);
+            Gl.Uniform1f(gluints.LightPowerID, 1, LightPower);
+            Gl.Uniform2f(gluints.MouseLocID, 1, MouseLoc);
+            Gl.Uniform2f(gluints.MouseLocGLID, 1, MouseLocGL);
+
+        }
 
         #region texture
         void gpuCompute()
@@ -484,11 +528,13 @@ namespace Graphic
                 //Console.WriteLine(massData.data.Length);
                 Gl.DispatchCompute((uint)massData.data.Length, 1, 1);
                 Gl.MemoryBarrier(MemoryBarrierMask.ShaderImageAccessBarrierBit);
-                var result = posData.getData();
-               // var resultVel = velData.getData();
-                resultComputeShader = result;
-                //Console.WriteLine(toStringBuf(result, 3, "pos "));
-                // Console.WriteLine(toStringBuf(resultVel, 3, "vel "));
+                var resultPos = posData.getData();
+                var resultVel = velData.getData();
+                var resultAcs = acsData.getData();
+                resultComputeShader = resultPos;
+                //Console.WriteLine(toStringBuf(resultPos, 3, "pos "));
+                //Console.WriteLine(toStringBuf(resultVel, 3, "vel "));
+                //Console.WriteLine(toStringBuf(resultAcs, 3, "acs "));
             }
         }
         byte[] textureLoad(Mat mat)
@@ -681,7 +727,7 @@ namespace Graphic
             var zRot = trz.zRot;
             if (trz.viewType_ == viewType.Perspective)
             {
-                var _Pm = ProjmatrF(53f,(float)trz.rect.Width/ trz.rect.Height);              
+                var _Pm =  ProjmatrF(53f,(float)trz.rect.Width/ trz.rect.Height);              
                 var _Vm = Transmatr((float)off_x, -(float)off_y, (float)zoom * (float)off_z) * RotXmatr(xRot) * RotYmatr(yRot) * RotZmatr(zRot);
                 Pm = new Matrix4x4f((_Pm).data);
                 Vm = new Matrix4x4f((_Vm).data);
@@ -699,6 +745,44 @@ namespace Graphic
             }
             
 
+            return new Matrix4x4f[] { Pm, Vm, Mm, MVP };
+        }
+
+        public Matrix4x4f[] compMVPmatrix_left(TransRotZoom trz_in)
+        {
+            var trz = trz_in.getInfo(transRotZooms.ToArray());
+
+            var zoom = trz.zoom;
+            var off_x = trz.off_x;
+            var off_y = trz.off_y;
+            var off_z = trz.off_z;
+            var xRot = trz.xRot;
+            var yRot = trz.yRot;
+            var zRot = trz.zRot;
+            if (trz.viewType_ == viewType.Perspective)
+            {
+                var _Pm = Matrix4x4f.Perspective(53f, (float)trz.rect.Width / trz.rect.Height, 0.001f, 100000f);
+                var _Vm = Matrix4x4f.Translated((float)off_x, -(float)off_y, (float)zoom * (float)off_z)*
+                    Matrix4x4f.RotatedX((float)xRot) * 
+                    Matrix4x4f.RotatedY((float)yRot) * 
+                    Matrix4x4f.RotatedZ((float)zRot);
+                Pm = _Pm;
+                Vm = _Vm;
+                Mm = Matrix4x4f.Identity;
+                MVP = _Pm*_Vm ;
+            }
+            else if (trz.viewType_ == viewType.Ortho)
+            {
+                var _Pm = Matrix4x4f.Ortho(-1, 1, -1, 1, 0.00001f, 10000f);
+                var _Vm = Matrix4x4f.Translated((float)off_x, -(float)off_y, (float)zoom * (float)off_z) *
+                    Matrix4x4f.RotatedX((float)xRot) *
+                    Matrix4x4f.RotatedY((float)yRot) *
+                    Matrix4x4f.RotatedZ((float)zRot);
+                Pm = _Pm;
+                Vm = _Vm;
+                Mm = Matrix4x4f.Identity;
+                MVP = _Vm * _Pm;
+            }
             return new Matrix4x4f[] { Pm, Vm, Mm, MVP };
         }
         static public float toRad(float degrees)
@@ -866,13 +950,13 @@ namespace Graphic
             string txt = name +" "+buff.Length;
             for (int i = 0; i < buff.Length / strip; i++)
             {
-                txt += "         | ";
+                txt += "  | ";
                 for(int j=0; j<strip; j++)
                 {
                     txt += buff[i * strip+j].ToString() + ", ";
                 }
             }
-            txt += " |\n---------------------\n";
+            txt += " |\n___________________________________________________________________________________";
             return txt;
        
         }
@@ -1535,233 +1619,4 @@ namespace Graphic
 
         #endregion
     }
-
-    /*
-     * float[] compute(float[] data)
-        {
-            
-            Gl.UseProgram(gluints.programID_comp);
-            useTexture(gluints.buff_tex,0);
-            Gl.DispatchCompute(16, 1, 1);
-            Gl.MemoryBarrier(MemoryBarrierMask.ShaderImageAccessBarrierBit);
-            useTexture(gluints.buff_tex1, 1);
-            float[] pixels = new float[16];
-            Gl.GetTexImage(TextureTarget.Texture2d, 0, PixelFormat.Red, PixelType.Float, pixels);
-            //useTexture(buff_tex, 0);
-            //bufferToComputeTex(pixels);
-            printBuff(pixels);
-            return pixels;
-        }
-     * 
-     * private  string[] _VertexSourceGL = {
-            "#version 460 core\n",
-
-
-            "in vec3 _vertexPosition_modelspace;\n",
-            "in vec3 _vertexNormal_modelspace;\n",
-            "in vec3 _vertexColor;\n",
-
-            "out VS_GS_INTERFACE\n",
-            "{\n",
-            "vec3 vertexPosition_modelspace;\n",
-            "vec3 vertexNormal_modelspace;\n",
-            "vec3 vertexColor;\n",
-            "} vs_out;\n",
-
-            "void main() {\n",
-            "   gl_Position = vec4(_vertexPosition_modelspace, 1.0);\n",
-            "	vs_out.vertexPosition_modelspace = _vertexPosition_modelspace;\n",
-            "	vs_out.vertexNormal_modelspace = _vertexNormal_modelspace;\n",
-            "	vs_out.vertexColor = _vertexColor;\n",
-            "}\n"
-        };
-        private  string[] _GeometryShaderBody = {
-            "uniform mat4 MVP;\n",
-            "uniform mat4 M;\n",
-            "uniform mat4 V;\n",
-            "uniform vec3 LightPosition_worldspace;\n",
-
-            "in VS_GS_INTERFACE\n",
-            "{\n",
-            "vec3 vertexPosition_modelspace;\n",
-            "vec3 vertexNormal_modelspace;\n",
-            "vec3 vertexColor;\n",
-              "}vs_out[];\n",
-
-            "out GS_FS_INTERFACE\n",
-            "{\n",
-            "vec3 Position_worldspace;\n",
-            "vec3 Color;\n",
-            "vec3 Normal_cameraspace;\n",
-            "vec3 EyeDirection_cameraspace;\n",
-            "vec3 LightDirection_cameraspace;\n",
-            "} fs_in;\n",
-
-            "uniform mat4 MVPs[4];\n",
-            "uniform mat4 Ms[4];\n",
-            "uniform mat4 Vs[4];\n",
-
-
-
-            "void main() {\n",
-
-            "   for (int i = 0; i < gl_in.length(); i++){ \n",
-            "	    gl_ViewportIndex = gl_InvocationID;\n",
-
-            "       gl_Position = MVPs[gl_InvocationID] * vec4(vs_out[i].vertexPosition_modelspace, 1.0);\n",
-
-            "	    fs_in.Position_worldspace = (M * vec4(vs_out[i].vertexPosition_modelspace,1)).xyz;\n",
-
-            "	    vec3 vertexPosition_cameraspace = ( Vs[gl_InvocationID] * Ms[gl_InvocationID] * vec4(vs_out[i].vertexPosition_modelspace,1)).xyz;\n",
-
-            "	    float[16] mx = float[](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);\n",
-
-            "	    fs_in.EyeDirection_cameraspace = vec3(0,0,0) - vertexPosition_cameraspace;\n",
-            "	    vec3 LightPosition_cameraspace = ( Vs[gl_InvocationID] * vec4(LightPosition_worldspace,1)).xyz;\n",
-            "	    fs_in.LightDirection_cameraspace = LightPosition_cameraspace + fs_in.EyeDirection_cameraspace;\n",
-            "	    fs_in.Normal_cameraspace = ( Vs[gl_InvocationID] * Ms[gl_InvocationID] * vec4(vs_out[i].vertexNormal_modelspace,0)).xyz;\n",
-            "	    fs_in.Color = vs_out[i].vertexColor;\n",
-
-            "	    EmitVertex();}\n",
-
-
-            "}\n"
-        };
-
-        private string[] _GeometryShaderLinesGL = {
-            "#version 460 core\n",
-
-            "layout (lines, invocations = 4) in;\n",
-            "layout (line_strip, max_vertices = 2) out;\n", 
-        };
-
-        private  string[] _GeometryShaderPointsGL = {
-            "#version 460 core\n",
-
-            "layout (points, invocations = 4) in;\n",
-            "layout (points, max_vertices = 1) out;\n", 
-        };
-
-        private string[] _GeometryShaderTrianglesGL = {
-            "#version 460 core\n",
-
-            "layout (triangles, invocations = 4) in;\n",
-            "layout (triangle_strip, max_vertices = 3) out;\n",
-
-        };
-
-        private string[] _FragmentSourceGL = {
-            "#version 460 core\n",
-            "uniform vec3 LightPosition_worldspace;\n",
-            "uniform vec3 MaterialDiffuse;\n",
-            "uniform vec3 MaterialAmbient;\n",
-            "uniform vec3 MaterialSpecular;\n",
-            "uniform float lightPower;\n",
-
-
-            "in GS_FS_INTERFACE\n",
-            "{\n",
-            "vec3 Position_worldspace;\n",
-            "vec3 Color;\n",
-            "vec3 Normal_cameraspace;\n",
-            "vec3 EyeDirection_cameraspace;\n",
-            "vec3 LightDirection_cameraspace;\n",
-              "}fs_in;\n",
-
-
-            //"in int  gl_ViewportIndex;\n",
-
-            "out vec4 color;\n",
-            "void main() {\n",
-            "	vec3 LightColor = vec3(1,1,1);\n",
-            "	float LightPower = lightPower;\n",
-            "	vec3 MaterialDiffuseColor = MaterialDiffuse;\n",
-            "	vec3 MaterialAmbientColor = MaterialAmbient;\n",
-            "	vec3 MaterialSpecularColor = MaterialSpecular;\n",
-            "	float distance = length( LightPosition_worldspace - fs_in.Position_worldspace );\n",
-            "	vec3 n = normalize( fs_in.Normal_cameraspace );\n",
-            "	vec3 l = normalize( fs_in.LightDirection_cameraspace );\n",
-            "	float cosTheta = clamp( dot( n,l ), 0,1 );\n",
-            "	vec3 E = normalize(fs_in.EyeDirection_cameraspace);\n",
-            "	vec3 R = reflect(-l,n);\n",
-            "	float cosAlpha = clamp( dot( E,R ), 0,1 );\n",
-             "	MaterialDiffuseColor = fs_in.Color;\n",
-            "	color.xyz = MaterialAmbientColor + MaterialDiffuseColor * LightColor * LightPower * cosTheta / (distance*distance) +MaterialSpecularColor * LightColor * LightPower * pow(cosAlpha,5) / (distance*distance);\n",
-            "	color.w = 1.0;\n",
-          //  "	if(gl_ViewportIndex==0)\n",
-           // "	{color.xyz =  vec3(1,0,0);}\n",
-          //  "	if(gl_ViewportIndex==1)\n",
-          //  "	{color.xyz =  vec3(0,1,0);}\n",
-            //"	if(gl_ViewportIndex);\n",
-           // "	color.xyz = Color;\n",
-          //  "	float color_grey = (color_true.x+color_true.y+color_true.z)/3;\n",
-           // "	color = vec3(color_grey,color_grey,color_grey);\n",
-            "}\n"
-        };
-
-
-        private string[] _FragmentSourceGL_ = {
-            "#version 460 core\n",
-            "uniform vec3 LightPosition_worldspace;\n",
-            "uniform vec3 MaterialDiffuse;\n",
-            "uniform vec3 MaterialAmbient;\n",
-            "uniform vec3 MaterialSpecular;\n",
-            "uniform float lightPower;\n",
-            "in vec3 Color;\n",
-            "in vec3 Position_worldspace;\n",
-            "in vec3 Normal_cameraspace;\n",
-            "in vec3 EyeDirection_cameraspace;\n",
-            "in vec3 LightDirection_cameraspace;\n",
-            "out vec4 color;\n",
-            "void main() {\n",
-            "	vec3 LightColor = vec3(1,1,1);\n",
-            "	float LightPower = lightPower;\n",
-            "	vec3 MaterialDiffuseColor = MaterialDiffuse;\n",
-            "	vec3 MaterialAmbientColor = MaterialAmbient;\n",
-            "	vec3 MaterialSpecularColor = MaterialSpecular;\n",
-            "	float distance = length( LightPosition_worldspace - Position_worldspace );\n",
-            "	vec3 n = normalize( Normal_cameraspace );\n",
-            "	vec3 l = normalize( LightDirection_cameraspace );\n",
-            "	float cosTheta = clamp( dot( n,l ), 0,1 );\n",
-            "	vec3 E = normalize(EyeDirection_cameraspace);\n",
-            "	vec3 R = reflect(-l,n);\n",
-            "	float cosAlpha = clamp( dot( E,R ), 0,1 );\n",
-             "	MaterialDiffuseColor = Color;\n",
-            "	color.xyz = MaterialAmbientColor + MaterialDiffuseColor * LightColor * LightPower * cosTheta / (distance*distance) +MaterialSpecularColor * LightColor * LightPower * pow(cosAlpha,5) / (distance*distance);\n",
-            "	color.w = 1.0;\n",
-           // "	color.xyz = Color;\n",
-          //  "	float color_grey = (color_true.x+color_true.y+color_true.z)/3;\n",
-           // "	color = vec3(color_grey,color_grey,color_grey);\n",
-            "}\n"
-        };
-        private string[] _GeometryShaderGL_ = {
-            "#version 460 core\n",
-            //"uniform mat4 MVP;\n",
-            //"uniform mat4 M;\n",
-            //"uniform mat4 V;\n",
-            //"uniform vec3 LightPosition_worldspace;\n",
-
-           // "in vec3 vertexPosition_modelspace;\n",
-           // "in vec3 vertexNormal_modelspace;\n",
-           // "in vec3 vertexColor;\n",
-
-
-           // "out vec3 Color;\n",
-           // "out vec3 Position_worldspace;\n",
-           // "out vec3 Normal_cameraspace;\n",
-           // "out vec3 EyeDirection_cameraspace;\n",
-           // "out vec3 LightDirection_cameraspace;\n",
-            "void main() {\n",
-            "   for (int i = 0; i < gl_in.length(); i++)\n",
-            "	gl_ViewportIndex = gl_InvocationID;\n",
-            "	gs_color = colors[gl_InvocationID];\n",
-            "	gs_normal = (model_matrix[gl_InvocationID] * vec4(vs_normal[i], 0.0)).xyz;\n",
-            "	gl_Position = projection_matrix * (model_matrix[gl_InvocationID] * gl_in[i].gl_Position);\n",
-            "	EmitVertex();\n",
-           // "	Normal_cameraspace = ( V * M * vec4(vertexNormal_modelspace,0)).xyz;\n",
-           // "	Color = vertexColor;\n",
-            "}\n"
-        };
-     * 
-     */
 }

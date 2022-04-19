@@ -1,4 +1,5 @@
-﻿uniform vec3 LightPosition_world;
+﻿
+uniform vec3 LightPosition_world;
 uniform mat4 MVPs[4];
 uniform mat4 Ms[4];
 uniform mat4 Vs[4];
@@ -68,6 +69,7 @@ in VS_GS_INTERFACE
 	vec3 vertexNormal_model;
 	vec3 vertexColor;
 	vec2 vertexTexture;
+	int InstanceID;
 }vs_out[];
 
 out GS_FS_INTERFACE
@@ -103,26 +105,21 @@ int checkPointInTriangle(vec2 _A,vec2 _B,vec2 _C,vec2 _P)
 void main() 
 {
 	int glID = gl_InvocationID;
+	
 	gl_ViewportIndex = glID;
-	int checkCursore = 0;
-
-	int checkCursoreGL = 0;
-
 	vec4 positGL[4];
 	for (int i = 0; i < gl_in.length(); i++)
     { 
-		positGL[i] = matrVecMul(MVPs[glID],matrVecMul(Ms[glID], vec4(vs_out[i].vertexPosition_model, 1.0)));
+		vec4 vertexPosition_view = matrVecMul(Ms[glID], vec4(vs_out[i].vertexPosition_model, 1.0));
+		vertexPosition_view.x+=5*vs_out[i].InstanceID;
+		positGL[i] = matrVecMul(MVPs[glID],vertexPosition_view);
 	}
-	if(gl_in.length() == 3)
-	{
-		//checkCursore = checkPointInTriangle(vs_out[0].vertexTexture,vs_out[1].vertexTexture,vs_out[2].vertexTexture,MouseLoc);
-		//checkCursoreGL = checkPointInTriangle(positGL[0].xy/positGL[0].w, positGL[1].xy/positGL[1].w, positGL[2].xy/positGL[2].w ,MouseLocGL);
-	}
+
     for (int i = 0; i < gl_in.length(); i++)
     { 			
         gl_Position = positGL[i];
 	    fs_in.Position_world = gl_Position.xyz;
-
+		
 		vec4 pos_cam = matrVecMul( Vs[glID] , gl_Position);
 	    vec3 vertexPosition_camera = (matrVecMul( Vs[glID] ,matrVecMul( Ms[glID],gl_Position))).xyz;       //model matrix!
 	    fs_in.EyeDirection_camera= vec3(0,0,0) - vertexPosition_camera;
@@ -137,21 +134,6 @@ void main()
 	    fs_in.Color = vs_out[i].vertexColor;
 		fs_in.TextureUV = vs_out[i].vertexTexture;
 
-
-
-		if(gl_Position.w > 2)
-		{
-			//fs_in.Color = vec3(0,0,1);
-		}
-
-		if(checkCursore == 1)
-		{
-			fs_in.Color = vec3(1,0,0);
-		}
-		if(checkCursoreGL == 1)
-		{
-			fs_in.Color = vec3(0,1,0);
-		}
 		
 	    EmitVertex();
 	 }

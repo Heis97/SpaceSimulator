@@ -19,7 +19,7 @@ namespace SpaceWorld
     public partial class Scene : Form
     {
         private GraphicGL GL1 = new GraphicGL();
-        int[] obs = new int[3000];
+        int[] obs = new int[100];
         float[] _mass1;
         public Scene()
         {
@@ -31,45 +31,51 @@ namespace SpaceWorld
         public void PreInitializeScene()
         {
             Random random = new Random();
-            /*var pos3 = new float[] { 0.05f, 0, 0, -3.5f, 3.05f, 0 };
-            var vel3 = new float[] { 0, 2E-5f, 0, 0, -0.1E-2f, 0 };
-            var mass1 = new float[] { 5E14f, 5E10f };*/
+            /*var pos3 = new float[] { 0 ,0, 0, 1.0f, 0, 0 };
+            var vel3 = new float[] { 0, 0, 0, 0, 2E-7f, 0 };
+            var mass1 = new float[] { 3.3E+5f, 0.995f };
+            var acs3 = new float[] { 0, 0, 0, 0, 0, 0 };*/
+
 
             var pos3 = new float[obs.Length * 3];
             var vel3 = new float[obs.Length * 3];
             var mass1 = new float[obs.Length ];
-            for (int i = 0; i < obs.Length; i++)
+
+           for (int i = 0; i < obs.Length; i++)
             {
-                var pos = 0.01 * random.Next(-10000, 10000);
+                var pos = 1e-4* random.Next(-10000, 10000);
                 pos3[3 * i] = (float) pos;
 
-                pos = 0.01 * random.Next(-10000, 10000);
+                pos = 1e-4 * random.Next(-10000, 10000);
                 pos3[3 * i+1] = (float)pos;
 
-                pos = 0.01 * random.Next(-10000, 10000);
+                pos = 1e-4 * random.Next(-10000, 10000);
                 pos3[3 * i+2] = (float)pos;
 
 
 
-                var vel = 0.0001 * random.Next(-100, 100);
+                var vel = 3e-9 * random.Next(-100, 100);
                 vel3[3 * i] = (float)vel;
 
-                vel = 0.0001 * random.Next(-100, 100);
+                vel = 3e-9 * random.Next(-100, 100);
                 vel3[3 * i+1] = (float)vel;
 
-                vel = 0.0001 * random.Next(-100, 100);
+                vel = 3e-9 * random.Next(-100, 100);
                 vel3[3 * i+2] = (float)vel;
 
-                var mass =2E11 * random.Next(10, 1000);
+                var mass =1 * random.Next(1, 1000);
                 mass1[i] = (float)mass;
 
             }
-            _mass1 = mass1;
+            mass1[0] = 3.3E+12f;
+            mass1[1] = 3.3E+5f;
+            mass1[3] = 3.3E+5f;
             List<float[]> gravData = new List<float[]>();
 
             gravData.Add(pos3);
             gravData.Add(vel3);
             gravData.Add(mass1);
+            //gravData.Add(acs3);
             Console.WriteLine(gravData.Count);
             GL1.dataComputeShader = gravData;
         }
@@ -82,7 +88,12 @@ namespace SpaceWorld
             var sphere = new Model3d(@"модели\Шар.STL");
             for(int i=0; i<obs.Length;i++)
             {
-                obs[i] = GL1.addSTL(cube.mesh, PrimitiveType.Triangles, new Point3d_GL(0, 0, 0), new Point3d_GL(0, 0, 0), 1E-15*_mass1[i]);
+                var scale = 0.001;
+                if(i==0 || i==1 || i==2)
+                {
+                    scale = 0.01;
+                }
+                obs[i] = GL1.addSTL(cube.mesh, PrimitiveType.Triangles, new Point3d_GL(0, 0, 0), new Point3d_GL(0, 0, 0),scale);
 
             }
             
