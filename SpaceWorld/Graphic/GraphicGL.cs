@@ -107,15 +107,12 @@ namespace Graphic
     {
         public uint buff_tex;
         public uint buff_tex1;
-        public uint programID_ps;
-        public uint programID_trs;
-        public uint programID_lns;
-        public uint programID_comp;
+        public uint programID;
         public uint vert;
-        public int[] LocationMVPs = new int[4];
-        public int[] LocationMs = new int[4];
+        public int[] LocationVPs = new int[4];
         public int[] LocationVs = new int[4];
         public int[] LocationPs = new int[4];
+        public int LocationM;
         public int LightID;
         public int textureVisID;
         public int LightPowerID;
@@ -143,18 +140,13 @@ namespace Graphic
         int currentMonitor = 1;
 
         public int textureVis = 0;
-        float LightPower = 500000.0f;
+        float LightPower = 50000.0f;
         Label Label_cor;
         Label Label_cor_cur;
         Label Label_trz_cur;
         RichTextBox debug_box;
-        Matrix4x4f Pm;
-        Matrix4x4f Vm;
         public BuffersGl buffersGl = new BuffersGl();
-        Matrix4x4f Mm;
-        Matrix4x4f MVP;
-        public Matrix4x4f[] MVPs;
-        public Matrix4x4f[] Ms;
+        public Matrix4x4f[] VPs;
         public Matrix4x4f[] Vs;
         public Matrix4x4f[] Ps;
         public Vertex2f MouseLoc;
@@ -179,7 +171,13 @@ namespace Graphic
         byte[] textureB;
         Size textureSize;
         public Bitmap bmp;
-        IDs gluints = new IDs();
+        IDs idsPs = new IDs();
+        IDs idsLs = new IDs();
+        IDs idsTs = new IDs();
+        IDs idsTsOne = new IDs();
+        IDs idsPsOne = new IDs();
+        IDs idsLsOne = new IDs();
+        IDs idsCs = new IDs();
 
         TextureGL posData, velData, massData,acsData;
         public List<float[]> dataComputeShader = new List<float[]>();
@@ -190,8 +188,7 @@ namespace Graphic
 
         public void glControl_Render(object sender, GlControlEventArgs e)
         {
-            MVPs = new Matrix4x4f[4];
-            Ms = new Matrix4x4f[4];
+            VPs = new Matrix4x4f[4];
             Vs = new Matrix4x4f[4];
             Ps = new Matrix4x4f[4];
             var txt = "";
@@ -202,19 +199,14 @@ namespace Graphic
                     transRotZooms[i].rect.Y,
                     transRotZooms[i].rect.Width,
                     transRotZooms[i].rect.Height);
-                var retM = compMVPmatrix_left(transRotZooms[i]);               
-                MVPs[i] = retM[3];
-                Ms[i] = retM[2];
+                var retM = transRotZooms[i].getVPmatrix();               
+                VPs[i] = retM[2];
                 Vs[i] = retM[1];
                 Ps[i] = retM[0];
 
                 txt += "TRZ " + i + ": "+transRotZooms[i].getInfo(transRotZooms.ToArray()).ToString()+"\n";
             }
-            if(Label_trz_cur!=null)
-            {
-                Label_trz_cur.Text = txt;
-            }
-           
+            
             Gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             if (buffersGl.objs_static!=null)
@@ -223,6 +215,7 @@ namespace Graphic
                 {
                     foreach(var opglObj in buffersGl.objs_static)
                     {
+                      
                         renderGlobj(opglObj);   
                     }
                 }
@@ -247,34 +240,48 @@ namespace Graphic
             gpuCompute();
         }
 
-        
-
-    
         void renderGlobj(openGlobj opgl_obj)
         {
-
             if(opgl_obj.visible)
             {
                 try
                 {
-                    uint prog = 0;
+                    var ids = new IDs();
                     if (opgl_obj.tp == PrimitiveType.Points)
                     {
-                        prog = gluints.programID_ps;
+                        ids = idsPs;
+                        if (opgl_obj.count == 1)
+                        {
+                            ids = idsPsOne;
+                        }
                     }
                     else if (opgl_obj.tp == PrimitiveType.Triangles)
                     {
-                        prog = gluints.programID_trs;
+                        ids = idsTs;
+                        if(opgl_obj.count==1)
+                        {
+                            ids = idsTsOne;
+                        }
                     }
                     else if (opgl_obj.tp == PrimitiveType.Lines)
                     {
-                        prog = gluints.programID_lns;
+                        ids = idsLs;
+                        if (opgl_obj.count == 1)
+                        {
+                            ids = idsLsOne;
+                        }
                     }
-                    load_vars_gl_left(prog,opgl_obj);
-                    use_buff_gl(opgl_obj);
-                   // Gl.DrawArrays(opgl_obj.tp, 0, opgl_obj.vert_len);
-                    Gl.DrawArraysInstanced(opgl_obj.tp, 0, opgl_obj.vert_len, 10);
-                    disableVert(opgl_obj);
+                    load_vars_gl(ids, opgl_obj);
+                    opgl_obj.useBuffers();
+                    if(opgl_obj.count > 1)
+                    {
+                        opgl_obj.loadModels();
+                        Gl.DrawArraysInstanced(opgl_obj.tp, 0, opgl_obj.vert_len, opgl_obj.count);
+                    }
+                    else
+                    {
+                        Gl.DrawArrays(opgl_obj.tp, 0, opgl_obj.vert_len);
+                    }
                 }
                 catch
                 {
@@ -285,7 +292,7 @@ namespace Graphic
 
         public void glControl_ContextDestroying(object sender, GlControlEventArgs e)
         {
-            foreach (var opglObj in buffersGl.objs_static)
+            /*foreach (var opglObj in buffersGl.objs_static)
             {
                 Gl.DeleteBuffers(opglObj.buff_color);
                 Gl.DeleteBuffers(opglObj.buff_pos);
@@ -298,7 +305,7 @@ namespace Graphic
                 Gl.DeleteBuffers(opglObj.buff_pos);
                 Gl.DeleteBuffers(opglObj.buff_normal);
                 Gl.DeleteBuffers(opglObj.buff_UV);
-            }
+            }*/
         }
 
         public void glControl_ContextCreated(object sender, GlControlEventArgs e)
@@ -307,81 +314,50 @@ namespace Graphic
             Gl.Initialize();
             Gl.Enable(EnableCap.Multisample);
             Gl.ClearColor(0.9f, 0.9f, 0.95f, 0.0f);
-            Gl.PointSize(2f);
+            Gl.PointSize(3f);
             Gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             var ComputeSourceGL = assembCode(new string[] { @"Graphic\Shaders\Comp\CompSh_N2_gravitation.glsl" });
-            var VertexSourceGL = assembCode(new string[] { @"Graphic\Shaders\Vert\VertexSh.glsl" });
+
+            var VertexSourceGL = assembCode(new string[] { @"Graphic\Shaders\Vert\VertexSh_Models.glsl" });
+            var VertexOneSourceGL = assembCode(new string[] { @"Graphic\Shaders\Vert\VertexSh_ModelsOne.glsl" });
+
             var FragmentSourceGL = assembCode(new string[] { @"Graphic\Shaders\Frag\FragmSh.glsl" });
-            var GeometryShaderPointsGL = assembCode(new string[]    { @"Graphic\Shaders\Geom\GeomShP_head.glsl", @"Graphic\Shaders\Geom\GeomSh_body.glsl" });
-            var GeometryShaderLinesGL = assembCode(new string[]     { @"Graphic\Shaders\Geom\GeomShL_head.glsl", @"Graphic\Shaders\Geom\GeomSh_body.glsl" });
-            var GeometryShaderTrianglesGL = assembCode(new string[] { @"Graphic\Shaders\Geom\GeomShT_head.glsl", @"Graphic\Shaders\Geom\GeomSh_body.glsl" });
+            var FragmentSimpleSourceGL = assembCode(new string[] { @"Graphic\Shaders\Frag\FragmSh_Simple.glsl" });
+
+            var GeometryShaderPointsGL = assembCode(new string[]    { @"Graphic\Shaders\Geom\GeomSh_Points.glsl"});
+            var GeometryShaderLinesGL = assembCode(new string[]     { @"Graphic\Shaders\Geom\GeomSh_Lines.glsl"});
+            var GeometryShaderTrianglesGL = assembCode(new string[] { @"Graphic\Shaders\Geom\GeomSh_Triangles.glsl"});
 
 
-            gluints.programID_lns = createShader(VertexSourceGL, GeometryShaderLinesGL, FragmentSourceGL);
-            gluints.programID_ps = createShader(VertexSourceGL, GeometryShaderPointsGL, FragmentSourceGL);
-            gluints.programID_trs = createShader(VertexSourceGL, GeometryShaderTrianglesGL , FragmentSourceGL);
-            gluints.programID_comp = createShaderCompute(ComputeSourceGL);
-            init_vars_gl(gluints.programID_lns);
-            init_vars_gl(gluints.programID_ps);
-            init_vars_gl(gluints.programID_trs);
+            idsLs.programID = createShader(VertexSourceGL, GeometryShaderLinesGL, FragmentSimpleSourceGL);
+            idsLsOne.programID = createShader(VertexOneSourceGL, GeometryShaderLinesGL, FragmentSimpleSourceGL);
 
+            idsPs.programID = createShader(VertexSourceGL, GeometryShaderPointsGL, FragmentSimpleSourceGL);
+            idsPsOne.programID = createShader(VertexOneSourceGL, GeometryShaderPointsGL, FragmentSimpleSourceGL);
+
+            idsTs.programID = createShader(VertexSourceGL, GeometryShaderTrianglesGL , FragmentSourceGL);
+            idsTsOne.programID = createShader(VertexOneSourceGL, GeometryShaderTrianglesGL, FragmentSourceGL);
+
+            idsCs.programID = createShaderCompute(ComputeSourceGL);
+            
+            init_vars_gl(idsLs);
+            init_vars_gl(idsPs);
+            init_vars_gl(idsTs);
+            init_vars_gl(idsTsOne);
+            init_vars_gl(idsPsOne);
+            init_vars_gl(idsLsOne);
             initComputeShader = init_textures(dataComputeShader);
 
             // Gl.Enable(EnableCap.CullFace);
             Gl.Enable(EnableCap.DepthTest);
-            //pict = new Mat("cube2.png");
-            //pict = new Mat("Model.png");
-            //CvInvoke.Resize(pict, pict, new Size(3800,3800));
-
-            // pict.Save("Model_small.png");
-            // textureB = textureLoad(pict);
-            //bmp = byteToBitmap(textureB, textureSize);
-
-            //bindTexture(textureB);
         }
 
-    
+        
+
 
         #region addBuffer
-        private void load_buffs_gl(List<openGlobj> opgl_obj)
-        {
-            for(int i = 0; i < opgl_obj.Count; i++)
-            {
-                opgl_obj[i] = load_buff_gl(opgl_obj[i]);
-            }
-        }
 
-        private openGlobj load_buff_gl(openGlobj opgl_obj)
-        {
-            var buff_pos = bindBuffer(opgl_obj.vertex_buffer_data);
-            var buff_normal = bindBuffer(opgl_obj.normal_buffer_data);
-            var buff_color = bindBuffer(opgl_obj.color_buffer_data);
-            var buff_UV = bindBuffer(opgl_obj.texture_buffer_data);
-            return opgl_obj.setBuffers(buff_pos, buff_normal, buff_color, buff_UV);           
-        }
-        private void use_buff_gl(openGlobj opgl_obj)
-        {
-            useBuffer(opgl_obj.buff_pos,0, 3);
-            useBuffer(opgl_obj.buff_normal, 1, 3);
-            useBuffer(opgl_obj.buff_color, 2, 3);
-            useBuffer(opgl_obj.buff_UV, 3, 2);
-        }
-
-        private void disableVert(openGlobj openGlobj)
-        {
-            Gl.DisableVertexAttribArray(openGlobj.buff_pos);
-            Gl.DisableVertexAttribArray(openGlobj.buff_normal);
-            Gl.DisableVertexAttribArray(openGlobj.buff_color);
-            Gl.DisableVertexAttribArray(openGlobj.buff_UV);
-        }
-        private uint bindBuffer(float[] data)
-        {
-            var buff = Gl.GenBuffer();
-            Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
-            Gl.BufferData(BufferTarget.ArrayBuffer, (uint)(4 * data.Length), data, BufferUsage.StaticDraw);
-            return buff;
-        }
         void bufferToCompute(float[] data, int locat)
         {
             var dat_buff = Gl.GenBuffer();
@@ -390,13 +366,6 @@ namespace Graphic
             Gl.BindBufferBase(BufferTarget.ShaderStorageBuffer, (uint)locat, dat_buff);
             // Gl.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);
         }
-        private void useBuffer(uint buff, uint lvl, int strip)
-        {
-            Gl.EnableVertexAttribArray(lvl);
-            Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
-            Gl.VertexAttribPointer(lvl, strip, VertexAttribType.Float, false, 0, IntPtr.Zero);
-        }
-
         public void SortObj()
         {
             buffersGl.sortObj();
@@ -404,7 +373,10 @@ namespace Graphic
             {
                 if (buffersGl.objs_static.Count != 0)
                 {
-                    load_buffs_gl(buffersGl.objs_static);
+                    for(int i=0; i< buffersGl.objs_static.Count;i++)
+                    {
+                        buffersGl.objs_static[i] = buffersGl.objs_static[i].setBuffers();
+                    }
                 }
             }
         }
@@ -427,94 +399,54 @@ namespace Graphic
             Console.WriteLine(posData.w + " " + posData.h + " " + posData.ch + " " + posData.data.Length);
             return true;
         }
-        private void init_vars_gl(uint prog)
+        private void init_vars_gl(IDs ids)
         {
-            Gl.UseProgram(prog);
+            Gl.UseProgram(ids.programID);
 
             for (int i = 0; i < 4; i++)
             {
-                gluints.LocationMVPs[i] = Gl.GetUniformLocation(prog, "MVPs[" + i + "]");
-                gluints.LocationMs[i] = Gl.GetUniformLocation(prog, "Ms[" + i + "]");
-                gluints.LocationVs[i] = Gl.GetUniformLocation(prog, "Vs[" + i + "]");
-                gluints.LocationPs[i] = Gl.GetUniformLocation(prog, "Ps[" + i + "]");
+                ids.LocationVPs[i] = Gl.GetUniformLocation(ids.programID, "VPs[" + i + "]");
+                ids.LocationVs[i] = Gl.GetUniformLocation(ids.programID, "Vs[" + i + "]");
+                ids.LocationPs[i] = Gl.GetUniformLocation(ids.programID, "Ps[" + i + "]");
             }
-            gluints.TextureID  = Gl.GetUniformLocation(prog, "textureSample");
-            gluints.MaterialDiffuseID = Gl.GetUniformLocation(prog, "MaterialDiffuse");
-            gluints.MaterialAmbientID = Gl.GetUniformLocation(prog, "MaterialAmbient");
-            gluints.MaterialSpecularID = Gl.GetUniformLocation(prog, "MaterialSpecular");
-            gluints.LightID = Gl.GetUniformLocation(prog, "LightPosition_world");
-            gluints.LightPowerID = Gl.GetUniformLocation(prog, "lightPower");
-            gluints.textureVisID = Gl.GetUniformLocation(prog, "textureVis");
-            gluints.MouseLocID = Gl.GetUniformLocation(prog, "MouseLoc");
-            gluints.MouseLocGLID = Gl.GetUniformLocation(prog, "MouseLocGL");
+            ids.LocationM = Gl.GetUniformLocation(ids.programID, "ModelMatrix");
+            ids.TextureID  = Gl.GetUniformLocation(ids.programID, "textureSample");
+            ids.MaterialDiffuseID = Gl.GetUniformLocation(ids.programID, "MaterialDiffuse");
+            ids.MaterialAmbientID = Gl.GetUniformLocation(ids.programID, "MaterialAmbient");
+            ids.MaterialSpecularID = Gl.GetUniformLocation(ids.programID, "MaterialSpecular");
+            ids.LightID = Gl.GetUniformLocation(ids.programID, "LightPosition_world");
+            ids.LightPowerID = Gl.GetUniformLocation(ids.programID, "lightPower");
+            ids.textureVisID = Gl.GetUniformLocation(ids.programID, "textureVis");
+            ids.MouseLocID = Gl.GetUniformLocation(ids.programID, "MouseLoc");
+            ids.MouseLocGLID = Gl.GetUniformLocation(ids.programID, "MouseLocGL");
 
         }
-        private void load_vars_gl(uint prog, openGlobj openGlobj)
+        private void load_vars_gl(IDs ids, openGlobj openGlobj)
         {
 
-            Gl.UseProgram(prog);
-
-            var ModelMatr =new Matrix4x4f(( Transmatr((float)openGlobj.transl.x, (float)openGlobj.transl.y, (float)openGlobj.transl.z)
-                * RotXmatr(openGlobj.rotate.x) * RotYmatr(openGlobj.rotate.y) * RotZmatr(openGlobj.rotate.z)* Scalematr(openGlobj.scale)).data);
-           // Console.WriteLine(ModelMatr);
-
-            for (int i = 0; i < 4; i++)
+            Gl.UseProgram(ids.programID);
+            if(openGlobj.count==1)
             {
-
-                Gl.UniformMatrix4f(gluints.LocationMVPs[i], 1, false, MVPs[i]);
-                Gl.UniformMatrix4f(gluints.LocationMs[i], 1, false, ModelMatr);
-                Gl.UniformMatrix4f(gluints.LocationVs[i], 1, false, Vs[i]);
-                Gl.UniformMatrix4f(gluints.LocationPs[i], 1, false, Ps[i]);
+                var ModelMatr = openGlobj.trsc[0].getModelMatrix();
+                Gl.UniformMatrix4f(ids.LocationM, 1, false, ModelMatr);
             }
-
             
-           // Gl.UniformMatrix4f(LocationMVP, 1, false, MVP);
-           // Gl.UniformMatrix4f(LocationM, 1, false, Mm);
-           // Gl.UniformMatrix4f(LocationV, 1, false, Vm);
-
-            Gl.Uniform3f(gluints.MaterialDiffuseID, 1, MaterialDiffuse);
-            Gl.Uniform3f(gluints.MaterialAmbientID, 1, MaterialAmbient);
-            Gl.Uniform3f(gluints.MaterialSpecularID, 1, MaterialSpecular);
-            Gl.Uniform3f(gluints.LightID, 1, lightPos);
-            Gl.Uniform1f(gluints.LightPowerID, 1, LightPower);
-            Gl.Uniform2f(gluints.MouseLocID, 1, MouseLoc);
-            Gl.Uniform2f(gluints.MouseLocGLID, 1, MouseLocGL);
-        
-        }
-
-        private void load_vars_gl_left(uint prog, openGlobj openGlobj)
-        {
-
-            Gl.UseProgram(prog);
-
-            var ModelMatr = Matrix4x4f.Translated((float)openGlobj.transl.x, (float)openGlobj.transl.y, (float)openGlobj.transl.z) *
-                Matrix4x4f.RotatedX((float)openGlobj.rotate.x) *
-                Matrix4x4f.RotatedY((float)openGlobj.rotate.y) *
-                Matrix4x4f.RotatedZ((float)openGlobj.rotate.z) *
-                Matrix4x4f.Scaled((float)openGlobj.scale, (float)openGlobj.scale, (float)openGlobj.scale);
-
+            //Console.WriteLine(ModelMatr);
 
             for (int i = 0; i < 4; i++)
             {
-
-                Gl.UniformMatrix4f(gluints.LocationMVPs[i], 1, false, MVPs[i]);
-                Gl.UniformMatrix4f(gluints.LocationMs[i], 1, false, ModelMatr);
-                Gl.UniformMatrix4f(gluints.LocationVs[i], 1, false, Vs[i]);
-                Gl.UniformMatrix4f(gluints.LocationPs[i], 1, false, Ps[i]);
+                Gl.UniformMatrix4f(ids.LocationVPs[i], 1, false, VPs[i]);
+                Gl.UniformMatrix4f(ids.LocationVs[i], 1, false, Vs[i]);
+                Gl.UniformMatrix4f(ids.LocationPs[i], 1, false, Ps[i]);
             }
-
-
-            // Gl.UniformMatrix4f(LocationMVP, 1, false, MVP);
-            // Gl.UniformMatrix4f(LocationM, 1, false, Mm);
-            // Gl.UniformMatrix4f(LocationV, 1, false, Vm);
-
-            Gl.Uniform3f(gluints.MaterialDiffuseID, 1, MaterialDiffuse);
-            Gl.Uniform3f(gluints.MaterialAmbientID, 1, MaterialAmbient);
-            Gl.Uniform3f(gluints.MaterialSpecularID, 1, MaterialSpecular);
-            Gl.Uniform3f(gluints.LightID, 1, lightPos);
-            Gl.Uniform1f(gluints.LightPowerID, 1, LightPower);
-            Gl.Uniform2f(gluints.MouseLocID, 1, MouseLoc);
-            Gl.Uniform2f(gluints.MouseLocGLID, 1, MouseLocGL);
+            
+            Gl.Uniform3f(ids.MaterialDiffuseID, 1, MaterialDiffuse);
+            Gl.Uniform3f(ids.MaterialAmbientID, 1, MaterialAmbient);
+            Gl.Uniform3f(ids.MaterialSpecularID, 1, MaterialSpecular);
+            Gl.Uniform3f(ids.LightID, 1, lightPos);
+            Gl.Uniform1f(ids.LightPowerID, 1, LightPower);
+            Gl.Uniform2f(ids.MouseLocID, 1, MouseLoc);
+            Gl.Uniform2f(ids.MouseLocGLID, 1, MouseLocGL);
 
         }
 
@@ -523,7 +455,7 @@ namespace Graphic
         {
             if (initComputeShader)
             {
-                Gl.UseProgram(gluints.programID_comp);
+                Gl.UseProgram(idsCs.programID);
                 //use texture
                 //Console.WriteLine(massData.data.Length);
                 Gl.DispatchCompute((uint)massData.data.Length, 1, 1);
@@ -606,27 +538,8 @@ namespace Graphic
             Directory.CreateDirectory(path_gl);
             bitmap.Save(path_gl + "/" + trz.ToString() + ".png");
         }
-
-        public Bitmap bitmapFromMonitor(int id)
-        {
-            var recTRZ = (transRotZooms[selectTRZ_id(id)]).rect;
-            var lockMode = System.Drawing.Imaging.ImageLockMode.WriteOnly;
-            var format = System.Drawing.Imaging.PixelFormat.Format32bppRgb;
-            var bitmap = new Bitmap(recTRZ.Width, recTRZ.Height, format);
-
-            var bitmapRectangle = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
-            System.Drawing.Imaging.BitmapData bmpData = bitmap.LockBits(bitmapRectangle, lockMode, format);
-            Gl.ReadPixels(recTRZ.X, recTRZ.Y, recTRZ.Width, recTRZ.Height, PixelFormat.Bgra, PixelType.UnsignedByte, bmpData.Scan0);
-            bitmap.UnlockBits(bmpData);
-            bitmap.RotateFlip(RotateFlipType.Rotate180FlipX);
-           
-            return bitmap;
-
-        }
-
         public Mat matFromMonitor(int id)
         {
-            //Console.WriteLine("selectTRZ_id(id)" + selectTRZ_id(id));
             var selecTrz = selectTRZ_id(id);
             if(selecTrz<0)
             {
@@ -635,9 +548,6 @@ namespace Graphic
             var trz = transRotZooms[selectTRZ_id(id)];
             var recTRZ = trz.rect;
             var data = new Mat(recTRZ.Width, recTRZ.Height, Emgu.CV.CvEnum.DepthType.Cv8U, 3);
-            //Console.WriteLine("recTRZ.Width " + recTRZ.X + " " + recTRZ.Y + " " + recTRZ.Width + " " + recTRZ.Height);
-           // Console.WriteLine(data.DataPointer);
-           // Console.WriteLine(trz);
             Gl.ReadPixels(recTRZ.X, recTRZ.Y, recTRZ.Width, recTRZ.Height, PixelFormat.Bgr, PixelType.UnsignedByte, data.DataPointer);
             //CvInvoke.Rotate(data, data, Emgu.CV.CvEnum.RotateFlags.Rotate180);
             //CvInvoke.Flip(data, data, Emgu.CV.CvEnum.FlipType.Vertical);
@@ -660,25 +570,6 @@ namespace Graphic
             var y = (sizeView.Width / 2) * pf.Y + sizeView.Height / 2;
             return new Geometry.PointF(x, y);
         }
-        Geometry.PointF toTRZcord_photo(Geometry.PointF pf,Size size_trz)
-        {
-            var sizeView = new Rectangle(new Point(0, 0), size_trz);
-
-            var x = (sizeView.Width / 2) * pf.X + sizeView.Width / 2;
-            var y = (sizeView.Width / 2) * pf.Y + sizeView.Height / 2;
-            return new Geometry.PointF(x, y);
-        }
-        public void swapTRZ(int ind1, int ind2)
-        {
-            var lamb1 = transRotZooms[ind1].rect;
-            var lamb2 = transRotZooms[ind2].rect;
-            var trz1 = transRotZooms[ind1];
-            var trz2 = transRotZooms[ind2];
-            trz1.rect = lamb2;
-            trz2.rect = lamb1;
-            transRotZooms[ind1] = trz1;
-            transRotZooms[ind2] = trz2;
-        }
         int selectTRZ_id(int id)
         {
             int ind = 0;
@@ -692,198 +583,8 @@ namespace Graphic
             }
             return -1;
         }
-         public Matrix4x4f[] compMVP_photo(string data)
-        {
-            var trz = new TransRotZoom(data);
-            var zoom = trz.zoom;
-            var off_x = trz.off_x;
-            var off_y = trz.off_y;
-            var off_z = trz.off_z;
-            var xRot = trz.xRot;
-            var yRot = trz.yRot;
-            var zRot = trz.zRot;
-            
-            var _Pm = ProjmatrF(53f);
-            var _Vm = Transmatr((float)off_x, -(float)off_y, (float)zoom * (float)off_z) * RotXmatr(xRot) * RotYmatr(yRot) * RotZmatr(zRot);
-            var Pm_ = new Matrix4x4f((_Pm).data);
-            var Vm_ = new Matrix4x4f((_Vm).data);
 
-            var Mm_ = Matrix4x4f.Identity;
-            var MVP_ = new Matrix4x4f((_Pm * _Vm).data);
-
-            return new Matrix4x4f[] { Pm_, Vm_, Mm_, MVP_ };
-        }
-
-        public Matrix4x4f[] compMVPmatrix(TransRotZoom trz_in)
-        {
-            var trz = trz_in.getInfo(transRotZooms.ToArray());
-            
-            var zoom = trz.zoom;
-            var off_x = trz.off_x;
-            var off_y = trz.off_y;
-            var off_z = trz.off_z;
-            var xRot = trz.xRot;
-            var yRot = trz.yRot;
-            var zRot = trz.zRot;
-            if (trz.viewType_ == viewType.Perspective)
-            {
-                var _Pm =  ProjmatrF(53f,(float)trz.rect.Width/ trz.rect.Height);              
-                var _Vm = Transmatr((float)off_x, -(float)off_y, (float)zoom * (float)off_z) * RotXmatr(xRot) * RotYmatr(yRot) * RotZmatr(zRot);
-                Pm = new Matrix4x4f((_Pm).data);
-                Vm = new Matrix4x4f((_Vm).data);
-                Mm = Matrix4x4f.Identity;
-                MVP = new Matrix4x4f((_Pm * _Vm).data);
-            }
-            else if (trz.viewType_ == viewType.Ortho)
-            {
-                var _Pm = OrthoF();
-                var _Vm = Transmatr((float)off_x, -(float)off_y, (float)zoom * (float)off_z) * RotXmatr(xRot) * RotYmatr(yRot) * RotZmatr(zRot);
-                Pm = new Matrix4x4f((_Pm).data);
-                Vm = new Matrix4x4f((_Vm).data);
-                Mm = Matrix4x4f.Identity;
-                MVP = new Matrix4x4f((_Pm * _Vm).data);
-            }
-            
-
-            return new Matrix4x4f[] { Pm, Vm, Mm, MVP };
-        }
-
-        public Matrix4x4f[] compMVPmatrix_left(TransRotZoom trz_in)
-        {
-            var trz = trz_in.getInfo(transRotZooms.ToArray());
-
-            var zoom = trz.zoom;
-            var off_x = trz.off_x;
-            var off_y = trz.off_y;
-            var off_z = trz.off_z;
-            var xRot = trz.xRot;
-            var yRot = trz.yRot;
-            var zRot = trz.zRot;
-            if (trz.viewType_ == viewType.Perspective)
-            {
-                var _Pm = Matrix4x4f.Perspective(53f, (float)trz.rect.Width / trz.rect.Height, 0.001f, 100000f);
-                var _Vm = Matrix4x4f.Translated((float)off_x, -(float)off_y, (float)zoom * (float)off_z)*
-                    Matrix4x4f.RotatedX((float)xRot) * 
-                    Matrix4x4f.RotatedY((float)yRot) * 
-                    Matrix4x4f.RotatedZ((float)zRot);
-                Pm = _Pm;
-                Vm = _Vm;
-                Mm = Matrix4x4f.Identity;
-                MVP = _Pm*_Vm ;
-            }
-            else if (trz.viewType_ == viewType.Ortho)
-            {
-                var _Pm = Matrix4x4f.Ortho(-1, 1, -1, 1, 0.00001f, 10000f);
-                var _Vm = Matrix4x4f.Translated((float)off_x, -(float)off_y, (float)zoom * (float)off_z) *
-                    Matrix4x4f.RotatedX((float)xRot) *
-                    Matrix4x4f.RotatedY((float)yRot) *
-                    Matrix4x4f.RotatedZ((float)zRot);
-                Pm = _Pm;
-                Vm = _Vm;
-                Mm = Matrix4x4f.Identity;
-                MVP = _Vm * _Pm;
-            }
-            return new Matrix4x4f[] { Pm, Vm, Mm, MVP };
-        }
-        static public float toRad(float degrees)
-        {
-            return degrees * PI / 180;
-        }
-        static public float cos(double alpha)
-        {
-            return (float)Math.Cos(toRad((float)alpha));
-        }
-        static public float sin(double alpha)
-        {
-            return (float)Math.Sin(toRad((float)alpha));
-        }
-        static public Matr4x4f Transmatr(float x = 0, float y = 0, float z = 0)
-        {
-            var data = new float[] {
-                 1, 0, 0, x ,
-                 0, 1, 0, y,
-                 0, 0, 1, z ,
-                 0, 0, 0, 1  };
-            return new Matr4x4f(data);
-        }
-        static public Matr4x4f ProjmatrF(float fx = 1, float aspec = 1, float n =0.1f ,float f = 300000f)
-        {
-            var fy = fx / aspec;
-            var a = (f + n) / (f - n);
-            var b = (-2*f * n) / (f - n);
-            var cx = 1 / (float)Math.Tan(toRad(fx) / 2);
-            var cy = 1 / (float)Math.Tan(toRad(fy) / 2);
-            var data = new float[] {
-                 cx, 0, 0, 0 ,
-                 0, cy, 0, 0 ,
-                 0, 0, a,  b,
-                 0, 0, 1, 0  };
-            return new Matr4x4f(data);
-        }
-
-        static public Matr4x4f OrthoF(float fx = 1, float aspec = 1, float n = 0.1f, float f = 30000f)
-        {
-            var fy = fx / aspec;
-            var a = (f + n) / (f - n);
-            var b = (-2 * f * n) / (f - n);
-            var cx = 1 / (float)Math.Tan(toRad(fx) / 2);
-            var cy = 1 / (float)Math.Tan(toRad(fy) / 2);
-            var data = new float[] {
-                 1, 0, 0, 0 ,
-                 0, 1, 0, 0 ,
-                 0, 0, 1,  0,
-                 0, 0, 0, 1 };
-            return new Matr4x4f(data);
-        }
-
-        static public Matr4x4f Projmatr(float f = 1)
-        {
-
-            var data = new float[] {
-                 f, 0, 0, 0 ,
-                 0, f, 0, 0 ,
-                 0, 0, 1.001f,  0.04f,
-                 0, 0, 100, 0  };
-            return new Matr4x4f(data);
-        }
-        static public Matr4x4f RotZmatr(double alpha)
-        {
-            var data =  new float[] {
-                 cos(alpha), -sin(alpha), 0,0 ,
-                 sin(alpha), cos(alpha), 0, 0 ,
-                 0, 0, 1, 0 ,
-                 0, 0, 0, 1  };
-            return new Matr4x4f(data);
-        }
-        static public Matr4x4f RotYmatr(double alpha)
-        {
-            var data = new float[] {
-                 cos(alpha),0, sin(alpha), 0,
-                 0,1,0 , 0,
-                 -sin(alpha), 0, cos(alpha), 0 ,
-                 0, 0, 0, 1  };
-            return new Matr4x4f(data);
-        }
-        static public Matr4x4f RotXmatr(double alpha)
-        {
-            var data = new float[] {
-                1,0,0,0,
-                0, cos(alpha), -sin(alpha), 0,
-                0, sin(alpha), cos(alpha), 0, 
-                 0, 0, 0, 1  };
-            return new Matr4x4f(data);
-        }
-        static public Matr4x4f Scalematr(double scale)
-        {
-            float scalef = (float)scale; 
-            var data = new float[] {
-                scalef,0,0,0,
-                0, scalef, 0, 0,
-                0, 0, scalef, 0,
-                 0, 0, 0, 1  };
-            return new Matr4x4f(data);
-        }
-
+        
         /// <summary>
         /// 3dGL->2dIm
         /// </summary>
@@ -892,20 +593,10 @@ namespace Graphic
         /// <returns></returns>
         public Geometry.PointF calcPixel(Vertex4f point, int id)
         {
-            var p2 =new  Matr4x4f( MVPs[id]) * new Vert4f(point);
-            p2.Norm();
-            var p3 = toTRZcord(new Geometry.PointF(p2.data[0], p2.data[1]));
+            var p2 = VPs[id] * point;
+            p2.Normalize();
+            var p3 = toTRZcord(new Geometry.PointF(p2.x, p2.y));
             
-            //Console.WriteLine("v: " + p3.X + " " + p3.Y + " " + p2.z + " " + p2.w + " mvp_len: " + MVPs[0].ToString());
-            return p3;
-        }
-
-         public Geometry.PointF calcPixel_photo(Vertex4f point, string data,Size size_trz)
-        {
-            var p2 = new Matr4x4f(compMVP_photo(data)[3]) * new Vert4f(point);
-            p2.Norm();
-            var p3 = toTRZcord_photo(new Geometry.PointF(p2.data[0], p2.data[1]), size_trz);
-
             //Console.WriteLine("v: " + p3.X + " " + p3.Y + " " + p2.z + " " + p2.w + " mvp_len: " + MVPs[0].ToString());
             return p3;
         }
@@ -922,15 +613,6 @@ namespace Graphic
         public void printDebug(RichTextBox box)
         {
             string txt = "";
-            txt += "\n______DYNAMIC_________\n";
-            foreach (var ob in buffersGl.objs_dynamic)
-            {
-                txt += toStringBuf(ob.vertex_buffer_data, 3, "vert");
-                txt += toStringBuf(ob.color_buffer_data, 3, "color");
-                txt += toStringBuf(ob.normal_buffer_data, 3, "normal");
-                txt += toStringBuf(ob.texture_buffer_data, 2, "textUV");
-                txt += "\n________________________\n";
-            }
             txt += "\n______STATIC_________\n";
             foreach (var ob in buffersGl.objs_static)
             {
@@ -940,6 +622,16 @@ namespace Graphic
                 txt += toStringBuf(ob.texture_buffer_data, 2, "textUV");
                 txt += "\n________________________\n";
             }
+            txt += "\n______DYNAMIC_________\n";
+            foreach (var ob in buffersGl.objs_dynamic)
+            {
+                txt += toStringBuf(ob.vertex_buffer_data, 3, "vert");
+                txt += toStringBuf(ob.color_buffer_data, 3, "color");
+                txt += toStringBuf(ob.normal_buffer_data, 3, "normal");
+                txt += toStringBuf(ob.texture_buffer_data, 2, "textUV");
+                txt += "\n________________________\n";
+            }
+            
             box.Text = txt;
         }
 
@@ -956,7 +648,7 @@ namespace Graphic
                     txt += buff[i * strip+j].ToString() + ", ";
                 }
             }
-            txt += " |\n___________________________________________________________________________________";
+            txt += " |\n--------------------------------\n";
             return txt;
        
         }
@@ -1080,7 +772,7 @@ namespace Graphic
                    // var p_ZX = new Point3d_GL((double)e.Location.X / (0.5 * (double)w),0, (double)e.Location.Y / (0.5 * (double)h));
                     try
                     {
-                        var invM = Pm.Inverse;
+                        var invM = Ps[0].Inverse;
                         //var invM = MVPs[0].Inverse;
                         if (Label_cor != null)
                         {
@@ -1297,14 +989,15 @@ namespace Graphic
         {            
             buffersGl.add_obj(new openGlobj(data_v, data_c, data_n,null,  tp));
         }
-        public int addSTL(float[] data_v, PrimitiveType tp, Point3d_GL trans, Point3d_GL rotate, double scale = 1)
+        public int addSTL(float[] data_v, PrimitiveType tp, Point3d_GL trans, Point3d_GL rotate, float scale = 1,int count =1)
         {
             var data_n = computeNormals(data_v);
-            var glObj = new openGlobj(data_v, null, data_n, null, tp,1);
-            glObj.scale = scale;
-            glObj.transl = trans;
-            glObj.rotate = rotate;       
-            return buffersGl.add_obj(load_buff_gl(glObj));
+            var glObj = new openGlobj(data_v, null, data_n, null, tp,1,count);
+
+            glObj.trsc[0].scale = scale;
+            glObj.trsc[0].transl = trans;
+            glObj.trsc[0].rotate = rotate;       
+            return buffersGl.add_obj(glObj.setBuffers());
         }
        void add_buff_gl_id(float[] data_v, float[] data_c, float[] data_n, PrimitiveType tp,int id)
         {

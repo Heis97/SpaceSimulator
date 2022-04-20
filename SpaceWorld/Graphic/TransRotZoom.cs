@@ -6,9 +6,41 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Geometry;
 
 namespace Graphic
 {
+
+    public struct trsc
+    {
+        public Point3d_GL transl;
+        public Point3d_GL rotate;
+        public float scale;
+
+        public trsc(Point3d_GL _transl, Point3d_GL _rotate, float _scale)
+        {
+            transl = _transl.Clone();
+            rotate = _rotate.Clone();
+            scale = _scale;
+        }
+        public trsc(double x, double y, double z, double rx, double ry, double rz, float _scale)
+        {
+            transl = new Point3d_GL(x, y, z);
+            rotate = new Point3d_GL(rx, ry, rz);
+            scale = _scale;
+        }
+
+        public Matrix4x4f getModelMatrix()
+        {
+           return  Matrix4x4f.Translated((float)transl.x, (float)transl.y, (float)transl.z) *
+                Matrix4x4f.RotatedX((float)rotate.x) *
+                Matrix4x4f.RotatedY((float)rotate.y) *
+                Matrix4x4f.RotatedZ((float)rotate.z) *
+                Matrix4x4f.Scaled(scale, scale, scale);
+        }
+
+
+    }
 
     public class TransRotZoom
     {
@@ -215,6 +247,35 @@ namespace Graphic
             xRot = valuex;
             yRot = valuey;
             zRot = valuez;
+        }
+
+        public Matrix4x4f[] getVPmatrix()
+        {
+
+            if (viewType_ == viewType.Perspective)
+            {
+                var _Pm = Matrix4x4f.Perspective(53f, (float)rect.Width / rect.Height, 0.001f, 100000f);
+                var _Vm = Matrix4x4f.Translated((float)off_x, -(float)off_y, (float)zoom * (float)off_z) *
+                    Matrix4x4f.RotatedX((float)xRot) *
+                    Matrix4x4f.RotatedY((float)yRot) *
+                    Matrix4x4f.RotatedZ((float)zRot);
+                //var _PVm
+                return new Matrix4x4f[] { _Pm, _Vm, _Pm * _Vm };
+            }
+            else if (viewType_ == viewType.Ortho)
+            {
+                var _Pm = Matrix4x4f.Ortho(-1, 1, -1, 1, 0.00001f, 10000f);
+                var _Vm = Matrix4x4f.Translated((float)off_x, -(float)off_y, (float)zoom * (float)off_z) *
+                    Matrix4x4f.RotatedX((float)xRot) *
+                    Matrix4x4f.RotatedY((float)yRot) *
+                    Matrix4x4f.RotatedZ((float)zRot);
+                return new Matrix4x4f[] { _Pm, _Vm, _Pm * _Vm };
+            }
+            else
+            {
+                return new Matrix4x4f[] { Matrix4x4f.Identity, Matrix4x4f.Identity, Matrix4x4f.Identity };
+            }
+
         }
     }
 

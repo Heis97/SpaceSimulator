@@ -71,8 +71,6 @@
     <Compile Include="Geometry\Flat_4P.cs" />
     <Compile Include="Geometry\Line3d_GL.cs" />
     <Compile Include="Geometry\LineF.cs" />
-    <Compile Include="Geometry\Matr3x3f_.cs" />
-    <Compile Include="Geometry\Matr4x4f.cs" />
     <Compile Include="Geometry\Point3d_GL.cs" />
     <Compile Include="Geometry\PointF.cs" />
     <Compile Include="Geometry\Vector3d_GL.cs" />
@@ -102,6 +100,18 @@
     <None Include="Graphic\Shaders\Comp\CompSh_N2_gravitation.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Graphic\Shaders\Frag\FragmSh_Simple.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\Geom\GeomSh_body - Копировать.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\Geom\GeomSh_Lines.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\Geom\GeomSh_Points.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Graphic\Shaders\Space\FragmSh.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -118,6 +128,15 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Graphic\Shaders\Space\VertexSh.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\Vert\VertexSh_ModelsOne.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\Vert\VertexSh_Static.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\Vert\VertexSh_Models.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Properties\Settings.settings">
@@ -164,7 +183,7 @@
     <None Include="Graphic\Shaders\Geom\GeomShT_head.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Graphic\Shaders\Geom\GeomSh_body.glsl">
+    <None Include="Graphic\Shaders\Geom\GeomSh_Triangles.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Graphic\Shaders\Geom_R\GeomShL_head.glsl">

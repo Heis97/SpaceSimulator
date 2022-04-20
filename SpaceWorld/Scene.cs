@@ -19,7 +19,9 @@ namespace SpaceWorld
     public partial class Scene : Form
     {
         private GraphicGL GL1 = new GraphicGL();
-        int[] obs = new int[100];
+        static  int count = 700;
+        int[] obs = new int[count];
+        int obs_inst = 0;
         float[] _mass1;
         public Scene()
         {
@@ -78,6 +80,8 @@ namespace SpaceWorld
             //gravData.Add(acs3);
             Console.WriteLine(gravData.Count);
             GL1.dataComputeShader = gravData;
+            GL1.addFrame(new Point3d_GL(0, 0, 0), new Point3d_GL(-100, 0, 0), new Point3d_GL(0, -100, 0), new Point3d_GL(0, 0, -100));
+            GL1.addFrame(new Point3d_GL(0, 0, 0), new Point3d_GL(100, 0, 0), new Point3d_GL(0, 100, 0), new Point3d_GL(0, 0, 100));
         }
 
         public void InitializeScene()
@@ -86,19 +90,27 @@ namespace SpaceWorld
             var p1 = new NativeObj();
             var cube = new Model3d(@"модели\cube30.STL");
             var sphere = new Model3d(@"модели\Шар.STL");
-            for(int i=0; i<obs.Length;i++)
+            /*for(int i=0; i<obs.Length;i++)
             {
                 var scale = 0.001;
                 if(i==0 || i==1 || i==2)
                 {
                     scale = 0.01;
                 }
-                obs[i] = GL1.addSTL(cube.mesh, PrimitiveType.Triangles, new Point3d_GL(0, 0, 0), new Point3d_GL(0, 0, 0),scale);
+                obs[i] = GL1.addSTL(sphere.mesh, PrimitiveType.Triangles, new Point3d_GL(0, 0, 0), new Point3d_GL(0, 0, 0),(float)scale);
+
+            }*/
+            obs_inst = GL1.addSTL(sphere.mesh, PrimitiveType.Triangles, new Point3d_GL(0, 0, 0), new Point3d_GL(0, 0, 0), 0.001f, count);
+            for (int i = 0; i < obs.Length; i++)
+            {
+                float scale = 0.001f;
+                if (i == 0 || i == 1 || i == 2)
+                {
+                    scale = 0.01f;
+                }
+                GL1.buffersGl.setScale(obs_inst,i,scale);
 
             }
-            
-            GL1.addFrame(new Point3d_GL(0, 0, 0), new Point3d_GL(100, 0, 0), new Point3d_GL(0, 100, 0), new Point3d_GL(0, 0, 100));
-
         }
 
         #region gl_control
@@ -109,14 +121,18 @@ namespace SpaceWorld
             {
                 if (GL1.resultComputeShader.Length> obs.Length*3-1)
                 {
+                    /*for (int i = 0; i < obs.Length; i++)
+                    {
+                        GL1.buffersGl.setTransfObj(obs[i],0, new Point3d_GL(GL1.resultComputeShader[3*i], GL1.resultComputeShader[3*i+1], GL1.resultComputeShader[3*i+2]), new Point3d_GL(0, 0, 0));
+                    }*/
+
                     for (int i = 0; i < obs.Length; i++)
                     {
-                        GL1.buffersGl.setTransfObj(obs[i], new Point3d_GL(GL1.resultComputeShader[3*i], GL1.resultComputeShader[3*i+1], GL1.resultComputeShader[3*i+2]), new Point3d_GL(0, 0, 0));
+                        GL1.buffersGl.setTransfObj(obs_inst, i, new Point3d_GL(GL1.resultComputeShader[3 * i], GL1.resultComputeShader[3 * i + 1], GL1.resultComputeShader[3 * i + 2]), new Point3d_GL(0, 0, 0));
                     }
                 }
             }
-            
-
+            //GL1.printDebug(richTextBox1);
         }
         private void glControl1_ContextCreated(object sender, GlControlEventArgs e)
         {
@@ -129,7 +145,7 @@ namespace SpaceWorld
             InitializeScene();
             GL1.SortObj();
             //GL1.printDebug(richTextBox1);
-            // pictureBox1.Image = GL1.bmp;
+
         }
 
         

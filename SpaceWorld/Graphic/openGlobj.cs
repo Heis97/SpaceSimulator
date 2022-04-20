@@ -21,25 +21,23 @@ namespace Graphic
         public AnimType animType;
         public int id;
         public bool visible;
-        public uint buff_pos;
-        public uint buff_normal;
-        public uint buff_color;
-        public uint buff_UV;
-        public Point3d_GL transl;
-        public Point3d_GL rotate;
-        public double scale;
+        uint buff_array;
+        public trsc[] trsc;
+        public int count;
 
 
 
-
-        public openGlobj(float[] v_buf, float[] c_buf, float[] n_buf, float[] t_buf, PrimitiveType type, int _id= -1)
+        public openGlobj(float[] v_buf, float[] c_buf, float[] n_buf, float[] t_buf, PrimitiveType type, int _id= -1,int _count=1)
         {
             vertex_buffer_data = new float[v_buf.Length];
             normal_buffer_data = new float[n_buf.Length];
-            transl = new Point3d_GL(0, 0, 0);
-            rotate = new Point3d_GL(0, 0, 0);
-            scale = 1;
-            buff_pos = 0; buff_normal = 0; buff_color = 0; buff_UV = 0;
+            trsc = new trsc[_count];
+            count = _count;
+            for(int i=0; i<_count;i++)
+            {
+                trsc[i] = new trsc(0, 0, 0, 0, 0, 0, 1);
+            }
+            buff_array = 0;
             if (t_buf == null)
             {
                 texture_buffer_data = new float[v_buf.Length];
@@ -77,57 +75,119 @@ namespace Graphic
             }
         }
 
-        public openGlobj setBuffers(uint _buff_pos = 0, uint _buff_normal = 0, uint _buff_color = 0, uint _buff_UV = 0)
+        public openGlobj setBuffers()
         {
-            buff_pos = _buff_pos;
-            buff_normal = _buff_normal;
-            buff_color = _buff_color;
-            buff_UV = _buff_UV;
-            return this;
-        }
-        public openGlobj setScale(double _scale)
-        {
-            scale = _scale;
+            buff_array = Gl.GenVertexArray();
+            Gl.BindVertexArray(buff_array);
+            bindBuffer(vertex_buffer_data, 0, 3);
+            bindBuffer(normal_buffer_data, 1, 3);
+            bindBuffer(color_buffer_data, 2, 3);
+            bindBuffer(texture_buffer_data, 3, 2);
             return this;
         }
 
-        public openGlobj setTransf(Point3d_GL _transl, Point3d_GL _rotate)
+        public void useBuffers()
         {
-            transl = _transl;
-            rotate = _rotate;
-            return this;
+            Gl.BindVertexArray(buff_array);
         }
-        public openGlobj setX(double x)
+        public void loadModels()
         {
-            transl.x = x;
-            return this;
+            bindBufferInstanceMatr(modelData(), 4);
         }
-        public openGlobj setY(double y)
+        uint bindBuffer(float[] data, uint lvl, int strip)
         {
-            transl.y = y;
-            return this;
+            var buff = Gl.GenBuffer();
+            Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
+            Gl.BufferData(BufferTarget.ArrayBuffer, (uint)(4 * data.Length), data, BufferUsage.StaticDraw);
+            Gl.EnableVertexAttribArray(lvl);
+            Gl.VertexAttribPointer(lvl, strip, VertexAttribType.Float, false, 0, (IntPtr)0);
+            return buff;
         }
-        public openGlobj setZ(double z)
+        Matrix4x4f[] modelData()
         {
-            transl.z = z;
-            return this;
+            var matrs = new Matrix4x4f[trsc.Length];
+            for(int i=0; i<trsc.Length;i++)
+            {
+                matrs[i] = trsc[i].getModelMatrix();
+            }
+            return matrs;
         }
-        public openGlobj setRotX(double x)
+        uint bindBufferInstanceMatr(Matrix4x4f[] data, uint lvl)
         {
-            rotate.x = x;
-            return this;
+            var buff = Gl.GenBuffer();
+            Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
+            Gl.BufferData(BufferTarget.ArrayBuffer, (uint)(4*16 * data.Length), data, BufferUsage.DynamicDraw);
+
+            Gl.EnableVertexAttribArray(lvl);
+            Gl.VertexAttribPointer(lvl, 4, VertexAttribType.Float, false, 4 * 16, (IntPtr)0);
+
+            Gl.EnableVertexAttribArray(lvl + 1);
+            Gl.VertexAttribPointer(lvl + 1, 4, VertexAttribType.Float, false, 4 * 16, (IntPtr)(4 * 4));
+
+            Gl.EnableVertexAttribArray(lvl + 2);
+            Gl.VertexAttribPointer(lvl + 2, 4, VertexAttribType.Float, false, 4 * 16, (IntPtr)(4 * 8));
+
+            Gl.EnableVertexAttribArray(lvl + 3);
+            Gl.VertexAttribPointer(lvl + 3, 4, VertexAttribType.Float, false, 4 * 16, (IntPtr)(4 * 12));
+
+            Gl.VertexAttribDivisor(lvl, 1);
+            Gl.VertexAttribDivisor(lvl+1, 1);
+            Gl.VertexAttribDivisor(lvl+2, 1);
+            Gl.VertexAttribDivisor(lvl+3, 1);
+        
+            return buff;
         }
-        public openGlobj setRotY(double y)
+
+
+        #region setters
+        public openGlobj setScale(int i,float _scale)
         {
-            rotate.y = y;
-            return this;
-        }
-        public openGlobj setRotZ(double z)
-        {
-            rotate.z = z;
+            trsc[i].scale = _scale;
             return this;
         }
 
+        public openGlobj setTransf(int i, trsc _trsc)
+        {
+            trsc[i] = _trsc;
+            return this;
+        }
+
+        public openGlobj setTransf(int i, Point3d_GL transl, Point3d_GL rotate)
+        {
+            trsc[i] = new trsc(transl, rotate, trsc[i].scale);
+            return this;
+        }
+        public openGlobj setX(int i, double x)
+        {
+            trsc[i].transl.x = x;
+            return this;
+        }
+        public openGlobj setY(int i, double y)
+        {
+            trsc[i].transl.y = y;
+            return this;
+        }
+        public openGlobj setZ(int i, double z)
+        {
+            trsc[i].transl.z = z;
+            return this;
+        }
+        public openGlobj setRotX(int i, double x)
+        {
+            trsc[i].rotate.x = x;
+            return this;
+        }
+        public openGlobj setRotY(int i, double y)
+        {
+            trsc[i].rotate.y = y;
+            return this;
+        }
+        public openGlobj setRotZ(int i, double z)
+        {
+            trsc[i].rotate.z = z;
+            return this;
+        }
+        #endregion
     }
 
 }

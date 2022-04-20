@@ -66,44 +66,47 @@ namespace Graphic
 
             }
         }
+
         public void removeObj(int id)
         {
             objs_dynamic[id] = new openGlobj();
         }
-        public void setScale(int id, double _scale)
+
+        #region setters
+        public void setScale(int id, int i, float _scale)
         {
-            objs_dynamic[id] = objs_dynamic[id].setScale(_scale);
+            objs_dynamic[id] = objs_dynamic[id].setScale(i, _scale);
         }
-        public void setTransfObj(int id, Point3d_GL _transl, Point3d_GL _rotate)
+        public void setTransfObj(int id, int i, Point3d_GL _transl, Point3d_GL _rotate)
         {
-            objs_dynamic[id] = objs_dynamic[id].setTransf(_transl, _rotate);
+            objs_dynamic[id] = objs_dynamic[id].setTransf(i, _transl, _rotate);
         }
-        public void setXobj(int id,double x)
+        public void setXobj(int id, int i, double x)
         {
-            objs_dynamic[id] = objs_dynamic[id].setX(x);
+            objs_dynamic[id] = objs_dynamic[id].setX(i, x);
         }
-        public void setYobj(int id, double y)
+        public void setYobj(int id, int i, double y)
         {
-            objs_dynamic[id] = objs_dynamic[id].setY(y);
+            objs_dynamic[id] = objs_dynamic[id].setY(i, y);
         }
-        public void setZobj(int id, double z)
+        public void setZobj(int id, int i, double z)
         {
-            objs_dynamic[id] = objs_dynamic[id].setZ(z);
+            objs_dynamic[id] = objs_dynamic[id].setZ(i, z);
         }
 
-        public void setRotXobj(int id, double x)
+        public void setRotXobj(int id, int i, double x)
         {
-            objs_dynamic[id] = objs_dynamic[id].setRotX(x);
+            objs_dynamic[id] = objs_dynamic[id].setRotX(i, x);
         }
-        public void setRotYobj(int id, double y)
+        public void setRotYobj(int id, int i, double y)
         {
-            objs_dynamic[id] = objs_dynamic[id].setRotY(y);
+            objs_dynamic[id] = objs_dynamic[id].setRotY(i, y);
         }
-        public void setRotZobj(int id, double z)
+        public void setRotZobj(int id, int i, double z)
         {
-            objs_dynamic[id] = objs_dynamic[id].setRotZ(z);
+            objs_dynamic[id] = objs_dynamic[id].setRotZ(i,z);
         }
-
+        #endregion
 
 
     }

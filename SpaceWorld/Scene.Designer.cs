@@ -57,9 +57,9 @@ namespace SpaceWorld
             // 
             // richTextBox1
             // 
-            this.richTextBox1.Location = new System.Drawing.Point(1860, 12);
+            this.richTextBox1.Location = new System.Drawing.Point(1071, 12);
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(32, 25);
+            this.richTextBox1.Size = new System.Drawing.Size(821, 477);
             this.richTextBox1.TabIndex = 1;
             this.richTextBox1.Text = "";
             this.richTextBox1.Visible = false;

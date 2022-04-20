@@ -205,6 +205,10 @@ namespace Geometry
         {
             return new Point3d_GL(-p1.x,  - p1.y,- p1.z);
         }
+        public  Point3d_GL Clone()
+        {
+            return new Point3d_GL(x, y, z);
+        }
         public override string ToString()
         {
 
