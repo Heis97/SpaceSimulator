@@ -140,7 +140,7 @@ namespace Graphic
         int currentMonitor = 1;
 
         public int textureVis = 0;
-        float LightPower = 50000.0f;
+        float LightPower = 500000.0f;
         Label Label_cor;
         Label Label_cor_cur;
         Label Label_trz_cur;
@@ -319,15 +319,15 @@ namespace Graphic
 
             var ComputeSourceGL = assembCode(new string[] { @"Graphic\Shaders\Comp\CompSh_N2_gravitation.glsl" });
 
-            var VertexSourceGL = assembCode(new string[] { @"Graphic\Shaders\Vert\VertexSh_Models.glsl" });
-            var VertexOneSourceGL = assembCode(new string[] { @"Graphic\Shaders\Vert\VertexSh_ModelsOne.glsl" });
+            var VertexSourceGL = assembCode(new string[] { @"Graphic\Shaders\DefoltBFWithGeomShader\VertexSh_Models.glsl" });
+            var VertexOneSourceGL = assembCode(new string[] { @"Graphic\Shaders\DefoltBFWithGeomShader\VertexSh_ModelsOne.glsl" });
 
-            var FragmentSourceGL = assembCode(new string[] { @"Graphic\Shaders\Frag\FragmSh.glsl" });
-            var FragmentSimpleSourceGL = assembCode(new string[] { @"Graphic\Shaders\Frag\FragmSh_Simple.glsl" });
+            var FragmentSourceGL = assembCode(new string[] { @"Graphic\Shaders\DefoltBFWithGeomShader\FragmSh.glsl" });
+            var FragmentSimpleSourceGL = assembCode(new string[] { @"Graphic\Shaders\DefoltBFWithGeomShader\FragmSh_Simple.glsl" });
 
-            var GeometryShaderPointsGL = assembCode(new string[]    { @"Graphic\Shaders\Geom\GeomSh_Points.glsl"});
-            var GeometryShaderLinesGL = assembCode(new string[]     { @"Graphic\Shaders\Geom\GeomSh_Lines.glsl"});
-            var GeometryShaderTrianglesGL = assembCode(new string[] { @"Graphic\Shaders\Geom\GeomSh_Triangles.glsl"});
+            var GeometryShaderPointsGL = assembCode(new string[]    { @"Graphic\Shaders\DefoltBFWithGeomShader\GeomSh_Points.glsl" });
+            var GeometryShaderLinesGL = assembCode(new string[]     { @"Graphic\Shaders\DefoltBFWithGeomShader\GeomSh_Lines.glsl" });
+            var GeometryShaderTrianglesGL = assembCode(new string[] { @"Graphic\Shaders\DefoltBFWithGeomShader\GeomSh_Triangles.glsl" });
 
 
             idsLs.programID = createShader(VertexSourceGL, GeometryShaderLinesGL, FragmentSimpleSourceGL);
@@ -754,9 +754,9 @@ namespace Graphic
                     }
                     if (e.Button == MouseButtons.Left)
                     {
-                        trz.xRot += dy;
-                        trz.yRot -= dx;
-                        trz.zRot += dz;
+                        trz.xRot -= dy;
+                        trz.yRot += dx;
+                       //trz.zRot += dz;
                         
                     }
                     else if (e.Button == MouseButtons.Right)

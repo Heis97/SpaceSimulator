@@ -139,6 +139,54 @@
     <None Include="Graphic\Shaders\Vert\VertexSh_Models.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Graphic\Shaders\DefoltBFShader\FragmSh.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFShader\FragmSh_Simple.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFShader\GeomSh_Lines.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFShader\GeomSh_Points.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFShader\GeomSh_Triangles.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFShader\VertexSh_Models.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFShader\VertexSh_ModelsOne.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFShader\VertexSh_Static.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFWithGeomShader\FragmSh.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFWithGeomShader\FragmSh_Simple.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFWithGeomShader\GeomSh_Lines.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFWithGeomShader\GeomSh_Points.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFWithGeomShader\GeomSh_Triangles.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFWithGeomShader\VertexSh_Models.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFWithGeomShader\VertexSh_ModelsOne.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFWithGeomShader\VertexSh_Static.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

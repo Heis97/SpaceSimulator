@@ -116,13 +116,30 @@ namespace Model
 
         static public int[] parseFace(string num)
         {
-            var splnum  =num.Split('/');
-            var splnum_int = new int[splnum.Length];
-            for (int i=0; i<splnum.Length;i++)
+           
+            if(num.Contains("//"))
             {
-                splnum_int[i] = Convert.ToInt32(splnum[i]);
+                num.Replace('/', ' ');
+                var splnum = num.Split(' ');
+                var splnum_int = new int[3];
+                splnum_int[0] = Convert.ToInt32(splnum[0]);
+                splnum_int[2] = Convert.ToInt32(splnum[1]);
+                return splnum_int;
             }
-            return splnum_int;
+            else
+            {
+                //Console.WriteLine(num);
+                var splnum = num.Split('/');
+                var splnum_int = new int[splnum.Length];
+                for (int i = 0; i < splnum.Length; i++)
+                {
+                   // Console.WriteLine(splnum[i]);
+                    splnum_int[i] = Convert.ToInt32(splnum[i]);
+                }
+                return splnum_int;
+            }
+            
+            
 
         }
 

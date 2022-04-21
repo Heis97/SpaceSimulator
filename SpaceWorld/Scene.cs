@@ -19,7 +19,7 @@ namespace SpaceWorld
     public partial class Scene : Form
     {
         private GraphicGL GL1 = new GraphicGL();
-        static  int count = 700;
+        static  int count = 100;
         int[] obs = new int[count];
         int obs_inst = 0;
         float[] _mass1;
@@ -69,9 +69,9 @@ namespace SpaceWorld
                 mass1[i] = (float)mass;
 
             }
-            mass1[0] = 3.3E+12f;
+           /* mass1[0] = 3.3E+12f;
             mass1[1] = 3.3E+5f;
-            mass1[3] = 3.3E+5f;
+            mass1[3] = 3.3E+5f;*/
             List<float[]> gravData = new List<float[]>();
 
             gravData.Add(pos3);
@@ -89,7 +89,8 @@ namespace SpaceWorld
             Random random = new Random();
             var p1 = new NativeObj();
             var cube = new Model3d(@"модели\cube30.STL");
-            var sphere = new Model3d(@"модели\Шар.STL");
+            
+            var sphere = new Model3d(@"модели\Шар.STL");;
             /*for(int i=0; i<obs.Length;i++)
             {
                 var scale = 0.001;
@@ -98,17 +99,17 @@ namespace SpaceWorld
                     scale = 0.01;
                 }
                 obs[i] = GL1.addSTL(sphere.mesh, PrimitiveType.Triangles, new Point3d_GL(0, 0, 0), new Point3d_GL(0, 0, 0),(float)scale);
-
+            w
             }*/
-            obs_inst = GL1.addSTL(sphere.mesh, PrimitiveType.Triangles, new Point3d_GL(0, 0, 0), new Point3d_GL(0, 0, 0), 0.001f, count);
+            obs_inst = GL1.addSTL(cube.mesh, PrimitiveType.Triangles, new Point3d_GL(0, 0, 0), new Point3d_GL(0, 0, 0),0.001f, count);
             for (int i = 0; i < obs.Length; i++)
             {
-                float scale = 0.001f;
-                if (i == 0 || i == 1 || i == 2)
+               float scale = 0.01f;
+               /* if (i == 0 || i == 1 || i == 2)
                 {
                     scale = 0.01f;
-                }
-                GL1.buffersGl.setScale(obs_inst,i,scale);
+                }*/
+                GL1.buffersGl.setScale(obs_inst,i,0.001f);
 
             }
         }
