@@ -66,6 +66,17 @@ namespace Model
                 mesh[i+2] -= (float)center.z;
             }
         }
+
+        public Model3d InvertNormals()
+        {
+            for (int i = 0; i < normale.Length; i += 3)
+            {
+                normale[i] *= -1;
+                normale[i + 1] *= -1;
+                normale[i + 2] *= -1;
+            }
+            return this;
+        }
         public float[] parsingTxt_Tab(string path)
         {
             

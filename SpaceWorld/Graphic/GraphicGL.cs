@@ -140,7 +140,7 @@ namespace Graphic
         int currentMonitor = 1;
 
         public int textureVis = 0;
-        float LightPower = 500000.0f;
+        float LightPower = 50.0f;
         Label Label_cor;
         Label Label_cor_cur;
         Label Label_trz_cur;
@@ -152,7 +152,7 @@ namespace Graphic
         public Vertex2f MouseLoc;
         public Vertex2f MouseLocGL;
         Vertex3f translMesh = new Vertex3f(0.0f, 0.0f, 0.0f);
-        Vertex3f lightPos = new Vertex3f(0.0f, 0.0f, 50.0f);
+        Vertex3f lightPos = new Vertex3f(0.0f, 0.0f, 0.0f);
         Vertex3f MaterialDiffuse = new Vertex3f(0.5f, 0.5f, 0.5f);
         Vertex3f MaterialAmbient = new Vertex3f(0.2f, 0.2f, 0.2f);
         Vertex3f MaterialSpecular = new Vertex3f(0.1f, 0.1f, 0.1f);
@@ -171,6 +171,9 @@ namespace Graphic
         byte[] textureB;
         Size textureSize;
         public Bitmap bmp;
+        IDs idsI = new IDs();
+        IDs idsO = new IDs();
+
         IDs idsPs = new IDs();
         IDs idsLs = new IDs();
         IDs idsTs = new IDs();
@@ -183,6 +186,7 @@ namespace Graphic
         public List<float[]> dataComputeShader = new List<float[]>();
         bool initComputeShader = false;
         public float[] resultComputeShader;
+        List<float[]> orbites;
 
         #endregion 
 
@@ -313,7 +317,8 @@ namespace Graphic
             sizeControl = ((Control)sender).Size;
             Gl.Initialize();
             Gl.Enable(EnableCap.Multisample);
-            Gl.ClearColor(0.9f, 0.9f, 0.95f, 0.0f);
+           // Gl.ClearColor(0.9f, 0.9f, 0.95f, 0.0f);
+            Gl.ClearColor(0.10f, 0.0f, 0.155f, 0.0f);
             Gl.PointSize(3f);
             Gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
@@ -375,7 +380,7 @@ namespace Graphic
                 {
                     for(int i=0; i< buffersGl.objs_static.Count;i++)
                     {
-                        buffersGl.objs_static[i] = buffersGl.objs_static[i].setBuffers();
+                        buffersGl.objs_static[i] = buffersGl.objs_static[i].setBuffersObj();
                     }
                 }
             }
@@ -761,8 +766,8 @@ namespace Graphic
                     }
                     else if (e.Button == MouseButtons.Right)
                     {
-                        trz.off_x += Convert.ToDouble(dx);
-                        trz.off_y += Convert.ToDouble(dy);
+                        trz.off_x +=0.1* Convert.ToDouble(dx);
+                        trz.off_y += 0.1 * Convert.ToDouble(dy);
                     }
                     lastPos = e.Location;
                     break;
@@ -823,13 +828,12 @@ namespace Graphic
                 else
                 {
                     trz.zoom = 0.7 * trz.zoom;
-                    trz.zoom = Math.Round(trz.zoom, 4);
+ 
                 }
             }
             else
             {
                 trz.zoom = 1.3 * trz.zoom;
-                trz.zoom = Math.Round(trz.zoom, 4);
             }
             transRotZooms[sel_trz] = trz;
         }
@@ -997,7 +1001,7 @@ namespace Graphic
             glObj.trsc[0].scale = scale;
             glObj.trsc[0].transl = trans;
             glObj.trsc[0].rotate = rotate;       
-            return buffersGl.add_obj(glObj.setBuffers());
+            return buffersGl.add_obj(glObj.setBuffersObj());
         }
        void add_buff_gl_id(float[] data_v, float[] data_c, float[] data_n, PrimitiveType tp,int id)
         {

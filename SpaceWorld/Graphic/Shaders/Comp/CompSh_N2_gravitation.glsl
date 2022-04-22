@@ -10,7 +10,7 @@ layout (rgba32f, binding = 4) uniform  image2D acsData;
 {
 	float data1[16];
 }; */
-const float deltTime = 1;
+const float deltTime = 100000;
 const float G = 1.18656E-19;
 //1 - объект расчёта, 2 - влияющие на него другие объекты
 //масса в массах земли, расстояние в астрономических единицах

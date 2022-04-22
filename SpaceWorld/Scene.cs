@@ -32,56 +32,64 @@ namespace SpaceWorld
 
         public void PreInitializeScene()
         {
+            
+            var pos3a = new float[] { 0 ,0, 0, 1.0f, 0, 0 };
+            var vel3a = new float[] { 0, 0, 0, 0, 2E-7f, 0 };
+            var mass1a = new float[] { 3.3E+5f, 0.995f };
+
+
+             var pos3 = new float[obs.Length * 3];
+             var vel3 = new float[obs.Length * 3];
+             var mass1 = new float[obs.Length ];
             Random random = new Random();
-            /*var pos3 = new float[] { 0 ,0, 0, 1.0f, 0, 0 };
-            var vel3 = new float[] { 0, 0, 0, 0, 2E-7f, 0 };
-            var mass1 = new float[] { 3.3E+5f, 0.995f };
-            var acs3 = new float[] { 0, 0, 0, 0, 0, 0 };*/
+            for (int i = 0; i < obs.Length; i++)
+             {
+                 var pos = 1e-4* random.Next(-10000, 10000);
+                 pos3[3 * i] = (float) pos;
+
+                 pos = 1e-4 * random.Next(-10000, 10000);
+                 pos3[3 * i+1] = (float)pos;
+
+                 pos = 1e-4 * random.Next(-10000, 10000);
+                 pos3[3 * i+2] = (float)pos;
 
 
-            var pos3 = new float[obs.Length * 3];
-            var vel3 = new float[obs.Length * 3];
-            var mass1 = new float[obs.Length ];
 
-           for (int i = 0; i < obs.Length; i++)
+                 var vel = 3e-9 * random.Next(-100, 100);
+                 vel3[3 * i] = (float)vel;
+
+                 vel = 3e-9 * random.Next(-100, 100);
+                 vel3[3 * i+1] = (float)vel;
+
+                 vel = 3e-9 * random.Next(-100, 100);
+                 vel3[3 * i+2] = (float)vel;
+
+                 var mass =1e-15 * random.Next(1, 1000);
+                 mass1[i] = (float)mass;
+
+             }
+
+            for(int i=0; i<2;i++)
             {
-                var pos = 1e-4* random.Next(-10000, 10000);
-                pos3[3 * i] = (float) pos;
+                pos3[3*i] = pos3a[3 * i];
+                pos3[3 * i +1] = pos3a[3 * i +1];
+                pos3[3 * i +2] = pos3a[3 * i +2];
 
-                pos = 1e-4 * random.Next(-10000, 10000);
-                pos3[3 * i+1] = (float)pos;
+                vel3[3 * i] = vel3a[3 * i];
+                vel3[3 * i + 1] = vel3a[3 * i + 1];
+                vel3[3 * i + 2] = vel3a[3 * i + 2];
 
-                pos = 1e-4 * random.Next(-10000, 10000);
-                pos3[3 * i+2] = (float)pos;
-
-
-
-                var vel = 3e-9 * random.Next(-100, 100);
-                vel3[3 * i] = (float)vel;
-
-                vel = 3e-9 * random.Next(-100, 100);
-                vel3[3 * i+1] = (float)vel;
-
-                vel = 3e-9 * random.Next(-100, 100);
-                vel3[3 * i+2] = (float)vel;
-
-                var mass =1 * random.Next(1, 1000);
-                mass1[i] = (float)mass;
-
+                mass1[i] = mass1a[i];
             }
-           /* mass1[0] = 3.3E+12f;
-            mass1[1] = 3.3E+5f;
-            mass1[3] = 3.3E+5f;*/
             List<float[]> gravData = new List<float[]>();
 
             gravData.Add(pos3);
             gravData.Add(vel3);
             gravData.Add(mass1);
-            //gravData.Add(acs3);
             Console.WriteLine(gravData.Count);
             GL1.dataComputeShader = gravData;
-            GL1.addFrame(new Point3d_GL(0, 0, 0), new Point3d_GL(-100, 0, 0), new Point3d_GL(0, -100, 0), new Point3d_GL(0, 0, -100));
-            GL1.addFrame(new Point3d_GL(0, 0, 0), new Point3d_GL(100, 0, 0), new Point3d_GL(0, 100, 0), new Point3d_GL(0, 0, 100));
+            GL1.addFrame(new Point3d_GL(0, 0, 0), new Point3d_GL(-1, 0, 0), new Point3d_GL(0, -1, 0), new Point3d_GL(0, 0, -1));
+            GL1.addFrame(new Point3d_GL(0, 0, 0), new Point3d_GL(1, 0, 0), new Point3d_GL(0, 1, 0), new Point3d_GL(0, 0, 1));
         }
 
         public void InitializeScene()
@@ -89,27 +97,18 @@ namespace SpaceWorld
             Random random = new Random();
             var p1 = new NativeObj();
             var cube = new Model3d(@"модели\cube30.STL");
-            
-            var sphere = new Model3d(@"модели\Шар.STL");;
-            /*for(int i=0; i<obs.Length;i++)
-            {
-                var scale = 0.001;
-                if(i==0 || i==1 || i==2)
-                {
-                    scale = 0.01;
-                }
-                obs[i] = GL1.addSTL(sphere.mesh, PrimitiveType.Triangles, new Point3d_GL(0, 0, 0), new Point3d_GL(0, 0, 0),(float)scale);
-            w
-            }*/
-            obs_inst = GL1.addSTL(cube.mesh, PrimitiveType.Triangles, new Point3d_GL(0, 0, 0), new Point3d_GL(0, 0, 0),0.001f, count);
+            //var izr = new Model3d(@"модели\izr1.STL");
+            var sphere = new Model3d(@"модели\Шар.STL");
+            sphere= sphere.InvertNormals();
+            obs_inst = GL1.addSTL(sphere.mesh, PrimitiveType.Triangles, new Point3d_GL(0, 0, 0), new Point3d_GL(0, 0, 0),0.001f, count);
             for (int i = 0; i < obs.Length; i++)
             {
-               float scale = 0.01f;
-               /* if (i == 0 || i == 1 || i == 2)
+               float scale = 0.0001f;
+                if (i == 0 || i == 1)
                 {
-                    scale = 0.01f;
-                }*/
-                GL1.buffersGl.setScale(obs_inst,i,0.001f);
+                    scale = 0.001f;
+                }
+                GL1.buffersGl.setScale(obs_inst,i, scale);
 
             }
         }
@@ -122,11 +121,6 @@ namespace SpaceWorld
             {
                 if (GL1.resultComputeShader.Length> obs.Length*3-1)
                 {
-                    /*for (int i = 0; i < obs.Length; i++)
-                    {
-                        GL1.buffersGl.setTransfObj(obs[i],0, new Point3d_GL(GL1.resultComputeShader[3*i], GL1.resultComputeShader[3*i+1], GL1.resultComputeShader[3*i+2]), new Point3d_GL(0, 0, 0));
-                    }*/
-
                     for (int i = 0; i < obs.Length; i++)
                     {
                         GL1.buffersGl.setTransfObj(obs_inst, i, new Point3d_GL(GL1.resultComputeShader[3 * i], GL1.resultComputeShader[3 * i + 1], GL1.resultComputeShader[3 * i + 2]), new Point3d_GL(0, 0, 0));

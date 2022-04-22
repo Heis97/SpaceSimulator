@@ -100,6 +100,9 @@
     <None Include="Graphic\Shaders\Comp\CompSh_N2_gravitation.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Graphic\Shaders\DefoltBFShader\VertexSh_ModelsOne.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Graphic\Shaders\Frag\FragmSh_Simple.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -112,22 +115,13 @@
     <None Include="Graphic\Shaders\Geom\GeomSh_Points.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Graphic\Shaders\Space\FragmSh.glsl">
+    <None Include="Graphic\Shaders\Space\FragmOrbite.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Graphic\Shaders\Space\Geom_Space\GeomShL_head.glsl">
+    <None Include="Graphic\Shaders\Space\GeomOrbite.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Graphic\Shaders\Space\Geom_Space\GeomShP_head.glsl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Graphic\Shaders\Space\Geom_Space\GeomShT_head.glsl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Graphic\Shaders\Space\Geom_Space\GeomSh_body.glsl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Graphic\Shaders\Space\VertexSh.glsl">
+    <None Include="Graphic\Shaders\Space\VertexOrbite.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Graphic\Shaders\Vert\VertexSh_ModelsOne.glsl">
@@ -142,25 +136,7 @@
     <None Include="Graphic\Shaders\DefoltBFShader\FragmSh.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Graphic\Shaders\DefoltBFShader\FragmSh_Simple.glsl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Graphic\Shaders\DefoltBFShader\GeomSh_Lines.glsl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Graphic\Shaders\DefoltBFShader\GeomSh_Points.glsl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Graphic\Shaders\DefoltBFShader\GeomSh_Triangles.glsl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Graphic\Shaders\DefoltBFShader\VertexSh_Models.glsl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Graphic\Shaders\DefoltBFShader\VertexSh_ModelsOne.glsl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Graphic\Shaders\DefoltBFShader\VertexSh_Static.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Graphic\Shaders\DefoltBFWithGeomShader\FragmSh.glsl">
@@ -339,5 +315,6 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

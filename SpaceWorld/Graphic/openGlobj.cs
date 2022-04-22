@@ -22,6 +22,7 @@ namespace Graphic
         public int id;
         public bool visible;
         uint buff_array;
+        uint buff_array_orb;
         public trsc[] trsc;
         public int count;
 
@@ -37,7 +38,7 @@ namespace Graphic
             {
                 trsc[i] = new trsc(0, 0, 0, 0, 0, 0, 1);
             }
-            buff_array = 0;
+            buff_array = 0; buff_array_orb = 0;
             if (t_buf == null)
             {
                 texture_buffer_data = new float[v_buf.Length];
@@ -75,7 +76,7 @@ namespace Graphic
             }
         }
 
-        public openGlobj setBuffers()
+        public openGlobj setBuffersObj()
         {
             buff_array = Gl.GenVertexArray();
             Gl.BindVertexArray(buff_array);
@@ -85,7 +86,16 @@ namespace Graphic
             bindBuffer(texture_buffer_data, 3, 2);
             return this;
         }
-
+        public openGlobj setBuffersOrbite()
+        {
+            buff_array = Gl.GenVertexArray();
+            Gl.BindVertexArray(buff_array);
+            bindBuffer(vertex_buffer_data, 0, 3);
+            bindBuffer(normal_buffer_data, 1, 3);
+            bindBuffer(color_buffer_data, 2, 3);
+            bindBuffer(texture_buffer_data, 3, 3);
+            return this;
+        }
         public void useBuffers()
         {
             Gl.BindVertexArray(buff_array);
