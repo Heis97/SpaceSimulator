@@ -25,19 +25,24 @@ namespace Graphic
         uint buff_array_orb;
         public trsc[] trsc;
         public int count;
-
+        public int orb_count;
+        uint[] buffs_orb;
 
 
         public openGlobj(float[] v_buf, float[] c_buf, float[] n_buf, float[] t_buf, PrimitiveType type, int _id= -1,int _count=1)
         {
             vertex_buffer_data = new float[v_buf.Length];
             normal_buffer_data = new float[n_buf.Length];
+            orb_count = 4;
+            buffs_orb = new uint[orb_count];
+
             trsc = new trsc[_count];
             count = _count;
             for(int i=0; i<_count;i++)
             {
                 trsc[i] = new trsc(0, 0, 0, 0, 0, 0, 1);
             }
+
             buff_array = 0; buff_array_orb = 0;
             if (t_buf == null)
             {
@@ -80,31 +85,73 @@ namespace Graphic
         {
             buff_array = Gl.GenVertexArray();
             Gl.BindVertexArray(buff_array);
-            bindBuffer(vertex_buffer_data, 0, 3);
-            bindBuffer(normal_buffer_data, 1, 3);
-            bindBuffer(color_buffer_data, 2, 3);
-            bindBuffer(texture_buffer_data, 3, 2);
+            setBuffer(vertex_buffer_data, 0, 3);
+            setBuffer(normal_buffer_data, 1, 3);
+            setBuffer(color_buffer_data, 2, 3);
+            setBuffer(texture_buffer_data, 3, 2);
+
+            setBuffersOrbite();
             return this;
         }
         public openGlobj setBuffersOrbite()
         {
-            buff_array = Gl.GenVertexArray();
-            Gl.BindVertexArray(buff_array);
-            bindBuffer(vertex_buffer_data, 0, 3);
-            bindBuffer(normal_buffer_data, 1, 3);
-            bindBuffer(color_buffer_data, 2, 3);
-            bindBuffer(texture_buffer_data, 3, 3);
+            buff_array_orb = Gl.GenVertexArray();
+            Gl.BindVertexArray(buff_array_orb);
+
+            var initDataOrb = orbDataFromTrsc();
+            for(int i=0; i<orb_count; i++)
+            {
+                buffs_orb[i]= setBuffer(initDataOrb, (uint)i, 3);
+            }
+
             return this;
+        }
+
+        public void updateOrbData()
+        {
+            Gl.BindVertexArray(buff_array_orb);
+            float[] data = orbDataFromTrsc();
+
+            for (int i = 0; i < orb_count-1; i++)
+            {
+                setVertexAttrib(buffs_orb[i], (uint)i+1, 3);
+            }
+            buffs_orb[orb_count - 1] = setBuffer(data, 0, 3);
+        }
+        public void updateOrbDataLong()
+        {
+            Gl.BindVertexArray(buff_array_orb);
+            float[] data = orbDataFromTrsc();
+            for (int i = 0; i < orb_count - 1; i++)
+            {
+                setVertexAttrib(buffs_orb[i], (uint)i + 1, 3);
+            }
+            buffs_orb[orb_count - 1] = setBuffer(data, (uint)(orb_count - 1), 3);
+        }
+        float[] orbDataFromTrsc()
+        {
+            var data = new float[trsc.Length * 3];
+            for(int i=0; i<trsc.Length; i++)
+            {
+                data[3 * i] = (float)trsc[i].transl.x;
+                data[3 * i+1] = (float)trsc[i].transl.y;
+                data[3 * i+2] = (float)trsc[i].transl.z;
+            }
+            return data;
         }
         public void useBuffers()
         {
             Gl.BindVertexArray(buff_array);
         }
+        public void useOrbit()
+        {
+            Gl.BindVertexArray(buff_array_orb);
+        }
         public void loadModels()
         {
             bindBufferInstanceMatr(modelData(), 4);
         }
-        uint bindBuffer(float[] data, uint lvl, int strip)
+        uint setBuffer(float[] data, uint lvl, int strip)
         {
             var buff = Gl.GenBuffer();
             Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
@@ -112,6 +159,17 @@ namespace Graphic
             Gl.EnableVertexAttribArray(lvl);
             Gl.VertexAttribPointer(lvl, strip, VertexAttribType.Float, false, 0, (IntPtr)0);
             return buff;
+        }
+        void setVertexAttrib( uint buff, uint lvl, int strip)
+        {
+            Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
+            Gl.EnableVertexAttribArray(lvl);
+            Gl.VertexAttribPointer(lvl, strip, VertexAttribType.Float, false, 0, (IntPtr)0);
+        }
+        void setBufferData(uint buff, float[] data)
+        {
+            Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
+            Gl.BufferData(BufferTarget.ArrayBuffer, (uint)(4 * data.Length), data, BufferUsage.StaticDraw);
         }
         Matrix4x4f[] modelData()
         {

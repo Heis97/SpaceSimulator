@@ -131,7 +131,7 @@ namespace Graphic
         static float PI = 3.1415926535f;
         public int startGen = 0;
         public int saveImagesLen = 0;
-        public int renderdelim = 1500;
+        public int renderdelim = 1;
         public int rendercout = 0;
         public viewType typeProj = viewType.Perspective;
         Size sizeControl;
@@ -181,6 +181,8 @@ namespace Graphic
         IDs idsPsOne = new IDs();
         IDs idsLsOne = new IDs();
         IDs idsCs = new IDs();
+
+        IDs idsOrb = new IDs();
 
         TextureGL posData, velData, massData,acsData;
         public List<float[]> dataComputeShader = new List<float[]>();
@@ -237,10 +239,7 @@ namespace Graphic
             }
 
             rendercout++;
-            if(rendercout%renderdelim==0)
-            {
-                rendercout = 0;
-            }
+            
             gpuCompute();
         }
 
@@ -286,6 +285,11 @@ namespace Graphic
                     {
                         Gl.DrawArrays(opgl_obj.tp, 0, opgl_obj.vert_len);
                     }
+                    opgl_obj.useOrbit();
+                    load_vars_gl(idsOrb, opgl_obj);
+                    opgl_obj.updateOrbData();
+                    Gl.UseProgram(idsOrb.programID);
+                    Gl.DrawArrays(PrimitiveType.Lines, 0, opgl_obj.trsc.Length*3);
                 }
                 catch
                 {
@@ -296,20 +300,6 @@ namespace Graphic
 
         public void glControl_ContextDestroying(object sender, GlControlEventArgs e)
         {
-            /*foreach (var opglObj in buffersGl.objs_static)
-            {
-                Gl.DeleteBuffers(opglObj.buff_color);
-                Gl.DeleteBuffers(opglObj.buff_pos);
-                Gl.DeleteBuffers(opglObj.buff_normal);
-                Gl.DeleteBuffers(opglObj.buff_UV);
-            }
-            foreach (var opglObj in buffersGl.objs_dynamic)
-            {
-                Gl.DeleteBuffers(opglObj.buff_color);
-                Gl.DeleteBuffers(opglObj.buff_pos);
-                Gl.DeleteBuffers(opglObj.buff_normal);
-                Gl.DeleteBuffers(opglObj.buff_UV);
-            }*/
         }
 
         public void glControl_ContextCreated(object sender, GlControlEventArgs e)
@@ -334,7 +324,6 @@ namespace Graphic
             var GeometryShaderLinesGL = assembCode(new string[]     { @"Graphic\Shaders\DefoltBFWithGeomShader\GeomSh_Lines.glsl" });
             var GeometryShaderTrianglesGL = assembCode(new string[] { @"Graphic\Shaders\DefoltBFWithGeomShader\GeomSh_Triangles.glsl" });
 
-
             idsLs.programID = createShader(VertexSourceGL, GeometryShaderLinesGL, FragmentSimpleSourceGL);
             idsLsOne.programID = createShader(VertexOneSourceGL, GeometryShaderLinesGL, FragmentSimpleSourceGL);
 
@@ -345,13 +334,20 @@ namespace Graphic
             idsTsOne.programID = createShader(VertexOneSourceGL, GeometryShaderTrianglesGL, FragmentSourceGL);
 
             idsCs.programID = createShaderCompute(ComputeSourceGL);
-            
+
+            var VertexOrbSourceGL = assembCode(new string[] { @"Graphic\Shaders\Space\VertexOrbite.glsl" });
+            var GeomOrbSourceGL = assembCode(new string[] { @"Graphic\Shaders\Space\GeomOrbite.glsl" });
+            var FragmOrbSourceGL = assembCode(new string[] { @"Graphic\Shaders\Space\FragmOrbite.glsl" });
+
+            idsOrb.programID = createShader(VertexOrbSourceGL, GeomOrbSourceGL, FragmOrbSourceGL);
+
             init_vars_gl(idsLs);
             init_vars_gl(idsPs);
             init_vars_gl(idsTs);
             init_vars_gl(idsTsOne);
             init_vars_gl(idsPsOne);
             init_vars_gl(idsLsOne);
+            init_vars_gl(idsOrb);
             initComputeShader = init_textures(dataComputeShader);
 
             // Gl.Enable(EnableCap.CullFace);

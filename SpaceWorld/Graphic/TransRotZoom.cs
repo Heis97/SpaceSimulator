@@ -69,7 +69,7 @@ namespace Graphic
             zRot = 0;
             off_x = 0;
             off_y = 0;
-            off_z = -400;
+            off_z = -10;
             rect = _rect;
             id = _id;
             type = TRZtype.Master;
