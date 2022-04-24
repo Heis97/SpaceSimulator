@@ -25,6 +25,9 @@ namespace Graphic
         public PixelFormat pixelFormat;
         InternalFormat internalFormat;
         public float[] data;
+        public TextureGL()
+        {
+        }
         public TextureGL(int _binding, int _w, int _h = 1, PixelFormat _pixelFormat = PixelFormat.Red, float[] _data = null)
         {
             Console.WriteLine("genTexture");    
@@ -42,11 +45,10 @@ namespace Graphic
             w = _w;
             h = _h;
             pixelFormat = _pixelFormat;
-            Console.WriteLine(w + " " + h + " " + ch+" "+ pixelFormat);
+            Console.WriteLine("bind "+binding+"; w "+ w + " h " + h + " ch " + ch+"; "+ pixelFormat);
         }
         public float[] getData()
         {
-            //Gl.ActiveTexture(TextureUnit.Texture0 + binding);
             Gl.BindTexture(TextureTarget.Texture2d, id);
             float[] dataf = new float[w * h ];
             Gl.GetTexImage(TextureTarget.Texture2d, 0, pixelFormat, PixelType.Float, dataf);
@@ -55,9 +57,8 @@ namespace Graphic
         }
         public void setData(float[] data)
         {
-            //Gl.ActiveTexture(TextureUnit.Texture0 + binding);
             Gl.BindTexture(TextureTarget.Texture2d, id);
-            Gl.TexImage2D(TextureTarget.Texture2d, 0, internalFormat, w, h, 0,pixelFormat, PixelType.Float, data);
+            Gl.TexImage2D(TextureTarget.Texture2d, 0, internalFormat, w/ch, h, 0,pixelFormat, PixelType.Float, data);
         }
         uint genTexture(int binding, int w, int h = 1, PixelFormat pixelFormat = PixelFormat.Red, float[] data = null)
         {
@@ -88,11 +89,12 @@ namespace Graphic
             Gl.TexParameteri(TextureTarget.Texture2d, TextureParameterName.TextureMagFilter, Gl.NEAREST);
             Gl.TexParameteri(TextureTarget.Texture2d, TextureParameterName.TextureMinFilter, Gl.NEAREST);
             internalFormat = InternalFormat.R32f;
-            if(pixelFormat == PixelFormat.Rgb)
+            if(pixelFormat == PixelFormat.Rgb || pixelFormat == PixelFormat.Rgba)
             {
                 internalFormat = InternalFormat.Rgba32f;
             }
-            Gl.TexImage2D(TextureTarget.Texture2d, 0, internalFormat, w/ch, h, 0, pixelFormat, PixelType.Float, data);
+            Gl.TexImage2D(TextureTarget.Texture2d, 0, internalFormat, w / ch, h, 0, pixelFormat, PixelType.Float, data);
+            
             Gl.BindImageTexture((uint)binding, buff_texture, 0, false, 0, BufferAccess.ReadWrite, internalFormat);
             return buff_texture;
         }
@@ -131,7 +133,7 @@ namespace Graphic
         static float PI = 3.1415926535f;
         public int startGen = 0;
         public int saveImagesLen = 0;
-        public int renderdelim = 1;
+        public int renderdelim = 5;
         public int rendercout = 0;
         public viewType typeProj = viewType.Perspective;
         Size sizeControl;
@@ -183,12 +185,14 @@ namespace Graphic
         IDs idsCs = new IDs();
 
         IDs idsOrb = new IDs();
+        IDs idsGrMap = new IDs();
 
         TextureGL posData, velData, massData,acsData;
         public List<float[]> dataComputeShader = new List<float[]>();
         bool initComputeShader = false;
         public float[] resultComputeShader;
         List<float[]> orbites;
+        int orb_p_count = 200;
 
         #endregion 
 
@@ -239,7 +243,7 @@ namespace Graphic
             }
 
             rendercout++;
-            
+            drawGravMap();
             gpuCompute();
         }
 
@@ -285,11 +289,10 @@ namespace Graphic
                     {
                         Gl.DrawArrays(opgl_obj.tp, 0, opgl_obj.vert_len);
                     }
-                    opgl_obj.useOrbit();
-                    load_vars_gl(idsOrb, opgl_obj);
-                    opgl_obj.updateOrbData();
-                    Gl.UseProgram(idsOrb.programID);
-                    Gl.DrawArrays(PrimitiveType.Lines, 0, opgl_obj.trsc.Length*3);
+                    /*if(opgl_obj.tp==PrimitiveType.Triangles)
+                    {
+                        drawOrbit(opgl_obj);
+                    }*/
                 }
                 catch
                 {
@@ -297,7 +300,20 @@ namespace Graphic
             }
             
         }
+        void drawOrbit(openGlobj opgl_obj)
+        {
+            opgl_obj.useOrbit();
+            load_vars_gl(idsOrb, opgl_obj);
+            Gl.DrawArrays(PrimitiveType.Lines, 0, 2 * opgl_obj.trsc.Length);
+        }
 
+        void drawGravMap()
+        {
+            Gl.UseProgram(idsGrMap.programID);
+            useBuffers(idsGrMap);
+            load_vars_gl(idsGrMap, new openGlobj());
+            Gl.DrawArrays(PrimitiveType.Lines, 0, 400);
+        }
         public void glControl_ContextDestroying(object sender, GlControlEventArgs e)
         {
         }
@@ -309,7 +325,7 @@ namespace Graphic
             Gl.Enable(EnableCap.Multisample);
            // Gl.ClearColor(0.9f, 0.9f, 0.95f, 0.0f);
             Gl.ClearColor(0.10f, 0.0f, 0.155f, 0.0f);
-            Gl.PointSize(3f);
+            Gl.PointSize(1.5f);
             Gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             var ComputeSourceGL = assembCode(new string[] { @"Graphic\Shaders\Comp\CompSh_N2_gravitation.glsl" });
@@ -341,6 +357,17 @@ namespace Graphic
 
             idsOrb.programID = createShader(VertexOrbSourceGL, GeomOrbSourceGL, FragmOrbSourceGL);
 
+            var VertexGravitMapSourceGL = assembCode(new string[] { @"Graphic\Shaders\GravitMap\Vertex.glsl" });
+            var GeomGravitMapSourceGL = assembCode(new string[] { @"Graphic\Shaders\GravitMap\Geom.glsl" });
+            var FragmGravitMapSourceGL = assembCode(new string[] { @"Graphic\Shaders\GravitMap\Fragm.glsl" });
+
+            idsGrMap.programID = createShader(VertexGravitMapSourceGL, GeomGravitMapSourceGL, FragmGravitMapSourceGL);
+
+            idsGrMap.buff_tex = Gl.GenVertexArray();
+            Gl.BindVertexArray(idsGrMap.buff_tex);
+            var ind_data = openGlobj.genIndexF(200);
+            setBuffer(ind_data, 0, 1);
+
             init_vars_gl(idsLs);
             init_vars_gl(idsPs);
             init_vars_gl(idsTs);
@@ -348,16 +375,28 @@ namespace Graphic
             init_vars_gl(idsPsOne);
             init_vars_gl(idsLsOne);
             init_vars_gl(idsOrb);
+            init_vars_gl(idsGrMap);
             initComputeShader = init_textures(dataComputeShader);
 
             // Gl.Enable(EnableCap.CullFace);
             Gl.Enable(EnableCap.DepthTest);
         }
 
-        
+        public void useBuffers(IDs ds)
+        {
+            Gl.BindVertexArray(ds.buff_tex);
+        }
 
+        uint setBuffer(float[] data, uint lvl, int strip)
+        {
+            var buff = Gl.GenBuffer();
+            Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
+            Gl.BufferData(BufferTarget.ArrayBuffer, (uint)(4 * data.Length), data, BufferUsage.StaticDraw);
+            Gl.EnableVertexAttribArray(lvl);
+            Gl.VertexAttribPointer(lvl, strip, VertexAttribType.Float, false, 0, (IntPtr)0);
+            return buff;
+        }
 
-        #region addBuffer
 
         void bufferToCompute(float[] data, int locat)
         {
@@ -381,7 +420,6 @@ namespace Graphic
                 }
             }
         }
-        #endregion
 
         private bool init_textures(List<float[]> data)
         {
@@ -394,10 +432,10 @@ namespace Graphic
             float[] vel3 = data[1];
             float[] mass1 = data[2];
             posData = new TextureGL(0, pos3.Length, 1, PixelFormat.Rgb, pos3);
-            velData = new TextureGL(2, vel3.Length, 1, PixelFormat.Rgb, vel3);
-            massData = new TextureGL(3, mass1.Length, 1, PixelFormat.Red, mass1);
-            acsData = new TextureGL(4, pos3.Length, 1, PixelFormat.Rgb, null);
-            Console.WriteLine(posData.w + " " + posData.h + " " + posData.ch + " " + posData.data.Length);
+            velData = new TextureGL(1, vel3.Length, 1, PixelFormat.Rgb, vel3);
+            massData = new TextureGL(2, mass1.Length, 1, PixelFormat.Red, mass1);
+            //acsData = new TextureGL(4, pos3.Length, 1, PixelFormat.Rgb, null);
+            //Console.WriteLine(posData.w + " " + posData.h + " " + posData.ch + " " + posData.data.Length);
             return true;
         }
         private void init_vars_gl(IDs ids)
@@ -463,7 +501,7 @@ namespace Graphic
                 Gl.MemoryBarrier(MemoryBarrierMask.ShaderImageAccessBarrierBit);
                 var resultPos = posData.getData();
                 var resultVel = velData.getData();
-                var resultAcs = acsData.getData();
+               // var resultAcs = acsData.getData();
                 resultComputeShader = resultPos;
                 //Console.WriteLine(toStringBuf(resultPos, 3, "pos "));
                 //Console.WriteLine(toStringBuf(resultVel, 3, "vel "));

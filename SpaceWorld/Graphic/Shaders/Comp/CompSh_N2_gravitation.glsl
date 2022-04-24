@@ -2,15 +2,11 @@
 
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 layout (rgba32f, binding = 0) uniform  image2D posData;
-layout (rgba32f, binding = 1) uniform  image2D posDataCompG;
-layout (rgba32f, binding = 2) uniform  image2D velData;
-layout (r32f, binding = 3) uniform  image2D massData;
-layout (rgba32f, binding = 4) uniform  image2D acsData;
-/*layout (binding = 1) buffer compBuf
-{
-	float data1[16];
-}; */
-const float deltTime = 100000;
+layout (rgba32f, binding = 1) uniform  image2D velData;
+layout (r32f, binding = 2) uniform  image2D massData;
+
+
+const float deltTime = 10000;
 const float G = 1.18656E-19;
 //1 - объект расчёта, 2 - влияющие на него другие объекты
 //масса в массах земли, расстояние в астрономических единицах
@@ -36,7 +32,7 @@ void main()
 	for(int i=0; i< imageSize(massData).x; i++)
 	{
 
-		if(ipos.x!=i)
+		if(ipos.x!=i)      
 		{
 			ivec2 curP = ivec2(i,0);
 			acs3 += compGravit(pos1,mass1,imageLoad(posData,curP).rgb,imageLoad(massData,curP).r);
@@ -46,7 +42,6 @@ void main()
 	pos1 += vel1*deltTime + (acs3*deltTime*deltTime)/2;
 	vel1 += acs3*deltTime;
 	
-	imageStore(acsData, ipos, vec4(acs3, 0));
 	imageStore(posData, ipos, vec4(pos1, 0));
 	imageStore(velData, ipos, vec4(vel1, 0));
 }	

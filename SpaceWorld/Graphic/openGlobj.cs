@@ -23,27 +23,38 @@ namespace Graphic
         public bool visible;
         uint buff_array;
         uint buff_array_orb;
+        uint buff_ind_orb;
         public trsc[] trsc;
         public int count;
         public int orb_count;
         uint[] buffs_orb;
-
+        public float[][] data_orb;
+        public TextureGL textureGL;
 
         public openGlobj(float[] v_buf, float[] c_buf, float[] n_buf, float[] t_buf, PrimitiveType type, int _id= -1,int _count=1)
         {
             vertex_buffer_data = new float[v_buf.Length];
             normal_buffer_data = new float[n_buf.Length];
-            orb_count = 4;
+            orb_count =200;
             buffs_orb = new uint[orb_count];
-
+            data_orb = new float[orb_count][];
+            
             trsc = new trsc[_count];
+            if(type == PrimitiveType.Triangles)
+            {
+                textureGL = new TextureGL(5,4* trsc.Length, orb_count,  PixelFormat.Rgba);
+            }
+            else
+            {
+                textureGL = new TextureGL();
+            }
             count = _count;
             for(int i=0; i<_count;i++)
             {
                 trsc[i] = new trsc(0, 0, 0, 0, 0, 0, 1);
             }
 
-            buff_array = 0; buff_array_orb = 0;
+            buff_array = 0; buff_array_orb = 0; buff_ind_orb = 0;
             if (t_buf == null)
             {
                 texture_buffer_data = new float[v_buf.Length];
@@ -90,23 +101,43 @@ namespace Graphic
             setBuffer(color_buffer_data, 2, 3);
             setBuffer(texture_buffer_data, 3, 2);
 
-            setBuffersOrbite();
+            setBuffersOrbite2();
             return this;
         }
-        public openGlobj setBuffersOrbite()
+        public openGlobj setBuffersOrbite2()
         {
             buff_array_orb = Gl.GenVertexArray();
             Gl.BindVertexArray(buff_array_orb);
-
-            var initDataOrb = orbDataFromTrsc();
-            for(int i=0; i<orb_count; i++)
+            var initDataOrb = orbDataFromTrsc4();
+            for (int i = 0; i < orb_count; i++)
             {
-                buffs_orb[i]= setBuffer(initDataOrb, (uint)i, 3);
+                data_orb[i] = initDataOrb;
             }
-
+            var ind_data = genIndexF(trsc.Length);
+            Console.WriteLine(toStringBuf(ind_data, 1, "ind: "));
+            buff_ind_orb = setBuffer(ind_data, 0, 1);
             return this;
         }
+        public void updateOrbData2()
+        {
+            float[] data = orbDataFromTrsc4();
+            for (int i = 0; i < orb_count - 1; i++)
+            {
+                data_orb[i] = data_orb[i + 1];
+            }
+            data_orb[orb_count - 1] = data;
 
+            var texdata = new float[data_orb[0].Length * orb_count];
+
+            for (int i = 0; i < orb_count; i++)
+            {
+                for (int j = 0; j < data_orb[0].Length; j++)
+                {
+                    texdata[i * data_orb[0].Length + j] = data_orb[i][j];
+                }
+            }
+            textureGL.setData(texdata);
+        }
         public void updateOrbData()
         {
             Gl.BindVertexArray(buff_array_orb);
@@ -114,9 +145,19 @@ namespace Graphic
 
             for (int i = 0; i < orb_count-1; i++)
             {
-                setVertexAttrib(buffs_orb[i], (uint)i+1, 3);
+                data_orb[i] = data_orb[i + 1];
+                
+                // setVertexAttrib(buffs_orb[i], (uint)i+1, 3);
             }
-            buffs_orb[orb_count - 1] = setBuffer(data, 0, 3);
+            //Console.WriteLine("__________");
+            data_orb[orb_count - 1] = data;
+            for (int i = 0; i < orb_count; i++) 
+            {
+                //setBufferData(buffs_orb[i], data_orb[i]);
+                //buffs_orb[i] = setBuffer(data_orb[i], (uint)i, 3);
+                setBufferData(buffs_orb[i], data_orb[i]);
+                //Console.WriteLine(toStringBuf(data_orb[i], 3, "data " + i));
+            }
         }
         public void updateOrbDataLong()
         {
@@ -130,12 +171,37 @@ namespace Graphic
         }
         float[] orbDataFromTrsc()
         {
-            var data = new float[trsc.Length * 3];
+            var data = new float[trsc.Length * 6];
             for(int i=0; i<trsc.Length; i++)
             {
+                data[6 * i] = (float)trsc[i].transl.x;
+                data[6 * i+1] = (float)trsc[i].transl.y;
+                data[6 * i+2] = (float)trsc[i].transl.z;
+
+            }
+            return data;
+        }
+        float[] orbDataFromTrsc4()
+        {
+            var data = new float[trsc.Length * 4];
+            for (int i = 0; i < trsc.Length; i++)
+            {
+                data[4 * i] = (float)trsc[i].transl.x;
+                data[4 * i + 1] = (float)trsc[i].transl.y;
+                data[4 * i + 2] = (float)trsc[i].transl.z;
+
+            }
+            return data;
+        }
+        float[] orbDataFromTrsc3()
+        {
+            var data = new float[trsc.Length * 3];
+            for (int i = 0; i < trsc.Length; i++)
+            {
                 data[3 * i] = (float)trsc[i].transl.x;
-                data[3 * i+1] = (float)trsc[i].transl.y;
-                data[3 * i+2] = (float)trsc[i].transl.z;
+                data[3 * i + 1] = (float)trsc[i].transl.y;
+                data[3 * i + 2] = (float)trsc[i].transl.z;
+
             }
             return data;
         }
@@ -160,16 +226,27 @@ namespace Graphic
             Gl.VertexAttribPointer(lvl, strip, VertexAttribType.Float, false, 0, (IntPtr)0);
             return buff;
         }
+
+        uint setBufferInt(Int32[] data, uint lvl, int strip)
+        {
+            var buff = Gl.GenBuffer();
+            Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
+            Gl.BufferData(BufferTarget.ArrayBuffer, (uint)(4 * data.Length), data, BufferUsage.DynamicDraw);
+            Gl.EnableVertexAttribArray(lvl);
+            Gl.VertexAttribPointer(lvl, strip, VertexAttribType.Int, false, 0, (IntPtr)0);
+            return buff;
+        }
+
         void setVertexAttrib( uint buff, uint lvl, int strip)
         {
             Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
             Gl.EnableVertexAttribArray(lvl);
             Gl.VertexAttribPointer(lvl, strip, VertexAttribType.Float, false, 0, (IntPtr)0);
         }
-        void setBufferData(uint buff, float[] data)
+        static void setBufferData(uint buff, float[] data)
         {
             Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
-            Gl.BufferData(BufferTarget.ArrayBuffer, (uint)(4 * data.Length), data, BufferUsage.StaticDraw);
+            Gl.BufferData(BufferTarget.ArrayBuffer, (uint)(4 * data.Length), data, BufferUsage.DynamicDraw);
         }
         Matrix4x4f[] modelData()
         {
@@ -256,6 +333,62 @@ namespace Graphic
             return this;
         }
         #endregion
+
+
+        static int[] genIndex(int len)
+        {
+            var buff = new int[2 * len];
+            for (int i = 0; i < len; i++)
+            {
+                buff[2 * i] = i;
+            }
+            return buff;
+        }
+
+        public static  float[] genIndexF(int len)
+        {
+            var buff = new float[2 * len];
+            for (int i = 0; i < len; i++)
+            {
+                buff[2 * i] = i;
+                buff[2 * i+1] = i;
+            }
+            return buff;
+        }
+        static string toStringBuf(float[] buff, int strip, string name)
+        {
+            if (buff == null)
+                return name + " null ";
+            string txt = name + " " + buff.Length;
+            for (int i = 0; i < buff.Length / strip; i++)
+            {
+                txt += "  | ";
+                for (int j = 0; j < strip; j++)
+                {
+                    txt += buff[i * strip + j].ToString() + ", ";
+                }
+            }
+            txt += " |\n--------------------------------\n";
+            return txt;
+
+        }
+        static float[] duplicateData(float[] data)
+        {
+            var dupdata = new float[data.Length * 2];
+            for (int i = 0; i < data.Length; i += 3)
+            {
+                dupdata[i * 2] = data[i];
+                dupdata[i * 2 + 1] = data[i + 1];
+                dupdata[i * 2 + 2] = data[i + 2];
+
+                dupdata[i * 2 + 3] = data[i];
+                dupdata[i * 2 + 4] = data[i + 1];
+                dupdata[i * 2 + 5] = data[i + 2];
+            }
+            //Console.WriteLine(toStringBuf(data, 3, "data"));
+            //Console.WriteLine(toStringBuf(dupdata, 3, "dupdata"));
+            return dupdata;
+        }
     }
 
 }
