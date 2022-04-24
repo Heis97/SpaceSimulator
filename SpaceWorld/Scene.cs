@@ -19,7 +19,7 @@ namespace SpaceWorld
     public partial class Scene : Form
     {
         private GraphicGL GL1 = new GraphicGL();
-        static  int count = 300 ;
+        static  int count = 400;
         int[] obs = new int[count];
         int obs_inst = 0;
         float[] _mass1;
@@ -33,9 +33,16 @@ namespace SpaceWorld
         public void PreInitializeScene()
         {
             
-            var pos3a = new float[] { 0 ,0, 0f, 1.0f, 0, 0 };
-            var vel3a = new float[] { 0, 0, 0, 0, 2E-7f, 0 };
-            var mass1a = new float[] { 3.3E+5f, 0.995f };
+            var pos3a = new float[] { 
+                0 ,0, 0f,
+                1.0f, 0, 0,
+                1f+kmToAe(3.8e5f),0,0 };
+            var vel3a = new float[] { 
+                0, 0, 0,
+                0, 2E-7f, 0,
+                0, 2E-7f +kmToAe(1f), 0
+            };
+            var mass1a = new float[] { 3.3E+5f, 0.995f, kgToMe(7.3477e22f) };
 
 
              var pos3 = new float[obs.Length * 3];
@@ -48,14 +55,14 @@ namespace SpaceWorld
                  pos3[3 * i] = (float) pos;
 
                  pos = 2e-4 * random.Next(-10000, 10000);
-                 pos3[3 * i+1] = (float)pos;
+                pos3[3 * i + 1] = (float)pos;
 
-                 pos = 2e-4 * random.Next(-10000, 10000);
-                 pos3[3 * i+2] = (float)pos;
+                pos = 2e-4 * random.Next(-10000, 10000);
+                 pos3[3 * i+2] = 0;//(float)pos;
 
 
 
-                 var vel = 1e-9 * random.Next(-100, 100);
+                var vel = 1e-9 * random.Next(-100, 100);
                  vel3[3 * i] = (float)vel;
 
                  vel = 1e-9 * random.Next(-100, 100);
@@ -69,7 +76,7 @@ namespace SpaceWorld
 
              }
 
-           /*for(int i=0; i<2;i++)
+           for(int i=0; i< mass1a.Length; i++)
             {
                 pos3[3*i] = pos3a[3 * i];
                 pos3[3 * i +1] = pos3a[3 * i +1];
@@ -80,7 +87,7 @@ namespace SpaceWorld
                 vel3[3 * i + 2] = vel3a[3 * i + 2];
 
                 mass1[i] = mass1a[i];
-            }*/
+            }
             List<float[]> gravData = new List<float[]>();
 
             gravData.Add(pos3);
@@ -99,15 +106,18 @@ namespace SpaceWorld
             var cube = new Model3d(@"модели\cube30.STL");
             //var izr = new Model3d(@"модели\izr1.STL");
             var sphere = new Model3d(@"модели\Шар.STL");
-            sphere= sphere.InvertNormals();
             obs_inst = GL1.addSTL(sphere.mesh, PrimitiveType.Triangles, new Point3d_GL(0, 0, 0), new Point3d_GL(0, 0, 0),0.001f, count);
             for (int i = 0; i < obs.Length; i++)
             {
                float scale = 0.0001f;
-              /* if (i == 0 || i == 1)
+               if (i == 0 || i == 1)
                 {
-                    scale = 0.001f;
-                }*/
+                    scale = 0.000001f;
+                }
+                if (i == 2)
+                {
+                    scale = 0.0000005f;
+                }
                 GL1.buffersGl.setScale(obs_inst,i, scale);
 
             }
@@ -123,7 +133,7 @@ namespace SpaceWorld
                 {
                     for (int i = 0; i < obs.Length; i++)
                     {
-                        GL1.buffersGl.setTransfObj(obs_inst, i, new Point3d_GL(GL1.resultComputeShader[3 * i], GL1.resultComputeShader[3 * i + 1], GL1.resultComputeShader[3 * i + 2]), new Point3d_GL(0, 0, 0));
+                        GL1.buffersGl.setTransfObj(obs_inst, i, new Point3d_GL(GL1.resultComputeShader[3 * i], GL1.resultComputeShader[3 * i + 1], GL1.resultComputeShader[3 * i + 2]), new Point3d_GL(20, 0, 0));
                     }
                 }
             }
@@ -176,5 +186,15 @@ namespace SpaceWorld
             GL1.glControl_ContextDestroying(sender, e);
         }
         #endregion
+
+        float kmToAe(float km)
+        {
+            return km / 1.5e8f;
+        }
+
+        float kgToMe(float kg)
+        {
+            return kg / 5.9726e24f;
+        }
     }
 }

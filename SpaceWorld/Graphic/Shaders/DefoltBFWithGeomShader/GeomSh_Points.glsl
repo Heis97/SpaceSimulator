@@ -11,10 +11,10 @@ uniform vec2 MouseLocGL;
 
 in VS_GS_INTERFACE
 {
-vec3 vertexPosition_world;
-vec3 vertexNormal_world;
-vec3 vertexColor;
-vec2 vertexTexture;
+vec3 Position_world;
+vec3 Normal_world;
+vec3 Color;
+vec2 Texture;
 }vs_out[];
 
 out GS_FS_INTERFACE
@@ -32,11 +32,11 @@ void main()
    for (int i = 0; i < gl_in.length(); i++)
    { 
 	    gl_ViewportIndex = gl_InvocationID;
-		gl_Position = VPs[gl_InvocationID] * vec4(vs_out[i].vertexPosition_world, 1.0);
+		gl_Position = VPs[gl_InvocationID] * vec4(vs_out[i].Position_world, 1.0);
 
 	    fs_in.Position_world = gl_Position.xyz;
-	    fs_in.Color = vs_out[i].vertexColor;
-		fs_in.TextureUV = vs_out[i].vertexTexture;
+	    fs_in.Color = vs_out[i].Color;
+		fs_in.TextureUV = vs_out[i].Texture;
 		fs_in.Normal_camera = vec3(0,0,1);
 		fs_in.EyeDirection_camera = vec3(0,0,1);
 		fs_in.LightDirection_camera = vec3(0,0,1);

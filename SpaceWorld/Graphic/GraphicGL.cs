@@ -115,6 +115,7 @@ namespace Graphic
         public int[] LocationVs = new int[4];
         public int[] LocationPs = new int[4];
         public int LocationM;
+        public int LocationRotM;
         public int LightID;
         public int textureVisID;
         public int LightPowerID;
@@ -142,7 +143,7 @@ namespace Graphic
         int currentMonitor = 1;
 
         public int textureVis = 0;
-        float LightPower = 50.0f;
+        float LightPower = 5.0f;
         Label Label_cor;
         Label Label_cor_cur;
         Label Label_trz_cur;
@@ -187,14 +188,15 @@ namespace Graphic
         IDs idsOrb = new IDs();
         IDs idsGrMap = new IDs();
 
-        TextureGL posData, velData, massData,acsData;
+        TextureGL posData, velData, massData,acsData,posTimeData;
         public List<float[]> dataComputeShader = new List<float[]>();
         bool initComputeShader = false;
         public float[] resultComputeShader;
-        List<float[]> orbites;
         int orb_p_count = 200;
+        int obj_p_count =0;
 
         #endregion 
+
 
         public void glControl_Render(object sender, GlControlEventArgs e)
         {
@@ -209,6 +211,7 @@ namespace Graphic
                     transRotZooms[i].rect.Y,
                     transRotZooms[i].rect.Width,
                     transRotZooms[i].rect.Height);
+               
                 var retM = transRotZooms[i].getVPmatrix();               
                 VPs[i] = retM[2];
                 Vs[i] = retM[1];
@@ -244,6 +247,7 @@ namespace Graphic
 
             rendercout++;
             drawGravMap();
+            drawOrbit();
             gpuCompute();
         }
 
@@ -289,10 +293,9 @@ namespace Graphic
                     {
                         Gl.DrawArrays(opgl_obj.tp, 0, opgl_obj.vert_len);
                     }
-                    /*if(opgl_obj.tp==PrimitiveType.Triangles)
-                    {
-                        drawOrbit(opgl_obj);
-                    }*/
+                    
+                        
+                    
                 }
                 catch
                 {
@@ -300,11 +303,12 @@ namespace Graphic
             }
             
         }
-        void drawOrbit(openGlobj opgl_obj)
+        void drawOrbit()
         {
-            opgl_obj.useOrbit();
-            load_vars_gl(idsOrb, opgl_obj);
-            Gl.DrawArrays(PrimitiveType.Lines, 0, 2 * opgl_obj.trsc.Length);
+            Gl.UseProgram(idsOrb.programID);
+            useBuffers(idsOrb);
+            load_vars_gl(idsOrb, new openGlobj());
+            Gl.DrawArrays(PrimitiveType.Lines, 0,2*obj_p_count);
         }
 
         void drawGravMap()
@@ -312,7 +316,8 @@ namespace Graphic
             Gl.UseProgram(idsGrMap.programID);
             useBuffers(idsGrMap);
             load_vars_gl(idsGrMap, new openGlobj());
-            Gl.DrawArrays(PrimitiveType.Lines, 0, 400);
+            Gl.DrawArrays(PrimitiveType.Lines, 0, 2 * orb_p_count);
+           
         }
         public void glControl_ContextDestroying(object sender, GlControlEventArgs e)
         {
@@ -363,10 +368,8 @@ namespace Graphic
 
             idsGrMap.programID = createShader(VertexGravitMapSourceGL, GeomGravitMapSourceGL, FragmGravitMapSourceGL);
 
-            idsGrMap.buff_tex = Gl.GenVertexArray();
-            Gl.BindVertexArray(idsGrMap.buff_tex);
-            var ind_data = openGlobj.genIndexF(200);
-            setBuffer(ind_data, 0, 1);
+            
+            
 
             init_vars_gl(idsLs);
             init_vars_gl(idsPs);
@@ -381,7 +384,16 @@ namespace Graphic
             // Gl.Enable(EnableCap.CullFace);
             Gl.Enable(EnableCap.DepthTest);
         }
-
+        static float[] genIndexF(int len)
+        {
+            var buff = new float[2 * len];
+            for (int i = 0; i < len; i++)
+            {
+                buff[2 * i] = i;
+                buff[2 * i + 1] = i;
+            }
+            return buff;
+        }
         public void useBuffers(IDs ds)
         {
             Gl.BindVertexArray(ds.buff_tex);
@@ -431,13 +443,29 @@ namespace Graphic
             float[] pos3 = data[0];
             float[] vel3 = data[1];
             float[] mass1 = data[2];
+            obj_p_count = mass1.Length;
             posData = new TextureGL(0, pos3.Length, 1, PixelFormat.Rgb, pos3);
             velData = new TextureGL(1, vel3.Length, 1, PixelFormat.Rgb, vel3);
             massData = new TextureGL(2, mass1.Length, 1, PixelFormat.Red, mass1);
+            posTimeData = new TextureGL(3, 4 * mass1.Length, orb_p_count, PixelFormat.Rgba);
             //acsData = new TextureGL(4, pos3.Length, 1, PixelFormat.Rgb, null);
             //Console.WriteLine(posData.w + " " + posData.h + " " + posData.ch + " " + posData.data.Length);
+
+
+            idsGrMap.buff_tex = Gl.GenVertexArray();
+            Gl.BindVertexArray(idsGrMap.buff_tex);
+            var ind_data1 = genIndexF(200);
+            setBuffer(ind_data1, 0, 1);
+
+            idsOrb.buff_tex = Gl.GenVertexArray();
+            Gl.BindVertexArray(idsOrb.buff_tex);
+            var ind_data2 = genIndexF(obj_p_count);
+            setBuffer(ind_data2, 0, 1);
+
             return true;
         }
+
+
         private void init_vars_gl(IDs ids)
         {
             Gl.UseProgram(ids.programID);
@@ -449,6 +477,7 @@ namespace Graphic
                 ids.LocationPs[i] = Gl.GetUniformLocation(ids.programID, "Ps[" + i + "]");
             }
             ids.LocationM = Gl.GetUniformLocation(ids.programID, "ModelMatrix");
+            ids.LocationRotM = Gl.GetUniformLocation(ids.programID, "RotateMatrix");
             ids.TextureID  = Gl.GetUniformLocation(ids.programID, "textureSample");
             ids.MaterialDiffuseID = Gl.GetUniformLocation(ids.programID, "MaterialDiffuse");
             ids.MaterialAmbientID = Gl.GetUniformLocation(ids.programID, "MaterialAmbient");
@@ -468,6 +497,9 @@ namespace Graphic
             {
                 var ModelMatr = openGlobj.trsc[0].getModelMatrix();
                 Gl.UniformMatrix4f(ids.LocationM, 1, false, ModelMatr);
+
+                var RotateMatr = openGlobj.trsc[0].getRotateMatrix();
+                Gl.UniformMatrix4f(ids.LocationRotM, 1, false, RotateMatr);
             }
             
             //Console.WriteLine(ModelMatr);
@@ -714,7 +746,7 @@ namespace Graphic
         {
             transRotZooms.Add(new TransRotZoom(rect,id));
         }
-        public void addMonitor(Rectangle rect, int id, Vertex3d rotVer, Vertex3d transVer, int _idMast)
+        public void addMonitor(Rectangle rect, int id, Vertex3f rotVer, Vertex3f transVer, int _idMast)
         {
             transRotZooms.Add(new TransRotZoom(rect, id, rotVer, transVer, _idMast));
         }
@@ -793,15 +825,15 @@ namespace Graphic
                     }
                     if (e.Button == MouseButtons.Left)
                     {
-                        trz.xRot -= dy;
-                        trz.yRot += dx;
+                        trz.xRot += dy;
+                        trz.zRot += dx;
                        //trz.zRot += dz;
                         
                     }
                     else if (e.Button == MouseButtons.Right)
                     {
-                        trz.off_x +=0.1* Convert.ToDouble(dx);
-                        trz.off_y += 0.1 * Convert.ToDouble(dy);
+                        trz.target.x +=0.1f* Convert.ToSingle(dx);
+                        trz.target.y += 0.1f * Convert.ToSingle(dy);
                     }
                     lastPos = e.Location;
                     break;
@@ -1207,8 +1239,8 @@ namespace Graphic
                 p1 = new Point3d_GL(gl_vertex_buffer_data[i], gl_vertex_buffer_data[i + 1], gl_vertex_buffer_data[i + 2]);
                 p2 = new Point3d_GL(gl_vertex_buffer_data[i + 3], gl_vertex_buffer_data[i + 4], gl_vertex_buffer_data[i + 5]);
                 p3 = new Point3d_GL(gl_vertex_buffer_data[i + 6], gl_vertex_buffer_data[i + 7], gl_vertex_buffer_data[i + 8]);
-                U = p1 - p2;
-                V = p1 - p3;
+                U = p1 - p3;
+                V = p1 - p2;
                 Norm = new Point3d_GL(
                     U.y * V.z - U.z * V.y,
                     U.z * V.x - U.x * V.z,

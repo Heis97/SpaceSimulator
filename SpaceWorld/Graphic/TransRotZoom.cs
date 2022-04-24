@@ -39,6 +39,14 @@ namespace Graphic
                 Matrix4x4f.Scaled(scale, scale, scale);
         }
 
+        public Matrix4x4f getRotateMatrix()
+        {
+            return Matrix4x4f.RotatedX((float)rotate.x) *
+                 Matrix4x4f.RotatedY((float)rotate.y) *
+                 Matrix4x4f.RotatedZ((float)rotate.z);
+                
+        }
+
 
     }
 
@@ -49,9 +57,6 @@ namespace Graphic
         public double xRot;
         public double yRot;
         public double zRot;
-        public double off_x;
-        public double off_y;
-        public double off_z;
         public TRZtype type;
         public viewType viewType_;
         public int id;
@@ -60,6 +65,9 @@ namespace Graphic
         public Rectangle rect;
         public DateTime dateTime;
         public TransRotZoom consttransf;
+        public Vertex3f target;
+        public Vertex3f pos;
+        public Vertex3f localpos;
 
         public TransRotZoom(Rectangle _rect, int _id)
         {
@@ -67,26 +75,24 @@ namespace Graphic
             xRot = 0;
             yRot = 0;
             zRot = 0;
-            off_x = 0;
-            off_y = 0;
-            off_z = -10;
             rect = _rect;
             id = _id;
             type = TRZtype.Master;
             viewType_ = viewType.Perspective;
             visible = false;
-            
+            target = new Vertex3f(1, 0, 0);
+            pos = new Vertex3f(0, 0, -10);
+            localpos = new Vertex3f(0, 0, -10);
         }
 
-        public TransRotZoom(Rectangle _rect, int _id, Vertex3d rotVer, Vertex3d transVer, int _idMast)
+        public TransRotZoom(Rectangle _rect, int _id, Vertex3f rotVer, Vertex3f transVer, int _idMast)
         {
             zoom = 0.1;
             xRot = 0;
             yRot = 0;
             zRot = 0;
-            off_x = 0;
-            off_y = 0;
-            off_z = 4;
+
+            pos = new Vertex3f(0, 0, 4);
             rect = _rect;
             id = _id;
             id_m = _idMast;
@@ -96,14 +102,14 @@ namespace Graphic
             visible = false;
             
         }
-        public TransRotZoom(Vertex3d rotVer, Vertex3d transVer)
+        public TransRotZoom(Vertex3f rotVer, Vertex3f transVer)
         {
             xRot = rotVer.x;
             yRot = rotVer.y;
             zRot = rotVer.z;
-            off_x = transVer.x;
-            off_y = transVer.y;
-            off_z = transVer.z;
+            pos.x = transVer.x;
+            pos.y = transVer.y;
+            pos.z = transVer.z;
             type = TRZtype.Const;
             viewType_ = viewType.Perspective;
             visible = false;
@@ -120,9 +126,9 @@ namespace Graphic
                     var trz_m = transRotZooms[id_m];
                     var trz_info = new TransRotZoom();
                     trz_info.zoom = trz_m.zoom;
-                    trz_info.off_x = trz_m.off_x + consttransf.off_x;
-                    trz_info.off_y = trz_m.off_y + consttransf.off_y;
-                    trz_info.off_z = trz_m.off_z + consttransf.off_z;
+                    trz_info.pos.x = trz_m.pos.x + consttransf.pos.x;
+                    trz_info.pos.y = trz_m.pos.y + consttransf.pos.y;
+                    trz_info.pos.z = trz_m.pos.z + consttransf.pos.z;
                     trz_info.xRot = trz_m.xRot + consttransf.xRot;
                     trz_info.yRot = trz_m.yRot + consttransf.yRot;
                     trz_info.zRot = trz_m.zRot + consttransf.zRot;
@@ -141,9 +147,9 @@ namespace Graphic
             xRot = _trz.xRot;
             yRot = _trz.yRot;
             zRot = _trz.zRot;
-            off_x = _trz.off_x;
-            off_y = _trz.off_y;
-            off_z = _trz.off_z;
+            pos.x = _trz.pos.x;
+            pos.y = _trz.pos.y;
+            pos.z = _trz.pos.z;
             rect = _trz.rect;
             id = _trz.id;
             type = _trz.type;
@@ -163,31 +169,31 @@ namespace Graphic
             xRot = Convert.ToDouble(dt[0]);
             yRot = Convert.ToDouble(dt[1]);
             zRot = Convert.ToDouble(dt[2]);
-            off_x = Convert.ToDouble(dt[3]);
-            off_y = Convert.ToDouble(dt[4]);
-            off_z = Convert.ToDouble(dt[5]);
+            pos.x = Convert.ToSingle(dt[3]);
+            pos.y = Convert.ToSingle(dt[4]);
+            pos.z = Convert.ToSingle(dt[5]);
             zoom = Convert.ToDouble(dt[6]);
         }
         public TransRotZoom(double _xRot, double _yRot, double _zRot,
-            double _off_x, double _off_y, double _off_z, double _zoom)
+            float _off_x, float _off_y, float _off_z, double _zoom)
         {
             xRot = _xRot;
             yRot = _yRot;
             zRot = _zRot;
-            off_x = _off_x;
-            off_y = _off_y;
-            off_z = _off_z;
+            pos.x = _off_x;
+            pos.y = _off_y;
+            pos.z = _off_z;
             zoom = _zoom;
         }
         public void setTrz(double _xRot, double _yRot, double _zRot,
-            double _off_x, double _off_y, double _off_z, double _zoom)
+            float _off_x, float _off_y, float _off_z, double _zoom)
         {
             xRot = _xRot;
             yRot = _yRot;
             zRot = _zRot;
-            off_x = _off_x;
-            off_y = _off_y;
-            off_z = _off_z;
+            pos.x = _off_x;
+            pos.y = _off_y;
+            pos.z = _off_z;
             zoom = _zoom;
         }
         public TransRotZoom minusDelta(TransRotZoom trz)
@@ -195,9 +201,9 @@ namespace Graphic
             var _xRot = xRot - trz.xRot;
             var _yRot = yRot - trz.yRot;
             var _zRot = zRot - trz.zRot;
-            var _off_x = off_x - trz.off_x;
-            var _off_y = off_y - trz.off_y;
-            var _off_z = off_z - trz.off_z;
+            var _off_x = pos.x - trz.pos.x;
+            var _off_y = pos.y - trz.pos.y;
+            var _off_z = pos.z - trz.pos.z;
             var _zoom = zoom - trz.zoom;
             return new TransRotZoom(_xRot, _yRot, _zRot, _off_x, _off_y, _off_z, _zoom);
         }
@@ -206,15 +212,15 @@ namespace Graphic
             xRot = trz.xRot;
             yRot = trz.yRot;
             zRot = trz.zRot;
-            off_x = trz.off_x;
-            off_y = trz.off_y;
-            off_z = trz.off_z;
+            pos.x = trz.pos.x;
+            pos.y = trz.pos.y;
+            pos.z = trz.pos.z;
             zoom = trz.zoom;
         }
         public override string ToString()
         {
             return xRot + " " + yRot + " " + zRot + " "
-                + off_x + " " + off_y + " " + off_z + " "
+                + pos.x + " " + pos.y + " " + pos.z + " "
                 + zoom + " " + viewType_ + " ";
         }
 
@@ -224,9 +230,9 @@ namespace Graphic
                 trz1.xRot - trz2.xRot,
                  trz1.yRot - trz2.yRot,
                   trz1.zRot - trz2.zRot,
-                   trz1.off_x - trz2.off_x,
-                   trz1.off_y - trz2.off_y,
-                   trz1.off_z - trz2.off_z,
+                   trz1.pos.x - trz2.pos.x,
+                   trz1.pos.y - trz2.pos.y,
+                   trz1.pos.z - trz2.pos.z,
                    trz1.zoom - trz2.zoom
                   );
         }
@@ -249,23 +255,42 @@ namespace Graphic
             zRot = valuez;
         }
 
+        Vertex3f cross(Vertex3f U, Vertex3f V)
+        {
+            return new Vertex3f(
+                U.y * V.z - U.z * V.y,
+                    U.z * V.x - U.x * V.z,
+                    U.x * V.y - U.y * V.x
+                );
+        }
         public Matrix4x4f[] getVPmatrix()
         {
 
             if (viewType_ == viewType.Perspective)
             {
                 var _Pm = Matrix4x4f.Perspective(53f, (float)rect.Width / rect.Height, 0.001f, 100000f);
-                var _Vm = Matrix4x4f.Translated((float)off_x, -(float)off_y, (float)zoom * (float)off_z) *
+                var _Vm =  Matrix4x4f.Translated(0, 0, (float)zoom * pos.z) *
                     Matrix4x4f.RotatedX((float)xRot) *
                     Matrix4x4f.RotatedY((float)yRot) *
-                    Matrix4x4f.RotatedZ((float)zRot);
+                    Matrix4x4f.RotatedZ((float)zRot)*Matrix4x4f.Translated(-target.x, -target.y, -target.z);
+
+               /* var camDir = (pos - target).Normalized;
+                var vecu = new Vertex3f(0, 0, -1);
+                var rcam = cross(vecu, camDir).Normalized;
+                var ucam = cross(camDir, rcam).Normalized;
+                var loc4 = Matrix4x4f.RotatedX((float)xRot) *
+                    Matrix4x4f.RotatedY((float)yRot) *
+                    Matrix4x4f.RotatedZ((float)zRot)*  new Vertex4f((float)zoom, 0, 0,1);
+                localpos = new Vertex3f(loc4.x, loc4.y, loc4.z);
+                pos = target+localpos; 
+                _Vm = Matrix4x4f.LookAt(pos, target, ucam);*/
                 //var _PVm
                 return new Matrix4x4f[] { _Pm, _Vm, _Pm * _Vm };
             }
             else if (viewType_ == viewType.Ortho)
             {
                 var _Pm = Matrix4x4f.Ortho(-1, 1, -1, 1, 0.00001f, 10000f);
-                var _Vm = Matrix4x4f.Translated((float)off_x, -(float)off_y, (float)zoom * (float)off_z) *
+                var _Vm = Matrix4x4f.Translated(pos.x, -pos.y, (float)zoom * pos.z) *
                     Matrix4x4f.RotatedX((float)xRot) *
                     Matrix4x4f.RotatedY((float)yRot) *
                     Matrix4x4f.RotatedZ((float)zRot);

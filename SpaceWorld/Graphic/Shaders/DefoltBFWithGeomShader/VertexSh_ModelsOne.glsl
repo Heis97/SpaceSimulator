@@ -1,24 +1,25 @@
 ﻿#version 460 core
 
-layout(location = 0) in vec3 _vertexPosition_model;
-layout(location = 1) in vec3 _vertexNormal_model;
-layout(location = 2) in vec3 _vertexColor;
-layout(location = 3) in vec2 _vertexTexture;
+layout(location = 0) in vec3 _Position_model;
+layout(location = 1) in vec3 _Normal_model;
+layout(location = 2) in vec3 _Color;
+layout(location = 3) in vec2 _Texture;
 uniform mat4 ModelMatrix;
+uniform mat4 RotationMatrix;
 
 out VS_GS_INTERFACE
 {
-vec3 vertexPosition_world;
-vec3 vertexNormal_world;
-vec3 vertexColor;
-vec2 vertexTexture;
+vec3 Position_world;
+vec3 Normal_world;
+vec3 Color;
+vec2 Texture;
 } vs_out;
 
 void main() 
 {
-	vs_out.vertexPosition_world =  (ModelMatrix*vec4(_vertexPosition_model,1)).xyz;
-	vs_out.vertexNormal_world = _vertexNormal_model;
-	vs_out.vertexColor = _vertexColor;
-	vs_out.vertexTexture = _vertexTexture;
-	gl_Position = vec4(vs_out.vertexPosition_world,1);
+	vs_out.Position_world =  (ModelMatrix*vec4(_Position_model,1)).xyz;
+	vs_out.Normal_world =  (RotationMatrix*vec4(_Normal_model,1)).xyz;
+	vs_out.Color = _Color;
+	vs_out.Texture = _Texture;
+	gl_Position = vec4(vs_out.Position_world,1);
 }

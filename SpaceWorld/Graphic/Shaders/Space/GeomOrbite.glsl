@@ -1,10 +1,10 @@
 ﻿#version 460 core
 layout (lines, invocations = 1) in;
-layout (line_strip, max_vertices = 200) out;
+layout (line_strip, max_vertices = 203) out;
 
 uniform mat4 VPs[4];
 layout (rgba32f, binding = 0) uniform  image2D posData;
-layout (rgba32f, binding = 5) uniform  image2D posTimeData;
+layout (rgba32f, binding = 3) uniform  image2D posTimeData;
 in VS_GS_INTERFACE
 {
 	float ind;

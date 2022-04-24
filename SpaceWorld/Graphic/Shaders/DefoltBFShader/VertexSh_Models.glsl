@@ -40,12 +40,15 @@ void main()
 	vec3 MaterialAmbientColor = MaterialAmbient;
 	vec3 MaterialSpecularColor = MaterialSpecular;
 	float distance = length( LightPosition_world - vertexPosition_world.xyz );
+
 	vec3 n = normalize( Normal_camera );
 	vec3 l = normalize( LightDirection_camera );
 	float cosTheta = clamp( dot( n,l ), 0,1 );
+
 	vec3 E = normalize(EyeDirection_camera);
 	vec3 R = reflect(-l,n);
 	float cosAlpha = clamp( dot( E,R ), 0,1 );
+
 	vec3 MaterialDiffuseColor;
 	if(textureVis == 1)
 	{

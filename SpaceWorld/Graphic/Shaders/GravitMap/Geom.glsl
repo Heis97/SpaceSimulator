@@ -38,11 +38,13 @@ vec3 acsInPoint(in vec3 pos1)
 
 void main() 
 {
+	vec3 pos_area=imageLoad(posData,ivec2(1,0)).rgb;
+	float scale =0.00003;
 	for(int i=-100; i< 100; i++)
 	{
-		vec3 pos = vec3(0.02*(vs_out[0].ind-100),0.02*i,0);
+		vec3 pos = vec3(scale*(vs_out[0].ind-100)+pos_area.x,scale*i+pos_area.y,0);
 		vec3 a = acsInPoint(pos);
-		float lena =1e+9 *sqrt(length(a));
+		float lena =1e+3 *sqrt(length(a));
 		gl_Position =VPs[0]* vec4(pos.xy,lena,1);
 		EmitVertex();
 	}
