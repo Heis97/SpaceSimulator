@@ -155,7 +155,7 @@ namespace Graphic
         public Vertex2f MouseLoc;
         public Vertex2f MouseLocGL;
         Vertex3f translMesh = new Vertex3f(0.0f, 0.0f, 0.0f);
-        Vertex3f lightPos = new Vertex3f(0.0f, 0.0f, 0.0f);
+        Vertex3f lightPos = new Vertex3f(1.3f, 0.0f, 0.0f);
         Vertex3f MaterialDiffuse = new Vertex3f(0.5f, 0.5f, 0.5f);
         Vertex3f MaterialAmbient = new Vertex3f(0.2f, 0.2f, 0.2f);
         Vertex3f MaterialSpecular = new Vertex3f(0.1f, 0.1f, 0.1f);
@@ -284,7 +284,8 @@ namespace Graphic
                     }
                     load_vars_gl(ids, opgl_obj);
                     opgl_obj.useBuffers();
-                    if(opgl_obj.count > 1)
+                    
+                    if (opgl_obj.count > 1)
                     {
                         opgl_obj.loadModels();
                         Gl.DrawArraysInstanced(opgl_obj.tp, 0, opgl_obj.vert_len, opgl_obj.count);
@@ -477,7 +478,7 @@ namespace Graphic
                 ids.LocationPs[i] = Gl.GetUniformLocation(ids.programID, "Ps[" + i + "]");
             }
             ids.LocationM = Gl.GetUniformLocation(ids.programID, "ModelMatrix");
-            ids.LocationRotM = Gl.GetUniformLocation(ids.programID, "RotateMatrix");
+            ids.LocationRotM = Gl.GetUniformLocation(ids.programID, "RotationMatrix");
             ids.TextureID  = Gl.GetUniformLocation(ids.programID, "textureSample");
             ids.MaterialDiffuseID = Gl.GetUniformLocation(ids.programID, "MaterialDiffuse");
             ids.MaterialAmbientID = Gl.GetUniformLocation(ids.programID, "MaterialAmbient");
@@ -887,15 +888,10 @@ namespace Graphic
             var trz = transRotZooms[sel_trz];
             var angle = e.Delta;
             if (angle > 0)
-            {
-                if (trz.zoom < 0.0002)
-                {
-                }
-                else
-                {
+            { 
                     trz.zoom = 0.7 * trz.zoom;
  
-                }
+                
             }
             else
             {

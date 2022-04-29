@@ -19,9 +19,10 @@ namespace SpaceWorld
     public partial class Scene : Form
     {
         private GraphicGL GL1 = new GraphicGL();
-        static  int count = 400;
+        static  int count = 4;
         int[] obs = new int[count];
         int obs_inst = 0;
+        int obs_izr = 0;
         float[] _mass1;
         public Scene()
         {
@@ -34,7 +35,7 @@ namespace SpaceWorld
         {
             
             var pos3a = new float[] { 
-                0 ,0, 0f,
+                0 ,1, 0f,
                 1.0f, 0, 0,
                 1f+kmToAe(3.8e5f),0,0 };
             var vel3a = new float[] { 
@@ -104,19 +105,24 @@ namespace SpaceWorld
             Random random = new Random();
             var p1 = new NativeObj();
             var cube = new Model3d(@"модели\cube30.STL");
-            //var izr = new Model3d(@"модели\izr1.STL");
-            var sphere = new Model3d(@"модели\Шар.STL");
+            var izr = new Model3d(@"модели\izr1.STL");
+            var sphere = new Model3d(@"модели\Шар1.STL");
             obs_inst = GL1.addSTL(sphere.mesh, PrimitiveType.Triangles, new Point3d_GL(0, 0, 0), new Point3d_GL(0, 0, 0),0.001f, count);
+            obs_izr = GL1.addSTL(izr.mesh, PrimitiveType.Triangles, new Point3d_GL(0.001f, 0, 0), new Point3d_GL(0, 0, 0), kmToAe(1e-2f), 1);
             for (int i = 0; i < obs.Length; i++)
             {
-               float scale = 0.0001f;
-               if (i == 0 || i == 1)
+               float scale = 0.0000001f;
+               if (i == 0 )
+               {
+                    scale = kmToAe(7e6f);
+               }
+                if ( i == 1)
                 {
-                    scale = 0.000001f;
+                    scale = kmToAe(1.27e4f);
                 }
                 if (i == 2)
                 {
-                    scale = 0.0000005f;
+                    scale = kmToAe(7e3f);
                 }
                 GL1.buffersGl.setScale(obs_inst,i, scale);
 

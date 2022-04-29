@@ -6,7 +6,7 @@ layout (rgba32f, binding = 1) uniform  image2D velData;
 layout (r32f, binding = 2) uniform  image2D massData;
 
 
-const float deltTime = 10000;
+const float deltTime = 1;
 const float G = 1.18656E-19;
 //1 - объект расчёта, 2 - влияющие на него другие объекты
 //масса в массах земли, расстояние в астрономических единицах
