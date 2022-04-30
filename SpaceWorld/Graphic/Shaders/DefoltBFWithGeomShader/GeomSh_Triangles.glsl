@@ -40,7 +40,7 @@ void main()
 	    vec3 Position_camera = (Vs[gl_InvocationID] * vec4(vs_out[i].Position_world, 1.0)).xyz;
 	    fs_in.EyeDirection_camera = vec3(0,0,0) - Position_camera;
 	    vec3 LightPosition_camera = ( Vs[gl_InvocationID] * vec4(LightPosition_world,1)).xyz;
-
+		
 		fs_in.LightDirection_world = vs_out[i].Position_world-LightPosition_world;
 		fs_in.LightDirection_camera = LightPosition_camera + fs_in.EyeDirection_camera;
 

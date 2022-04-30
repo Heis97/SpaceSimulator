@@ -22,7 +22,13 @@ namespace Geometry
             z = _z;
             exist = true;
         }
-
+        public Point3d_GL(Vertex3f vert)
+        {
+            x = vert.x;
+            y = vert.y;
+            z = vert.z;
+            exist = true;
+        }
         public Point3d_GL(Point p, double _z)
         {
             x = p.X;

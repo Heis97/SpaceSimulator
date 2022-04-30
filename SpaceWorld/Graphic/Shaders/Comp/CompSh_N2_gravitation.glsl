@@ -1,10 +1,8 @@
 ﻿#version 460 core
 
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
-layout (rgba32f, binding = 0) uniform  image2D posData;
-layout (rgba32f, binding = 1) uniform  image2D velData;
-layout (r32f, binding = 2) uniform  image2D massData;
 
+layout (rgba32f, binding = 0) uniform  image2D objdata;
 
 const float deltTime = 1;
 const float G = 1.18656E-19;
@@ -24,24 +22,31 @@ vec3 compGravit(in vec3 pos1, in float mass1,in vec3 pos2,in float mass2)
 
 void main() 
 {
-	ivec2 ipos = ivec2( gl_GlobalInvocationID.xy );
+	ivec2 ipos1 = ivec2(0, gl_GlobalInvocationID.y );
+	ivec2 ipos2 =  ivec2(1,gl_GlobalInvocationID.y);
 	vec3 acs3 = vec3(0,0,0);
-	vec3 pos1 = imageLoad(posData,ipos).rgb;
-	vec3 vel1 = imageLoad(velData,ipos).rgb;
-	float mass1 = imageLoad(massData,ipos).r;
-	for(int i=0; i< imageSize(massData).x; i++)
+	vec4 pos1 = imageLoad(objdata,ipos1);
+	vec3 vel1 = imageLoad(objdata,ipos2).rgb;
+	float size1 = imageLoad(objdata,ipos2).a;
+
+	for(int i=0; i< imageSize(objdata).y; i++)
 	{
 
-		if(ipos.x!=i)      
+		if(ipos1.y!=i)      
 		{
-			ivec2 curP = ivec2(i,0);
-			acs3 += compGravit(pos1,mass1,imageLoad(posData,curP).rgb,imageLoad(massData,curP).r);
+			ivec2 curP1 = ivec2(0,i);
+			vec4 obj = imageLoad(objdata,curP1);
+			acs3 += compGravit(pos1.xyz,pos1.a,obj.rgb,obj.a);
 		}
 	}
+
+
 	
-	pos1 += vel1*deltTime + (acs3*deltTime*deltTime)/2;
+	pos1.xyz += vel1*deltTime + (acs3*deltTime*deltTime)/2;
 	vel1 += acs3*deltTime;
-	
-	imageStore(posData, ipos, vec4(pos1, 0));
-	imageStore(velData, ipos, vec4(vel1, 0));
+	//vel1 = vec3( imageSize(objdata).x,imageSize(objdata).y,);
+	imageStore(objdata, ipos1, pos1);
+	imageStore(objdata, ipos2, vec4(vel1, size1));
+	//imageStore(objdata, ipos1, vec4(gl_GlobalInvocationID.x,1,2,3));
+	//imageStore(objdata, ipos2, vec4(gl_GlobalInvocationID.y,4,5,6));
 }	

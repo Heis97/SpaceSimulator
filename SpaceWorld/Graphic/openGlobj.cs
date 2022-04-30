@@ -107,9 +107,9 @@ namespace Graphic
             Gl.BindVertexArray(buff_array);
         }
 
-        public void loadModels()
+        public void loadModels(Vertex3f target)
         {
-            bindBufferInstanceMatr(modelData(), 4);
+            bindBufferInstanceMatr(modelData(target), 4);
             bindBufferInstanceMatr(rotateData(), 8);
         }
         uint setBuffer(float[] data, uint lvl, int strip)
@@ -143,12 +143,12 @@ namespace Graphic
             Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
             Gl.BufferData(BufferTarget.ArrayBuffer, (uint)(4 * data.Length), data, BufferUsage.DynamicDraw);
         }
-        Matrix4x4f[] modelData()
+        Matrix4x4f[] modelData(Vertex3f target)
         {
             var matrs = new Matrix4x4f[trsc.Length];
             for(int i=0; i<trsc.Length;i++)
             {
-                matrs[i] = trsc[i].getModelMatrix();
+                matrs[i] = trsc[i].getModelMatrix(target);
             }
             return matrs;
         }

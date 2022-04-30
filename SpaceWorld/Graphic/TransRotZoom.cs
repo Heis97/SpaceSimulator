@@ -30,9 +30,9 @@ namespace Graphic
             scale = _scale;
         }
 
-        public Matrix4x4f getModelMatrix()
+        public Matrix4x4f getModelMatrix(Vertex3f target)
         {
-           return  Matrix4x4f.Translated((float)transl.x, (float)transl.y, (float)transl.z) *
+           return  Matrix4x4f.Translated((float)transl.x-target.x, (float)transl.y - target.y, (float)transl.z - target.z) *
                 Matrix4x4f.RotatedX((float)rotate.x) *
                 Matrix4x4f.RotatedY((float)rotate.y) *
                 Matrix4x4f.RotatedZ((float)rotate.z) *
@@ -71,7 +71,7 @@ namespace Graphic
 
         public TransRotZoom(Rectangle _rect, int _id)
         {
-            zoom = 1.0;
+            zoom = -1e-1;
             xRot = 0;
             yRot = 0;
             zRot = 0;
@@ -80,8 +80,8 @@ namespace Graphic
             type = TRZtype.Master;
             viewType_ = viewType.Perspective;
             visible = false;
-            target = new Vertex3f(0.001f, 0, 0);
-            pos = new Vertex3f(0, 0, -1e-6f);
+            target = new Vertex3f(1.001f, 0, 0);
+            pos = new Vertex3f(0, 0, -1e-1f);
             //localpos = new Vertex3f(0, 0, -5);
         }
 
@@ -268,11 +268,11 @@ namespace Graphic
 
             if (viewType_ == viewType.Perspective)
             {
-                var _Pm = Matrix4x4f.Perspective(53f, (float)rect.Width / rect.Height, 1e-7f, 1e-4f);
-                var _Vm =  Matrix4x4f.Translated(0, 0, (float)zoom * pos.z) *
+                var _Pm = Matrix4x4f.Perspective(53f, (float)rect.Width / rect.Height, -(float)zoom*0.1f, -(float)zoom * 1e4f);
+                var _Vm = Matrix4x4f.Translated(0, 0, (float)zoom) *
                     Matrix4x4f.RotatedX((float)xRot) *
                     Matrix4x4f.RotatedY((float)yRot) *
-                    Matrix4x4f.RotatedZ((float)zRot)*Matrix4x4f.Translated(-target.x, -target.y, -target.z);
+                    Matrix4x4f.RotatedZ((float)zRot);// *Matrix4x4f.Translated(-target.x, -target.y, -target.z);
 
                /* var camDir = (pos - target).Normalized;
                 var vecu = new Vertex3f(0, 0, -1);
