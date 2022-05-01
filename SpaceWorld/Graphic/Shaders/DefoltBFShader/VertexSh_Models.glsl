@@ -4,7 +4,7 @@ layout(location = 0) in vec3 _Position_model;
 layout(location = 1) in vec3 _Normal_model;
 
 layout (rgba32f, binding = 0) uniform  image2D objdata;
-
+layout (rgba32f, binding = 2) uniform  image2D choosedata;
 uniform vec3 LightPosition_world;
 uniform mat4 VPs[4];
 uniform mat4 Vs[4];
@@ -15,28 +15,40 @@ uniform float lightPower;
 uniform sampler2D textureSample;
 uniform int textureVis;
 uniform vec3 colorOne;
-uniform int modelind;
+uniform int stind;
 
 out VS_FS_INTERFACE
 {
 vec3 Color;
 } vs_out;
 
-mat4 modelMatr()
+mat4 modelMatr(in int  _ind)
 {
-	int ind = modelind + gl_InstanceID;
-	ivec2 ipos4 =  ivec2(4,ind);
-	ivec2 ipos5 =  ivec2(5,ind);
-	ivec2 ipos6 =  ivec2(6,ind);
-	ivec2 ipos7 =  ivec2(7,ind);
-
-	return(mat4( imageLoad(objdata,ipos4), imageLoad(objdata,ipos5),imageLoad(objdata,ipos6),imageLoad(objdata,ipos7)));
+	return(mat4( 
+	imageLoad(objdata,ivec2(4,_ind)),
+	imageLoad(objdata,ivec2(5,_ind)),
+	imageLoad(objdata,ivec2(6,_ind)),
+	imageLoad(objdata,ivec2(7,_ind))
+	));
 }
-
+vec3 select(in int _ind)
+{
+     if(imageLoad(choosedata,ivec2(0,_ind)).y==1)
+	 {
+		return (vec3(1,0,0));	
+	 }
+	 else
+	 {
+		return (vec3(0.5));
+	 }
+}
 void main() 
 {
-	vec4 Position_world = modelMatr()*vec4(_Position_model,1);
-	vec3 Normal_world = (modelMatr()*vec4(_Normal_model,0)).xyz;
+	int ind = stind + gl_InstanceID;
+	ind = int(imageLoad(choosedata,ivec2(1,ind)).x);
+
+	vec4 Position_world = modelMatr(ind)*vec4(_Position_model,1);
+	vec3 Normal_world = normalize((modelMatr(ind)*vec4(_Normal_model,0)).xyz);
 	gl_Position = VPs[0] * Position_world;
 
 	vec3 Position_camera = (Vs[0] * Position_world).xyz;
@@ -46,7 +58,7 @@ void main()
 	vec3 LightDirection_world = Position_world.xyz - LightPosition_world;
 	vec3 LightDirection_camera = LightPosition_camera + EyeDirection_camera;
 
-	vec3 Normal_camera =(Vs[0] * vec4(Normal_world, 1.0)).xyz;
+	vec3 Normal_camera =(Vs[0] * vec4(Normal_world, 0)).xyz;
 
 	vec3 LightColor = vec3(1.0, 1.0, 1.0);
 	float LightPower = lightPower;
@@ -62,12 +74,14 @@ void main()
 
 	float cosAlpha = clamp(dot( E,R ) , 0,1 );
 	
-
+	
 
 	vec3 MaterialDiffuseColor = colorOne;
+
+	 
 	vec3 MaterialAmbientColor = vec3(0.05);
 	vec3 MaterialSpecularColor = vec3(0.01);
 	vs_out.Color  = MaterialAmbientColor + MaterialDiffuseColor * LightColor * LightPower * cosTheta / (distance*distance) +MaterialSpecularColor * LightColor * LightPower * pow(cosAlpha,5) / (distance*distance);
 
-	
+	//vs_out.Color = select(ind);
 }

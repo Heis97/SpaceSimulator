@@ -19,7 +19,7 @@ uniform vec3 MaterialSpecular;
 uniform float lightPower;
 uniform sampler2D textureSample;
 uniform int textureVis;
-uniform int modelind;
+uniform int stind;
 
 out VS_FS_INTERFACE
 {
@@ -29,7 +29,7 @@ vec3 Color;
 
 mat4 modelMatr()
 {
-	int ind = modelind + gl_InstanceID;
+	int ind = stind + gl_InstanceID;
 	ivec2 ipos4 =  ivec2(4,ind);
 	ivec2 ipos5 =  ivec2(5,ind);
 	ivec2 ipos6 =  ivec2(6,ind);

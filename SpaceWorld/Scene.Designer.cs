@@ -31,6 +31,7 @@ namespace SpaceWorld
         {
             this.glControl1 = new OpenGL.GlControl();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.label_fps = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // glControl1
@@ -64,16 +65,30 @@ namespace SpaceWorld
             this.richTextBox1.Text = "";
             this.richTextBox1.Visible = false;
             // 
+            // label_fps
+            // 
+            this.label_fps.AutoSize = true;
+            this.label_fps.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(64)))));
+            this.label_fps.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label_fps.ForeColor = System.Drawing.Color.Lime;
+            this.label_fps.Location = new System.Drawing.Point(13, 13);
+            this.label_fps.Name = "label_fps";
+            this.label_fps.Size = new System.Drawing.Size(31, 20);
+            this.label_fps.TabIndex = 2;
+            this.label_fps.Text = "fps";
+            // 
             // Scene
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1904, 1041);
+            this.Controls.Add(this.label_fps);
             this.Controls.Add(this.richTextBox1);
             this.Controls.Add(this.glControl1);
             this.Name = "Scene";
             this.Text = "Form1";
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -81,6 +96,7 @@ namespace SpaceWorld
 
         private OpenGL.GlControl glControl1;
         private System.Windows.Forms.RichTextBox richTextBox1;
+        private System.Windows.Forms.Label label_fps;
     }
 }
 

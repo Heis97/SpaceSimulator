@@ -12,17 +12,19 @@ namespace Objects
     {
         float mass;
         public float size;
+        public float true_size;
         public Vertex3f pos;
         Vertex3f vel;
         public Vertex3f posrot;
         Vertex3f velrot;
         public int mesh_number;
         static int datalen = 32;
-        public ObjectMassGL(int _mesh_number,float _mass, float _size, Vertex3f _pos, Vertex3f _vel, Vertex3f _posrot , Vertex3f _velrot)
+        public ObjectMassGL(int _mesh_number,float _mass, float _size, float _true_size, Vertex3f _pos, Vertex3f _vel, Vertex3f _posrot , Vertex3f _velrot)
         {
             mesh_number = _mesh_number;
             mass = _mass;
             size = _size;
+            true_size = _true_size;
             pos = _pos;
             vel = _vel;
             posrot = _posrot;
@@ -34,7 +36,7 @@ namespace Objects
             return new float[] { 
                 pos.x, pos.y, pos.z, mass,
                 vel.x, vel.y, vel.z, size,
-                posrot.x, posrot.y, posrot.z, 0, //поворот
+                posrot.x, posrot.y, posrot.z, true_size, //поворот
                 velrot.x, velrot.y, velrot.z, 0, //поворот скорость
                 0, 0, 0, 0,//матрица
                 0, 0, 0, 0,//4
@@ -44,7 +46,7 @@ namespace Objects
         }
         public ObjectMassGL Clone()
         {
-            return new ObjectMassGL(mesh_number, mass, size, pos, vel, posrot, velrot);
+            return new ObjectMassGL(mesh_number, mass, size, true_size, pos, vel, posrot, velrot);
         }
         public ObjectMassGL setData(float[] data)
         {
@@ -60,7 +62,7 @@ namespace Objects
             posrot.x = data[8];
             posrot.y = data[9];
             posrot.z = data[10];
-
+            true_size = data[11];
             velrot.x = data[12];
             velrot.y = data[13];
             velrot.z = data[14];

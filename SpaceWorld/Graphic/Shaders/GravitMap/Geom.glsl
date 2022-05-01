@@ -3,7 +3,7 @@ layout (lines, invocations = 1) in;
 layout (line_strip, max_vertices = 202) out;
 layout (rgba32f, binding = 0) uniform  image2D objData;
 uniform mat4 VPs[4];
-uniform vec3 target;
+uniform vec3 targetCam;
 in VS_GS_INTERFACE
 {
 	float ind;
@@ -45,7 +45,7 @@ void main()
 		vec3 pos = vec3(scale*(vs_out[0].ind-100)+pos_area.x,scale*i+pos_area.y,0);
 		vec3 a = acsInPoint(pos);
 		float lena =1e+3 *sqrt(length(a));
-		gl_Position =VPs[0]* vec4(vec3(pos.xy,lena)-target,1);
+		gl_Position =VPs[0]* vec4(vec3(pos.xy,lena)-targetCam,1);
 		EmitVertex();
 	}
 }	

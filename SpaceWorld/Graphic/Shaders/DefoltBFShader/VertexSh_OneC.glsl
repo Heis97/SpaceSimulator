@@ -4,7 +4,6 @@ layout(location = 0) in vec3 _Position_model;
 layout(location = 1) in vec3 _Normal_model;
 layout(location = 2) in vec3 _Color;
 layout(location = 3) in vec2 _Texture;
-uniform mat4 ModelMatrix;
 layout (rgba32f, binding = 0) uniform  image2D objdata;
 
 uniform vec3 LightPosition_world;
@@ -19,7 +18,7 @@ uniform vec3 MaterialSpecular;
 uniform float lightPower;
 uniform sampler2D textureSample;
 uniform int textureVis;
-uniform int modelind;
+uniform int stind;
 
 out VS_FS_INTERFACE
 {
@@ -28,7 +27,7 @@ vec3 Color;
 
 mat4 modelMatr()
 {
-	int ind = modelind;
+	int ind = stind;
 	ivec2 ipos4 =  ivec2(4,ind);
 	ivec2 ipos5 =  ivec2(5,ind);
 	ivec2 ipos6 =  ivec2(6,ind);

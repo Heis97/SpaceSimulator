@@ -23,9 +23,11 @@ namespace Graphic
         public bool visible;
         uint buff_array;
         public int count;
+        public int const_count;
         public bool colortex;
         public Vertex3f colorOne;
         public int modelind;
+        public int stind;
 
         public openGlobj(float[] v_buf, float[] c_buf, float[] n_buf, float[] t_buf, PrimitiveType type, int _id= -1,int _count=1)
         {
@@ -33,10 +35,12 @@ namespace Graphic
             normal_buffer_data = new float[n_buf.Length];
             colorOne = new Vertex3f(0.5f);
             count = _count;
+            const_count = _count;
             colortex = false;
 
             buff_array = 0;
-            modelind = 0;
+            modelind = -1;
+            stind = 0;
             if (t_buf == null)
             {
                 texture_buffer_data = new float[v_buf.Length];
@@ -107,118 +111,125 @@ namespace Graphic
             return buff;
         }
 
-       /* uint setBufferInt(Int32[] data, uint lvl, int strip)
+        public openGlobj setCount(int _count,int _stind)
         {
-            var buff = Gl.GenBuffer();
-            Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
-            Gl.BufferData(BufferTarget.ArrayBuffer, (uint)(4 * data.Length), data, BufferUsage.DynamicDraw);
-            Gl.EnableVertexAttribArray(lvl);
-            Gl.VertexAttribPointer(lvl, strip, VertexAttribType.Int, false, 0, (IntPtr)0);
-            return buff;
+            count = _count;
+            stind = _stind;
+            return this;
         }
 
-        void setVertexAttrib( uint buff, uint lvl, int strip)
-        {
-            Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
-            Gl.EnableVertexAttribArray(lvl);
-            Gl.VertexAttribPointer(lvl, strip, VertexAttribType.Float, false, 0, (IntPtr)0);
-        }
-        static void setBufferData(uint buff, float[] data)
-        {
-            Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
-            Gl.BufferData(BufferTarget.ArrayBuffer, (uint)(4 * data.Length), data, BufferUsage.DynamicDraw);
-        }
-        Matrix4x4f[] modelData(Vertex3f target)
-        {
-            var matrs = new Matrix4x4f[trsc.Length];
-            for(int i=0; i<trsc.Length;i++)
-            {
-                matrs[i] = trsc[i].getModelMatrix(target);
-            }
-            return matrs;
-        }
+        /* uint setBufferInt(Int32[] data, uint lvl, int strip)
+         {
+             var buff = Gl.GenBuffer();
+             Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
+             Gl.BufferData(BufferTarget.ArrayBuffer, (uint)(4 * data.Length), data, BufferUsage.DynamicDraw);
+             Gl.EnableVertexAttribArray(lvl);
+             Gl.VertexAttribPointer(lvl, strip, VertexAttribType.Int, false, 0, (IntPtr)0);
+             return buff;
+         }
 
-        Matrix4x4f[] rotateData()
-        {
-            var matrs = new Matrix4x4f[trsc.Length];
-            for (int i = 0; i < trsc.Length; i++)
-            {
-                matrs[i] = trsc[i].getRotateMatrix();
-            }
-            return matrs;
-        }
-        uint bindBufferInstanceMatr(Matrix4x4f[] data, uint lvl)
-        {
-            var buff = Gl.GenBuffer();
-            Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
-            Gl.BufferData(BufferTarget.ArrayBuffer, (uint)(4*16 * data.Length), data, BufferUsage.DynamicDraw);
+         void setVertexAttrib( uint buff, uint lvl, int strip)
+         {
+             Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
+             Gl.EnableVertexAttribArray(lvl);
+             Gl.VertexAttribPointer(lvl, strip, VertexAttribType.Float, false, 0, (IntPtr)0);
+         }
+         static void setBufferData(uint buff, float[] data)
+         {
+             Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
+             Gl.BufferData(BufferTarget.ArrayBuffer, (uint)(4 * data.Length), data, BufferUsage.DynamicDraw);
+         }
+         Matrix4x4f[] modelData(Vertex3f target)
+         {
+             var matrs = new Matrix4x4f[trsc.Length];
+             for(int i=0; i<trsc.Length;i++)
+             {
+                 matrs[i] = trsc[i].getModelMatrix(target);
+             }
+             return matrs;
+         }
 
-            Gl.EnableVertexAttribArray(lvl);
-            Gl.VertexAttribPointer(lvl, 4, VertexAttribType.Float, false, 4 * 16, (IntPtr)0);
+         Matrix4x4f[] rotateData()
+         {
+             var matrs = new Matrix4x4f[trsc.Length];
+             for (int i = 0; i < trsc.Length; i++)
+             {
+                 matrs[i] = trsc[i].getRotateMatrix();
+             }
+             return matrs;
+         }
+         uint bindBufferInstanceMatr(Matrix4x4f[] data, uint lvl)
+         {
+             var buff = Gl.GenBuffer();
+             Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
+             Gl.BufferData(BufferTarget.ArrayBuffer, (uint)(4*16 * data.Length), data, BufferUsage.DynamicDraw);
 
-            Gl.EnableVertexAttribArray(lvl + 1);
-            Gl.VertexAttribPointer(lvl + 1, 4, VertexAttribType.Float, false, 4 * 16, (IntPtr)(4 * 4));
+             Gl.EnableVertexAttribArray(lvl);
+             Gl.VertexAttribPointer(lvl, 4, VertexAttribType.Float, false, 4 * 16, (IntPtr)0);
 
-            Gl.EnableVertexAttribArray(lvl + 2);
-            Gl.VertexAttribPointer(lvl + 2, 4, VertexAttribType.Float, false, 4 * 16, (IntPtr)(4 * 8));
+             Gl.EnableVertexAttribArray(lvl + 1);
+             Gl.VertexAttribPointer(lvl + 1, 4, VertexAttribType.Float, false, 4 * 16, (IntPtr)(4 * 4));
 
-            Gl.EnableVertexAttribArray(lvl + 3);
-            Gl.VertexAttribPointer(lvl + 3, 4, VertexAttribType.Float, false, 4 * 16, (IntPtr)(4 * 12));
+             Gl.EnableVertexAttribArray(lvl + 2);
+             Gl.VertexAttribPointer(lvl + 2, 4, VertexAttribType.Float, false, 4 * 16, (IntPtr)(4 * 8));
 
-            Gl.VertexAttribDivisor(lvl, 1);
-            Gl.VertexAttribDivisor(lvl+1, 1);
-            Gl.VertexAttribDivisor(lvl+2, 1);
-            Gl.VertexAttribDivisor(lvl+3, 1);
-        
-            return buff;
-        }
+             Gl.EnableVertexAttribArray(lvl + 3);
+             Gl.VertexAttribPointer(lvl + 3, 4, VertexAttribType.Float, false, 4 * 16, (IntPtr)(4 * 12));
 
-        static int[] genIndex(int len)
-        {
-            var buff = new int[2 * len];
-            for (int i = 0; i < len; i++)
-            {
-                buff[2 * i] = i;
-            }
-            return buff;
-        }
+             Gl.VertexAttribDivisor(lvl, 1);
+             Gl.VertexAttribDivisor(lvl+1, 1);
+             Gl.VertexAttribDivisor(lvl+2, 1);
+             Gl.VertexAttribDivisor(lvl+3, 1);
 
-       
-        static string toStringBuf(float[] buff, int strip, string name)
-        {
-            if (buff == null)
-                return name + " null ";
-            string txt = name + " " + buff.Length;
-            for (int i = 0; i < buff.Length / strip; i++)
-            {
-                txt += "  | ";
-                for (int j = 0; j < strip; j++)
-                {
-                    txt += buff[i * strip + j].ToString() + ", ";
-                }
-            }
-            txt += " |\n--------------------------------\n";
-            return txt;
+             return buff;
+         }
 
-        }
-        static float[] duplicateData(float[] data)
-        {
-            var dupdata = new float[data.Length * 2];
-            for (int i = 0; i < data.Length; i += 3)
-            {
-                dupdata[i * 2] = data[i];
-                dupdata[i * 2 + 1] = data[i + 1];
-                dupdata[i * 2 + 2] = data[i + 2];
+         static int[] genIndex(int len)
+         {
+             var buff = new int[2 * len];
+             for (int i = 0; i < len; i++)
+             {
+                 buff[2 * i] = i;
+             }
+             return buff;
+         }
 
-                dupdata[i * 2 + 3] = data[i];
-                dupdata[i * 2 + 4] = data[i + 1];
-                dupdata[i * 2 + 5] = data[i + 2];
-            }
-            //Console.WriteLine(toStringBuf(data, 3, "data"));
-            //Console.WriteLine(toStringBuf(dupdata, 3, "dupdata"));
-            return dupdata;
-        }
-        */
+
+         static string toStringBuf(float[] buff, int strip, string name)
+         {
+             if (buff == null)
+                 return name + " null ";
+             string txt = name + " " + buff.Length;
+             for (int i = 0; i < buff.Length / strip; i++)
+             {
+                 txt += "  | ";
+                 for (int j = 0; j < strip; j++)
+                 {
+                     txt += buff[i * strip + j].ToString() + ", ";
+                 }
+             }
+             txt += " |\n--------------------------------\n";
+             return txt;
+
+         }
+         static float[] duplicateData(float[] data)
+         {
+             var dupdata = new float[data.Length * 2];
+             for (int i = 0; i < data.Length; i += 3)
+             {
+                 dupdata[i * 2] = data[i];
+                 dupdata[i * 2 + 1] = data[i + 1];
+                 dupdata[i * 2 + 2] = data[i + 2];
+
+                 dupdata[i * 2 + 3] = data[i];
+                 dupdata[i * 2 + 4] = data[i + 1];
+                 dupdata[i * 2 + 5] = data[i + 2];
+             }
+             //Console.WriteLine(toStringBuf(data, 3, "data"));
+             //Console.WriteLine(toStringBuf(dupdata, 3, "dupdata"));
+             return dupdata;
+         }
+         */
     }
 
 }

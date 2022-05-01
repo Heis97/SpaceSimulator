@@ -130,8 +130,9 @@ namespace Graphic
         public int MouseLocGLID;
         public int translMeshID;
         public int targetCamID;
+        public int targetCamIndID;
         public int colorOneID;
-        public int modelindID;
+        public int stindID;
     }
     public class GraphicGL
     {
@@ -205,12 +206,13 @@ namespace Graphic
 
         IDs BFSt = new IDs();
 
-        TextureGL posTimeData, objData;
+        TextureGL posTimeData, chooseData, objData;
         public ObjectMassGL[] dataComputeShader = new ObjectMassGL[0];
         bool initComputeShader = false;
         public float[] resultComputeShader;
         int orb_p_count = 200;
         int obj_p_count =0;
+        int model_count =0;
 
         #endregion
 
@@ -266,9 +268,10 @@ namespace Graphic
             }
 
             rendercout++;
-            drawGravMap();
+            //drawGravMap();
             drawOrbit();
             gpuCompute();
+            selectViewObj();
         }
         IDs chooseShaderGeom(openGlobj opgl_obj)
         {
@@ -344,15 +347,18 @@ namespace Graphic
                     var ids = chooseShader(opgl_obj);
                     load_vars_gl(ids, opgl_obj);
                     opgl_obj.useBuffers();
-                    
+                    //Console.WriteLine(opgl_obj.count + " " + opgl_obj.modelind + " " + opgl_obj.stind);
                     if (opgl_obj.count > 1)
                     {
                         Gl.DrawArraysInstanced(opgl_obj.tp, 0, opgl_obj.vert_len, opgl_obj.count);
                     }
-                    else
+                    else if(opgl_obj.count==1)
                     {
                         Gl.DrawArrays(opgl_obj.tp, 0, opgl_obj.vert_len);
                     }       
+                    else
+                    {
+                    }
                 }
                 catch
                 {
@@ -487,21 +493,7 @@ namespace Graphic
             }
             return data;
         }
-        static ObjectMassGL[] setDataToObjs(ObjectMassGL[] objects,float[] data)
-        {
-            var objs = (ObjectMassGL[])objects.Clone();
-            var len = ObjectMassGL.getLength();
-            for (int i = 0; i < objects.Length; i++)
-            {
-                var obData = new float[len];
-                for (int j = 0; j < len; j++)
-                {
-                    obData[j] =  data[len * i + j];
-                }
-                objs[i].setData(obData);
-            }
-            return objs;
-        }
+        
 
         static float[] genIndexF(int len)
         {
@@ -528,15 +520,6 @@ namespace Graphic
             return buff;
         }
 
-
-        void bufferToCompute(float[] data, int locat)
-        {
-            var dat_buff = Gl.GenBuffer();
-            Gl.BindBuffer(BufferTarget.ShaderStorageBuffer, dat_buff);
-            Gl.BufferData(BufferTarget.ShaderStorageBuffer, (uint)(4 * data.Length), data, BufferUsage.StaticDraw);
-            Gl.BindBufferBase(BufferTarget.ShaderStorageBuffer, (uint)locat, dat_buff);
-            // Gl.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);
-        }
         public void SortObj()
         {
             buffersGl.sortObj();
@@ -552,12 +535,76 @@ namespace Graphic
             }
         }
 
+        void selectViewObj()
+        {
+            var select = chooseData.getData();
+            int len_select = 8;
+
+            List<float[]> inds = new List<float[]>();
+
+            int glob_j = 0;
+            int ind = 0;
+            int ind_obj = 0;
+            var inv_ind = new List<float>();
+            for (int i=0; i< model_count; i++)
+            {
+                if(ind_obj< buffersGl.objs_dynamic.Count)
+                {
+                    int model_num = buffersGl.objs_dynamic[ind_obj].modelind;
+                    if (model_num == i)
+                    {
+                        var cnt_ind = 0;
+                        var st_ind = ind;
+                        for (int j = 0; j < buffersGl.objs_dynamic[ind_obj].const_count; j++)
+                        {
+                            if (select[len_select * (glob_j + j)] == 1)
+                            {
+                                inv_ind.Add(glob_j + j);
+                                ind++;
+                                cnt_ind++;
+
+                                if(select[len_select * (glob_j + j)+1] ==1)
+                                {
+                                    transRotZooms[0].target = new Vertex3f(
+                                        select[len_select * (glob_j + j) + 5],
+                                        select[len_select * (glob_j + j) + 6],
+                                        select[len_select * (glob_j + j) + 7]);
+                                    transRotZooms[0].target_ind = glob_j + j;
+                                }
+                                //select[len_select * (glob_j + j) + 2] = cnt_ind;
+                                //select[len_select * (glob_j + j) + 3] = model_num;
+                            }
+                        }
+
+                        glob_j += buffersGl.objs_dynamic[ind_obj].const_count;
+                        buffersGl.objs_dynamic[ind_obj] = buffersGl.objs_dynamic[ind_obj].setCount(cnt_ind, st_ind);
+                        //Console.WriteLine(ind_obj + " " + model_num + " " + cnt_ind + " " + st_ind);
+                        ind_obj++;
+                    }
+                }
+                
+            }
+
+            for(int i=0; i< inv_ind.Count;i++)
+            {
+                select[len_select * i + 4] = inv_ind[i];
+            }
+            //Console.WriteLine(toStringBuf(select, 8,4, "select"));
+            chooseData.setData(select);
+        }
+
         private bool init_textures(float[] data)
         {
+
+
             var len = ObjectMassGL.getLength();
             objData = new TextureGL(0, len/4, data.Length / len, PixelFormat.Rgba, data);
             posTimeData = new TextureGL(1, orb_p_count, data.Length/len ,  PixelFormat.Rgba);
+            chooseData = new TextureGL(2, 2, data.Length / len, PixelFormat.Rgba);
+
             obj_p_count = data.Length / len;
+
+
 
             idsGrMap.buff_tex = Gl.GenVertexArray();
             Gl.BindVertexArray(idsGrMap.buff_tex);
@@ -568,15 +615,11 @@ namespace Graphic
             Gl.BindVertexArray(idsOrb.buff_tex);
             var ind_data2 = genIndexF(obj_p_count);
             setBuffer(ind_data2, 0, 1);
-
             return true;
         }
-
-
         private void init_vars_gl(IDs ids)
         {
             Gl.UseProgram(ids.programID);
-
             for (int i = 0; i < 4; i++)
             {
                 ids.LocationVPs[i] = Gl.GetUniformLocation(ids.programID, "VPs[" + i + "]");
@@ -594,8 +637,9 @@ namespace Graphic
             ids.MouseLocID = Gl.GetUniformLocation(ids.programID, "MouseLoc");
             ids.MouseLocGLID = Gl.GetUniformLocation(ids.programID, "MouseLocGL");
             ids.colorOneID = Gl.GetUniformLocation(ids.programID, "colorOne");
-            ids.modelindID = Gl.GetUniformLocation(ids.programID, "modelind");
+            ids.stindID = Gl.GetUniformLocation(ids.programID, "stind");
             ids.targetCamID = Gl.GetUniformLocation(ids.programID, "targetCam");
+            ids.targetCamIndID = Gl.GetUniformLocation(ids.programID, "targetCamInd");
         }
         private void load_vars_gl(IDs ids, openGlobj openGlobj)
         {
@@ -609,7 +653,7 @@ namespace Graphic
                 Gl.UniformMatrix4f(ids.LocationPs[i], 1, false, Ps[i]);
             }
 
-            Gl.Uniform3f(ids.targetCamID, 1, transRotZooms[0].target);
+            
             Gl.Uniform3f(ids.MaterialDiffuseID, 1, MaterialDiffuse);
             Gl.Uniform3f(ids.MaterialAmbientID, 1, MaterialAmbient);
             Gl.Uniform3f(ids.MaterialSpecularID, 1, MaterialSpecular);
@@ -618,7 +662,10 @@ namespace Graphic
             Gl.Uniform2f(ids.MouseLocID, 1, MouseLoc);
             Gl.Uniform2f(ids.MouseLocGLID, 1, MouseLocGL);
             Gl.Uniform3f(ids.colorOneID, 1, openGlobj.colorOne);
-            Gl.Uniform1i(ids.modelindID, 1, openGlobj.modelind);
+            Gl.Uniform1i(ids.stindID, 1, openGlobj.stind);
+
+            Gl.Uniform3f(ids.targetCamID, 1, transRotZooms[0].target);
+            Gl.Uniform1i(ids.targetCamIndID, 1, transRotZooms[0].target_ind);
         }
         void gpuCompute()
         {
@@ -626,10 +673,8 @@ namespace Graphic
             {
                 load_vars_gl(idsCs, new openGlobj());
                 Gl.DispatchCompute(1, (uint)dataComputeShader.Length, 1);
-                Gl.MemoryBarrier(MemoryBarrierMask.ShaderImageAccessBarrierBit);
-                //Console.WriteLine(toStringBuf(objData.data, 8, "dataTex"));
-                var resultData = objData.getData();
-                Console.WriteLine(toStringBuf(resultData, 32, "dataOUT"));
+                Gl.MemoryBarrier(MemoryBarrierMask.ShaderImageAccessBarrierBit);                
+                Console.WriteLine(toStringBuf(objData.getData(), 32, 4, "objD"));
             }
         }
 
@@ -692,7 +737,29 @@ namespace Graphic
         #endregion
 
         #region util
-
+        void bufferToCompute(float[] data, int locat)
+        {
+            var dat_buff = Gl.GenBuffer();
+            Gl.BindBuffer(BufferTarget.ShaderStorageBuffer, dat_buff);
+            Gl.BufferData(BufferTarget.ShaderStorageBuffer, (uint)(4 * data.Length), data, BufferUsage.StaticDraw);
+            Gl.BindBufferBase(BufferTarget.ShaderStorageBuffer, (uint)locat, dat_buff);
+            // Gl.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);
+        }
+        static ObjectMassGL[] setDataToObjs(ObjectMassGL[] objects, float[] data)
+        {
+            var objs = (ObjectMassGL[])objects.Clone();
+            var len = ObjectMassGL.getLength();
+            for (int i = 0; i < objects.Length; i++)
+            {
+                var obData = new float[len];
+                for (int j = 0; j < len; j++)
+                {
+                    obData[j] = data[len * i + j];
+                }
+                objs[i].setData(obData);
+            }
+            return objs;
+        }
         public void SaveToFolder(string folder,int id)
         {
             var bitmap = matFromMonitor(id);
@@ -782,26 +849,26 @@ namespace Graphic
             txt += "\n______STATIC_________\n";
             foreach (var ob in buffersGl.objs_static)
             {
-                txt += toStringBuf(ob.vertex_buffer_data, 3, "vert");
-                txt += toStringBuf(ob.color_buffer_data, 3, "color");
-                txt += toStringBuf(ob.normal_buffer_data, 3, "normal");
-                txt += toStringBuf(ob.texture_buffer_data, 2, "textUV");
+                txt += toStringBuf(ob.vertex_buffer_data, 3,0, "vert");
+                txt += toStringBuf(ob.color_buffer_data, 3, 0, "color");
+                txt += toStringBuf(ob.normal_buffer_data, 3, 0, "normal");
+                txt += toStringBuf(ob.texture_buffer_data, 2, 0, "textUV");
                 txt += "\n________________________\n";
             }
             txt += "\n______DYNAMIC_________\n";
             foreach (var ob in buffersGl.objs_dynamic)
             {
-                txt += toStringBuf(ob.vertex_buffer_data, 3, "vert");
-                txt += toStringBuf(ob.color_buffer_data, 3, "color");
-                txt += toStringBuf(ob.normal_buffer_data, 3, "normal");
-                txt += toStringBuf(ob.texture_buffer_data, 2, "textUV");
+                txt += toStringBuf(ob.vertex_buffer_data, 3, 0, "vert");
+                txt += toStringBuf(ob.color_buffer_data, 3, 0, "color");
+                txt += toStringBuf(ob.normal_buffer_data, 3, 0, "normal");
+                txt += toStringBuf(ob.texture_buffer_data, 2, 0, "textUV");
                 txt += "\n________________________\n";
             }
             
             box.Text = txt;
         }
 
-        string toStringBuf(float[] buff, int strip,string name)
+        string toStringBuf(float[] buff, int strip,int substrip,string name)
         {
             if (buff == null)
                 return name + " null ";
@@ -811,7 +878,16 @@ namespace Graphic
                 txt += "  | \n";
                 for(int j=0; j<strip; j++)
                 {
+                    if (j % substrip == 0)
+                    {
+                        txt += "  | ";
+                    }
                     txt += buff[i * strip+j].ToString() + ", ";
+                    if(substrip!=0)
+                    {
+                        
+                    }
+                    
                 }
             }
             txt += " |\n--------------------------------\n";
@@ -927,8 +1003,8 @@ namespace Graphic
                     }
                     else if (e.Button == MouseButtons.Right)
                     {
-                        trz.target.x +=0.1f* Convert.ToSingle(dx);
-                        trz.target.y += 0.1f * Convert.ToSingle(dy);
+                        trz.target.x +=0.001f* Convert.ToSingle(dx);
+                        trz.target.y += 0.001f * Convert.ToSingle(dy);
                     }
                     lastPos = e.Location;
                     break;
@@ -1119,8 +1195,9 @@ namespace Graphic
  
         public ObjectMassGL[] loadObjs(ObjectMassGL[] objects, Model3d[] models)
         {
-            var objects_s = new ObjectMassGL[objects.Length];
+            var objects_s = new ObjectMassGL[objects.Length];//для O(m*n)->O(n) ипользовать двумерный массив
             int ind = 0;
+            model_count = models.Length;
             for (int i =0; i<models.Length;i++)
             {
                 var cnt_ind = 0;
@@ -1130,36 +1207,26 @@ namespace Graphic
                     if(objects[j].mesh_number == i)
                     {
                         objects_s[ind] = objects[j].Clone();
-                        Console.WriteLine(ind + " " + j + " " + objects[j].mesh_number + " " + cnt_ind + " ");
                         ind++;
                         cnt_ind++;
-                        
                     }
-                    //Console.WriteLine(j + " " + objects[j].mesh_number + " " + ind + " " + cnt_ind + " ");
                 }
-                Console.WriteLine("st_ind "+i+" "+ cnt_ind);
-                Console.WriteLine(st_ind);
-                loadModel(models[i], cnt_ind,st_ind);
+                loadModel(models[i], cnt_ind,st_ind,i);
             }
-
-
             var data = getDataFromObjs(objects_s);
-            initComputeShader = init_textures(data);
-            var resultData = objData.getData();
-            Console.WriteLine(toStringBuf(resultData, 32, "dataOUT"));
-
-            /*if (initComputeShader)
+            //Console.WriteLine(toStringBuf(data, 32, "models"));
+            if (!initComputeShader)
             {
                 initComputeShader = init_textures(data);
             }
             else
             {
                 objData.setData(data);
-            }*/
+            }
             return objects_s;
         }
 
-        public void loadModel(Model3d model,int count, int model_ind)
+        public void loadModel(Model3d model,int count, int st_ind, int model_ind)
         {
             if (count!=0)
             {
@@ -1169,9 +1236,12 @@ namespace Graphic
                 }
                 var objgl = new openGlobj(model.mesh, null, model.normale, model.texture, PrimitiveType.Triangles, 1, count);
                 objgl.modelind = model_ind;
+                objgl.stind = st_ind;
                 buffersGl.add_obj(objgl.setBuffersObj());
             } 
         }
+
+        
         float[] toFloat(Point3d_GL[] points)
         {
             var fl = new float[points.Length * 3];

@@ -67,6 +67,7 @@ namespace Graphic
         public TransRotZoom consttransf;
         public Vertex3f target;
         public Vertex3f pos;
+        public int target_ind;
         //public Vertex3f localpos;
 
         public TransRotZoom(Rectangle _rect, int _id)
@@ -80,8 +81,9 @@ namespace Graphic
             type = TRZtype.Master;
             viewType_ = viewType.Perspective;
             visible = false;
-            target = new Vertex3f(1.001f, 0, 0);
+            target = new Vertex3f(0, 0, 0);
             pos = new Vertex3f(0, 0, -1e-1f);
+            target_ind = 0;
             //localpos = new Vertex3f(0, 0, -5);
         }
 
@@ -268,7 +270,7 @@ namespace Graphic
 
             if (viewType_ == viewType.Perspective)
             {
-                var _Pm = Matrix4x4f.Perspective(53f, (float)rect.Width / rect.Height, -(float)zoom*0.1f, -(float)zoom * 1e4f);
+                var _Pm = Matrix4x4f.Perspective(53f, (float)rect.Width / rect.Height, -(float)zoom* 1e-1f, -(float)zoom *1e4f);
                 var _Vm = Matrix4x4f.Translated(0, 0, (float)zoom) *
                     Matrix4x4f.RotatedX((float)xRot) *
                     Matrix4x4f.RotatedY((float)yRot) *
