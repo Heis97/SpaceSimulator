@@ -22,26 +22,21 @@ namespace Graphic
         public int id;
         public bool visible;
         uint buff_array;
-        uint buff_array_orb;
-        public trsc[] trsc;
         public int count;
-        public int orb_count;
-
+        public bool colortex;
+        public Vertex3f colorOne;
+        public int modelind;
 
         public openGlobj(float[] v_buf, float[] c_buf, float[] n_buf, float[] t_buf, PrimitiveType type, int _id= -1,int _count=1)
         {
             vertex_buffer_data = new float[v_buf.Length];
             normal_buffer_data = new float[n_buf.Length];
-            orb_count =200;
-
-            trsc = new trsc[_count];
+            colorOne = new Vertex3f(0.5f);
             count = _count;
-            for(int i=0; i<_count;i++)
-            {
-                trsc[i] = new trsc(0, 0, 0, 0, 0, 0, 1);
-            }
+            colortex = false;
 
-            buff_array = 0; buff_array_orb = 0;
+            buff_array = 0;
+            modelind = 0;
             if (t_buf == null)
             {
                 texture_buffer_data = new float[v_buf.Length];
@@ -50,6 +45,7 @@ namespace Graphic
             {
                 texture_buffer_data = new float[t_buf.Length];
                 t_buf.CopyTo(texture_buffer_data, 0);
+                colortex = true;
             }
 
             if (c_buf == null)
@@ -61,7 +57,9 @@ namespace Graphic
             {
                 color_buffer_data = new float[c_buf.Length];
                 c_buf.CopyTo(color_buffer_data, 0);
+                colortex = true;
             }
+
             vert_len =(int) v_buf.Length / 3;
             v_buf.CopyTo(vertex_buffer_data, 0);       
             n_buf.CopyTo(normal_buffer_data, 0);
@@ -85,32 +83,19 @@ namespace Graphic
             Gl.BindVertexArray(buff_array);
             setBuffer(vertex_buffer_data, 0, 3);
             setBuffer(normal_buffer_data, 1, 3);
-            setBuffer(color_buffer_data, 2, 3);
-            setBuffer(texture_buffer_data, 3, 2);
+            if(colortex)
+            {
+                setBuffer(color_buffer_data, 2, 3);
+                setBuffer(texture_buffer_data, 3, 2);
+            }
+            
             return this;
         }
             
-        float[] DataFromTrsc3()
-        {
-            var data = new float[trsc.Length * 3];
-            for (int i = 0; i < trsc.Length; i++)
-            {
-                data[3 * i] = (float)trsc[i].transl.x;
-                data[3 * i + 1] = (float)trsc[i].transl.y;
-                data[3 * i + 2] = (float)trsc[i].transl.z;
 
-            }
-            return data;
-        }
         public void useBuffers()
         {
             Gl.BindVertexArray(buff_array);
-        }
-
-        public void loadModels(Vertex3f target)
-        {
-            bindBufferInstanceMatr(modelData(target), 4);
-            bindBufferInstanceMatr(rotateData(), 8);
         }
         uint setBuffer(float[] data, uint lvl, int strip)
         {
@@ -122,7 +107,7 @@ namespace Graphic
             return buff;
         }
 
-        uint setBufferInt(Int32[] data, uint lvl, int strip)
+       /* uint setBufferInt(Int32[] data, uint lvl, int strip)
         {
             var buff = Gl.GenBuffer();
             Gl.BindBuffer(BufferTarget.ArrayBuffer, buff);
@@ -188,58 +173,6 @@ namespace Graphic
             return buff;
         }
 
-
-        #region setters
-        public openGlobj setScale(int i,float _scale)
-        {
-            trsc[i].scale = _scale;
-            return this;
-        }
-
-        public openGlobj setTransf(int i, trsc _trsc)
-        {
-            trsc[i] = _trsc;
-            return this;
-        }
-
-        public openGlobj setTransf(int i, Point3d_GL transl, Point3d_GL rotate)
-        {
-            trsc[i] = new trsc(transl, rotate, trsc[i].scale);
-            return this;
-        }
-        public openGlobj setX(int i, double x)
-        {
-            trsc[i].transl.x = x;
-            return this;
-        }
-        public openGlobj setY(int i, double y)
-        {
-            trsc[i].transl.y = y;
-            return this;
-        }
-        public openGlobj setZ(int i, double z)
-        {
-            trsc[i].transl.z = z;
-            return this;
-        }
-        public openGlobj setRotX(int i, double x)
-        {
-            trsc[i].rotate.x = x;
-            return this;
-        }
-        public openGlobj setRotY(int i, double y)
-        {
-            trsc[i].rotate.y = y;
-            return this;
-        }
-        public openGlobj setRotZ(int i, double z)
-        {
-            trsc[i].rotate.z = z;
-            return this;
-        }
-        #endregion
-
-
         static int[] genIndex(int len)
         {
             var buff = new int[2 * len];
@@ -285,6 +218,7 @@ namespace Graphic
             //Console.WriteLine(toStringBuf(dupdata, 3, "dupdata"));
             return dupdata;
         }
+        */
     }
 
 }

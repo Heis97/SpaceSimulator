@@ -72,43 +72,6 @@ namespace Graphic
             objs_dynamic[id] = new openGlobj();
         }
 
-        #region setters
-        public void setScale(int id, int i, float _scale)
-        {
-            objs_dynamic[id] = objs_dynamic[id].setScale(i, _scale);
-        }
-        public void setTransfObj(int id, int i, Point3d_GL _transl, Point3d_GL _rotate)
-        {
-            objs_dynamic[id] = objs_dynamic[id].setTransf(i, _transl, _rotate);
-        }
-        public void setXobj(int id, int i, double x)
-        {
-            objs_dynamic[id] = objs_dynamic[id].setX(i, x);
-        }
-        public void setYobj(int id, int i, double y)
-        {
-            objs_dynamic[id] = objs_dynamic[id].setY(i, y);
-        }
-        public void setZobj(int id, int i, double z)
-        {
-            objs_dynamic[id] = objs_dynamic[id].setZ(i, z);
-        }
-
-        public void setRotXobj(int id, int i, double x)
-        {
-            objs_dynamic[id] = objs_dynamic[id].setRotX(i, x);
-        }
-        public void setRotYobj(int id, int i, double y)
-        {
-            objs_dynamic[id] = objs_dynamic[id].setRotY(i, y);
-        }
-        public void setRotZobj(int id, int i, double z)
-        {
-            objs_dynamic[id] = objs_dynamic[id].setRotZ(i,z);
-        }
-        #endregion
-
-
     }
 
 

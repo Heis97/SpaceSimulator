@@ -13,16 +13,20 @@ in VS_GS_INTERFACE
 {
 vec3 Position_world;
 vec3 Normal_world;
+vec3 Color;
+vec2 Texture;
 }vs_out[];
 
 out GS_FS_INTERFACE
 {
 vec3 Position_world;
+vec3 Color;
 vec3 Normal_camera;
 vec3 Normal_world;
 vec3 EyeDirection_camera;
 vec3 LightDirection_camera;
 vec3 LightDirection_world;
+vec2 TextureUV;
 } fs_in;
 
 void main() 
@@ -43,6 +47,8 @@ void main()
 
 		fs_in.Normal_world = vs_out[i].Normal_world;
 		fs_in.Normal_camera =(Vs[gl_InvocationID] * vec4(vs_out[i].Normal_world, 1.0)).xyz;
+	    fs_in.Color = vs_out[i].Color;
+		fs_in.TextureUV = vs_out[i].Texture;
 	    EmitVertex();
 	}
 }

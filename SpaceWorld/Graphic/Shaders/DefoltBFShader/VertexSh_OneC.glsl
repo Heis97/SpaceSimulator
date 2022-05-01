@@ -2,7 +2,9 @@
 
 layout(location = 0) in vec3 _Position_model;
 layout(location = 1) in vec3 _Normal_model;
-
+layout(location = 2) in vec3 _Color;
+layout(location = 3) in vec2 _Texture;
+uniform mat4 ModelMatrix;
 layout (rgba32f, binding = 0) uniform  image2D objdata;
 
 uniform vec3 LightPosition_world;
@@ -11,10 +13,12 @@ uniform mat4 Vs[4];
 uniform mat4 Ps[4];
 uniform vec2 MouseLoc;
 uniform vec2 MouseLocGL;
+uniform vec3 MaterialDiffuse;
+uniform vec3 MaterialAmbient;
+uniform vec3 MaterialSpecular;
 uniform float lightPower;
 uniform sampler2D textureSample;
 uniform int textureVis;
-uniform vec3 colorOne;
 uniform int modelind;
 
 out VS_FS_INTERFACE
@@ -24,7 +28,7 @@ vec3 Color;
 
 mat4 modelMatr()
 {
-	int ind = modelind + gl_InstanceID;
+	int ind = modelind;
 	ivec2 ipos4 =  ivec2(4,ind);
 	ivec2 ipos5 =  ivec2(5,ind);
 	ivec2 ipos6 =  ivec2(6,ind);
@@ -35,7 +39,7 @@ mat4 modelMatr()
 
 void main() 
 {
-	vec4 Position_world = modelMatr()*vec4(_Position_model,1);
+	vec4 Position_world =  modelMatr()*vec4(_Position_model,1);
 	vec3 Normal_world = (modelMatr()*vec4(_Normal_model,0)).xyz;
 	gl_Position = VPs[0] * Position_world;
 
@@ -50,6 +54,9 @@ void main()
 
 	vec3 LightColor = vec3(1.0, 1.0, 1.0);
 	float LightPower = lightPower;
+	vec3 MaterialDiffuseColor =_Color;
+	vec3 MaterialAmbientColor = MaterialAmbient;
+	vec3 MaterialSpecularColor = MaterialSpecular;
 	float distance = length( LightPosition_world - Position_world.xyz );
 	vec3 n = normalize( Normal_world );
 	vec3 l = normalize( LightDirection_world );
@@ -63,11 +70,16 @@ void main()
 	float cosAlpha = clamp(dot( E,R ) , 0,1 );
 	
 
+	if(textureVis == 1)
+	{
+		vs_out.Color = texture( textureSample,  _Texture ).xyz;
+	}
+	else
+	{
+	    MaterialDiffuseColor = vec3(0.5);
+		MaterialAmbientColor = vec3(0.05);
+		MaterialSpecularColor = vec3(0.01);
+	   vs_out.Color  = MaterialAmbientColor + MaterialDiffuseColor * LightColor * LightPower * cosTheta / (distance*distance) +MaterialSpecularColor * LightColor * LightPower * pow(cosAlpha,5) / (distance*distance);
 
-	vec3 MaterialDiffuseColor = colorOne;
-	vec3 MaterialAmbientColor = vec3(0.05);
-	vec3 MaterialSpecularColor = vec3(0.01);
-	vs_out.Color  = MaterialAmbientColor + MaterialDiffuseColor * LightColor * LightPower * cosTheta / (distance*distance) +MaterialSpecularColor * LightColor * LightPower * pow(cosAlpha,5) / (distance*distance);
-
-	
+	}
 }

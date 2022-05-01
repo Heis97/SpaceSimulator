@@ -10,16 +10,19 @@ uniform int textureVis;
 in GS_FS_INTERFACE
 {
 vec3 Position_world;
+vec3 Color;
 vec3 Normal_camera;
 vec3 Normal_world;
 vec3 EyeDirection_camera;
 vec3 LightDirection_camera;
 vec3 LightDirection_world;
+vec2 TextureUV;
 }fs_in;
 out vec4 color;
 void main() {
 	vec3 LightColor = vec3(1.0, 1.0, 1.0);
 	float LightPower = lightPower;
+	vec3 MaterialDiffuseColor = fs_in.Color;
 	vec3 MaterialAmbientColor = MaterialAmbient;
 	vec3 MaterialSpecularColor = MaterialSpecular;
 	float distance = length( LightPosition_world - fs_in.Position_world );
@@ -31,11 +34,21 @@ void main() {
 	vec3 nc = normalize( fs_in.Normal_camera);
 	vec3 E = normalize(fs_in.EyeDirection_camera);
 	vec3 R = reflect(-lc,nc);
-
-	float cosAlpha = clamp( dot( E,R ) , 0,1 );
+	float precosAlpha = dot( E,R );
+	float cosAlpha = 0;
 	
+	if(precosAlpha>0)
+	{
+		cosAlpha = clamp(precosAlpha , 0,1 );
+	}
 
-	   vec3 MaterialDiffuseColor = vec3(0.5);
+	if(textureVis == 1)
+	{
+		color = texture( textureSample,  fs_in.TextureUV );
+	}
+	else
+	{
+	    MaterialDiffuseColor = vec3(0.5);
 		MaterialAmbientColor = vec3(0.05);
 		MaterialSpecularColor = vec3(0.01);
 	    //color.xyz = MaterialDiffuseColor * LightColor * LightPower * cosTheta / (distance*distance);
@@ -44,7 +57,7 @@ void main() {
 	   
 	   //color.xyz = vec3(0.5,0,0.5);
 		color.w = 1.0;
-	
+	}
 	
 	
 }

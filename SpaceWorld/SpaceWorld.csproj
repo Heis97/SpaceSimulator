@@ -140,7 +140,37 @@
     <None Include="Graphic\Shaders\Comp\CompSh_N2_gravitation.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Graphic\Shaders\DefoltBFShader\VertexSh_ModelsOne.glsl">
+    <None Include="Graphic\Shaders\DefoltBFShader\VertexSh_Models.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFShader\VertexSh_One.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFShader\VertexSh_Static.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFShader\VertexSh_OneC.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFWithGeomShader\PointLineCol\FragmSh_SimpleC.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFWithGeomShader\PointLineCol\GeomSh_Lines.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFWithGeomShader\PointLineCol\GeomSh_Points.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFWithGeomShader\TriangleColTex\FragmShC.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFWithGeomShader\TriangleColTex\GeomSh_TrianglesC.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFWithGeomShader\TriangleColTex\VertexSh_ModelsC.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Graphic\Shaders\DefoltBFWithGeomShader\TriangleColTex\VertexSh_ModelsOneC.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Graphic\Shaders\Frag\FragmSh_Simple.glsl">
@@ -164,13 +194,13 @@
     <None Include="Graphic\Shaders\GravitMap\Vertex.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Graphic\Shaders\Space\FragmOrbite.glsl">
+    <None Include="Graphic\Shaders\Orbite\FragmOrbite.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Graphic\Shaders\Space\GeomOrbite.glsl">
+    <None Include="Graphic\Shaders\Orbite\GeomOrbite.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Graphic\Shaders\Space\VertexOrbite.glsl">
+    <None Include="Graphic\Shaders\Orbite\VertexOrbite.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Graphic\Shaders\Vert\VertexSh_ModelsOne.glsl">
@@ -185,7 +215,7 @@
     <None Include="Graphic\Shaders\DefoltBFShader\FragmSh.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Graphic\Shaders\DefoltBFShader\VertexSh_Models.glsl">
+    <None Include="Graphic\Shaders\DefoltBFShader\VertexSh_ModelsC.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Graphic\Shaders\DefoltBFWithGeomShader\FragmSh.glsl">
@@ -228,6 +258,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="модели\cube30.STL">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="модели\cube_scene.stl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="модели\izr1.STL">

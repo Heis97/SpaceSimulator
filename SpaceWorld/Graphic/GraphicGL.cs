@@ -13,6 +13,7 @@ using Emgu.CV.Structure;
 using Emgu.Util;
 using Geometry;
 using Objects;
+using Model;
 
 namespace Graphic
 {   
@@ -59,7 +60,7 @@ namespace Graphic
         public void setData(float[] data)
         {
             Gl.BindTexture(TextureTarget.Texture2d, id);
-            Gl.TexImage2D(TextureTarget.Texture2d, 0, internalFormat, w/ch, h, 0,pixelFormat, PixelType.Float, data);
+            Gl.TexImage2D(TextureTarget.Texture2d, 0, internalFormat, w, h, 0,pixelFormat, PixelType.Float, data);
         }
         uint genTexture(int binding, int w, int h = 1, PixelFormat pixelFormat = PixelFormat.Red, float[] data = null)
         {
@@ -128,7 +129,9 @@ namespace Graphic
         public int MouseLocID;
         public int MouseLocGLID;
         public int translMeshID;
-        public int targetID;
+        public int targetCamID;
+        public int colorOneID;
+        public int modelindID;
     }
     public class GraphicGL
     {
@@ -181,27 +184,41 @@ namespace Graphic
 
         IDs idsPs = new IDs();
         IDs idsLs = new IDs();
-        IDs idsTs = new IDs();
-        IDs idsTsOne = new IDs();
         IDs idsPsOne = new IDs();
         IDs idsLsOne = new IDs();
+
+        IDs idsTs = new IDs();
+        IDs idsTsOne = new IDs();
+
+        IDs idsTsC = new IDs();
+        IDs idsTsOneC = new IDs();
+
         IDs idsCs = new IDs();
 
         IDs idsOrb = new IDs();
         IDs idsGrMap = new IDs();
 
-        TextureGL posData, velData, massData,acsData,posTimeData,objData;
+        IDs BF = new IDs();
+        IDs BFOne = new IDs();
+        IDs BFC = new IDs();
+        IDs BFOneC = new IDs();
+
+        IDs BFSt = new IDs();
+
+        TextureGL posTimeData, objData;
         public ObjectMassGL[] dataComputeShader = new ObjectMassGL[0];
         bool initComputeShader = false;
         public float[] resultComputeShader;
         int orb_p_count = 200;
         int obj_p_count =0;
 
-        #endregion 
+        #endregion
 
 
         public void glControl_Render(object sender, GlControlEventArgs e)
         {
+            
+
             VPs = new Matrix4x4f[4];
             Vs = new Matrix4x4f[4];
             Ps = new Matrix4x4f[4];
@@ -242,6 +259,7 @@ namespace Graphic
                 {
                     foreach (var opglObj in buffersGl.objs_dynamic)
                     {
+                        
                         renderGlobj(opglObj);
                     }
                 }
@@ -252,53 +270,89 @@ namespace Graphic
             drawOrbit();
             gpuCompute();
         }
-
+        IDs chooseShaderGeom(openGlobj opgl_obj)
+        {
+            var ids = new IDs();
+            if (opgl_obj.tp == PrimitiveType.Points)
+            {
+                ids = idsPs;
+                if (opgl_obj.count == 1)
+                {
+                    ids = idsPsOne;
+                }
+            }
+            else if (opgl_obj.tp == PrimitiveType.Triangles)
+            {
+                ids = idsTs;
+                if (opgl_obj.count == 1)
+                {
+                    ids = idsTsOne;
+                }
+            }
+            else if (opgl_obj.tp == PrimitiveType.Lines)
+            {
+                ids = idsLs;
+                if (opgl_obj.count == 1)
+                {
+                    ids = idsLsOne;
+                }
+            }
+            return ids;
+        }
+        IDs chooseShader(openGlobj opgl_obj)
+        {
+            var ids = new IDs();  
+            if (opgl_obj.tp==PrimitiveType.Triangles)
+            {
+                if (opgl_obj.count == 1)
+                {
+                    if (opgl_obj.colortex)
+                    {
+                        ids = BFOneC;
+                    }
+                    else
+                    {
+                        ids = BFOne;
+                    }
+                    
+                }
+                else
+                {
+                    if (opgl_obj.colortex)
+                    {
+                        ids = BFC;
+                    }
+                    else
+                    {
+                        ids = BF;
+                    }
+                }
+            }
+            else
+            {
+                ids = BFSt;
+            }
+            
+            return ids;
+        }
         void renderGlobj(openGlobj opgl_obj)
         {
             if(opgl_obj.visible)
             {
                 try
                 {
-                    var ids = new IDs();
-                    if (opgl_obj.tp == PrimitiveType.Points)
-                    {
-                        ids = idsPs;
-                        if (opgl_obj.count == 1)
-                        {
-                            ids = idsPsOne;
-                        }
-                    }
-                    else if (opgl_obj.tp == PrimitiveType.Triangles)
-                    {
-                        ids = idsTs;
-                        if(opgl_obj.count==1)
-                        {
-                            ids = idsTsOne;
-                        }
-                    }
-                    else if (opgl_obj.tp == PrimitiveType.Lines)
-                    {
-                        ids = idsLs;
-                        if (opgl_obj.count == 1)
-                        {
-                            ids = idsLsOne;
-                        }
-                    }
+                    var ids = chooseShader(opgl_obj);
                     load_vars_gl(ids, opgl_obj);
                     opgl_obj.useBuffers();
                     
                     if (opgl_obj.count > 1)
                     {
-                        opgl_obj.loadModels(transRotZooms[0].target);
                         Gl.DrawArraysInstanced(opgl_obj.tp, 0, opgl_obj.vert_len, opgl_obj.count);
                     }
                     else
                     {
                         Gl.DrawArrays(opgl_obj.tp, 0, opgl_obj.vert_len);
-                    }
-                    
-                        
-                    
+                    }       
                 }
                 catch
                 {
@@ -313,7 +367,6 @@ namespace Graphic
             load_vars_gl(idsOrb, new openGlobj());
             Gl.DrawArrays(PrimitiveType.Lines, 0, 2*obj_p_count);
         }
-
         void drawGravMap()
         {
             Gl.UseProgram(idsGrMap.programID);
@@ -332,13 +385,13 @@ namespace Graphic
             sizeControl = ((Control)sender).Size;
             Gl.Initialize();
             Gl.Enable(EnableCap.Multisample);
-           // Gl.ClearColor(0.9f, 0.9f, 0.95f, 0.0f);
+            //Gl.ClearColor(0.9f, 0.9f, 0.95f, 0.0f);
             Gl.ClearColor(0.10f, 0.0f, 0.155f, 0.0f);
             Gl.PointSize(1.5f);
             Gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             #endregion
             #region loadShaders
-            var ComputeSourceGL = assembCode(new string[] { @"Graphic\Shaders\Comp\CompSh_N2_gravitation.glsl" });
+            
 
             var VertexSourceGL = assembCode(new string[] { @"Graphic\Shaders\DefoltBFWithGeomShader\VertexSh_Models.glsl" });
             var VertexOneSourceGL = assembCode(new string[] { @"Graphic\Shaders\DefoltBFWithGeomShader\VertexSh_ModelsOne.glsl" });
@@ -359,11 +412,31 @@ namespace Graphic
             idsTs.programID = createShader(VertexSourceGL, GeometryShaderTrianglesGL , FragmentSourceGL);
             idsTsOne.programID = createShader(VertexOneSourceGL, GeometryShaderTrianglesGL, FragmentSourceGL);
 
+            var VertBF = assembCode(new string[] { @"Graphic\Shaders\DefoltBFShader\VertexSh_Models.glsl" });
+            var VertBFOne = assembCode(new string[] { @"Graphic\Shaders\DefoltBFShader\VertexSh_One.glsl" });
+
+            var VertBFc = assembCode(new string[] { @"Graphic\Shaders\DefoltBFShader\VertexSh_ModelsC.glsl" });
+            var VertBFOnec = assembCode(new string[] { @"Graphic\Shaders\DefoltBFShader\VertexSh_OneC.glsl" });
+
+            var VertBFStat = assembCode(new string[] { @"Graphic\Shaders\DefoltBFShader\VertexSh_Static.glsl" });
+
+            var FragmBF = assembCode(new string[] { @"Graphic\Shaders\DefoltBFShader\FragmSh.glsl" });
+
+            BF.programID = createShader(VertBF, null, FragmBF);
+            BFOne.programID = createShader(VertBFOne, null, FragmBF);
+
+            BFC.programID = createShader(VertBFc, null, FragmBF);
+            BFOneC.programID = createShader(VertBFOnec, null, FragmBF);
+
+            BFSt.programID = createShader(VertBFStat, null, FragmBF);
+
+            var ComputeSourceGL = assembCode(new string[] { @"Graphic\Shaders\Comp\CompSh_N2_gravitation.glsl" });
+
             idsCs.programID = createShaderCompute(ComputeSourceGL);
 
-            var VertexOrbSourceGL = assembCode(new string[] { @"Graphic\Shaders\Space\VertexOrbite.glsl" });
-            var GeomOrbSourceGL = assembCode(new string[] { @"Graphic\Shaders\Space\GeomOrbite.glsl" });
-            var FragmOrbSourceGL = assembCode(new string[] { @"Graphic\Shaders\Space\FragmOrbite.glsl" });
+            var VertexOrbSourceGL = assembCode(new string[] { @"Graphic\Shaders\Orbite\VertexOrbite.glsl" });
+            var GeomOrbSourceGL = assembCode(new string[] { @"Graphic\Shaders\Orbite\GeomOrbite.glsl" });
+            var FragmOrbSourceGL = assembCode(new string[] { @"Graphic\Shaders\Orbite\FragmOrbite.glsl" });
 
             idsOrb.programID = createShader(VertexOrbSourceGL, GeomOrbSourceGL, FragmOrbSourceGL);
 
@@ -372,9 +445,12 @@ namespace Graphic
             var FragmGravitMapSourceGL = assembCode(new string[] { @"Graphic\Shaders\GravitMap\Fragm.glsl" });
 
             idsGrMap.programID = createShader(VertexGravitMapSourceGL, GeomGravitMapSourceGL, FragmGravitMapSourceGL);
-            #endregion
 
-
+            init_vars_gl(BF);
+            init_vars_gl(BFOne);
+            init_vars_gl(BFC);
+            init_vars_gl(BFOneC);
+            init_vars_gl(BFSt);
 
             init_vars_gl(idsLs);
             init_vars_gl(idsPs);
@@ -384,11 +460,16 @@ namespace Graphic
             init_vars_gl(idsLsOne);
             init_vars_gl(idsOrb);
             init_vars_gl(idsGrMap);
+            init_vars_gl(idsCs);
+            #endregion
 
-            var data = getDataFromObjs(dataComputeShader);
-            //Console.WriteLine(toStringBuf(data, 8, "dataINP"));
-            initComputeShader = init_textures(data);
 
+
+            /*var data = getDataFromObjs(dataComputeShader);
+            if(!initComputeShader)
+            {
+                initComputeShader = init_textures(data);
+            }*/
             // Gl.Enable(EnableCap.CullFace);
             Gl.Enable(EnableCap.DepthTest);
         }
@@ -473,12 +554,9 @@ namespace Graphic
 
         private bool init_textures(float[] data)
         {
-            // Console.WriteLine(data.Count);
             var len = ObjectMassGL.getLength();
-            objData = new TextureGL(0, 2, data.Length / len, PixelFormat.Rgba, data);
+            objData = new TextureGL(0, len/4, data.Length / len, PixelFormat.Rgba, data);
             posTimeData = new TextureGL(1, orb_p_count, data.Length/len ,  PixelFormat.Rgba);
-            //acsData = new TextureGL(4, pos3.Length, 1, PixelFormat.Rgb, null);
-            //Console.WriteLine(posData.w + " " + posData.h + " " + posData.ch + " " + posData.data.Length);
             obj_p_count = data.Length / len;
 
             idsGrMap.buff_tex = Gl.GenVertexArray();
@@ -506,7 +584,6 @@ namespace Graphic
                 ids.LocationPs[i] = Gl.GetUniformLocation(ids.programID, "Ps[" + i + "]");
             }
             ids.LocationM = Gl.GetUniformLocation(ids.programID, "ModelMatrix");
-            ids.LocationRotM = Gl.GetUniformLocation(ids.programID, "RotationMatrix");
             ids.TextureID  = Gl.GetUniformLocation(ids.programID, "textureSample");
             ids.MaterialDiffuseID = Gl.GetUniformLocation(ids.programID, "MaterialDiffuse");
             ids.MaterialAmbientID = Gl.GetUniformLocation(ids.programID, "MaterialAmbient");
@@ -516,57 +593,48 @@ namespace Graphic
             ids.textureVisID = Gl.GetUniformLocation(ids.programID, "textureVis");
             ids.MouseLocID = Gl.GetUniformLocation(ids.programID, "MouseLoc");
             ids.MouseLocGLID = Gl.GetUniformLocation(ids.programID, "MouseLocGL");
-            ids.targetID = Gl.GetUniformLocation(ids.programID, "target");
+            ids.colorOneID = Gl.GetUniformLocation(ids.programID, "colorOne");
+            ids.modelindID = Gl.GetUniformLocation(ids.programID, "modelind");
+            ids.targetCamID = Gl.GetUniformLocation(ids.programID, "targetCam");
         }
         private void load_vars_gl(IDs ids, openGlobj openGlobj)
         {
 
             Gl.UseProgram(ids.programID);
-            if(openGlobj.count==1)
-            {
-                var ModelMatr = openGlobj.trsc[0].getModelMatrix(transRotZooms[0].target);
-                Gl.UniformMatrix4f(ids.LocationM, 1, false, ModelMatr);
-
-                var RotateMatr = openGlobj.trsc[0].getRotateMatrix();
-                Gl.UniformMatrix4f(ids.LocationRotM, 1, false, RotateMatr);
-            }
             
-            //Console.WriteLine(ModelMatr);
-
             for (int i = 0; i < 4; i++)
             {
                 Gl.UniformMatrix4f(ids.LocationVPs[i], 1, false, VPs[i]);
                 Gl.UniformMatrix4f(ids.LocationVs[i], 1, false, Vs[i]);
                 Gl.UniformMatrix4f(ids.LocationPs[i], 1, false, Ps[i]);
             }
-            Gl.Uniform3f(ids.targetID, 1, transRotZooms[0].target);
+
+            Gl.Uniform3f(ids.targetCamID, 1, transRotZooms[0].target);
             Gl.Uniform3f(ids.MaterialDiffuseID, 1, MaterialDiffuse);
             Gl.Uniform3f(ids.MaterialAmbientID, 1, MaterialAmbient);
             Gl.Uniform3f(ids.MaterialSpecularID, 1, MaterialSpecular);
-            Gl.Uniform3f(ids.LightID, 1, lightPos - transRotZooms[0].target);
+            Gl.Uniform3f(ids.LightID, 1, lightPos-transRotZooms[0].target);
             Gl.Uniform1f(ids.LightPowerID, 1, LightPower);
             Gl.Uniform2f(ids.MouseLocID, 1, MouseLoc);
             Gl.Uniform2f(ids.MouseLocGLID, 1, MouseLocGL);
-
+            Gl.Uniform3f(ids.colorOneID, 1, openGlobj.colorOne);
+            Gl.Uniform1i(ids.modelindID, 1, openGlobj.modelind);
         }
-
-        #region texture
         void gpuCompute()
         {
-            if (initComputeShader && dataComputeShader.Length>0)
+            if (initComputeShader && dataComputeShader.Length > 0)
             {
-                //Console.WriteLine(dataComputeShader.Length);
-                Gl.UseProgram(idsCs.programID);
-                Gl.DispatchCompute( 1, (uint)dataComputeShader.Length, 1);
+                load_vars_gl(idsCs, new openGlobj());
+                Gl.DispatchCompute(1, (uint)dataComputeShader.Length, 1);
                 Gl.MemoryBarrier(MemoryBarrierMask.ShaderImageAccessBarrierBit);
                 //Console.WriteLine(toStringBuf(objData.data, 8, "dataTex"));
                 var resultData = objData.getData();
-                resultComputeShader = resultData;
-                dataComputeShader = setDataToObjs(dataComputeShader, resultData);
-
-                // Console.WriteLine(toStringBuf(resultData, 8, "dataOUT"));
+                Console.WriteLine(toStringBuf(resultData, 32, "dataOUT"));
             }
         }
+
+        #region texture
+
         byte[] textureLoad(Mat mat)
         {
 
@@ -740,7 +808,7 @@ namespace Graphic
             string txt = name +" "+buff.Length;
             for (int i = 0; i < buff.Length / strip; i++)
             {
-                txt += "  | ";
+                txt += "  | \n";
                 for(int j=0; j<strip; j++)
                 {
                     txt += buff[i * strip+j].ToString() + ", ";
@@ -1049,7 +1117,61 @@ namespace Graphic
         #endregion
         #region mesh
  
-        
+        public ObjectMassGL[] loadObjs(ObjectMassGL[] objects, Model3d[] models)
+        {
+            var objects_s = new ObjectMassGL[objects.Length];
+            int ind = 0;
+            for (int i =0; i<models.Length;i++)
+            {
+                var cnt_ind = 0;
+                var st_ind = ind;
+                for (int j = 0; j < objects.Length; j++)
+                {
+                    if(objects[j].mesh_number == i)
+                    {
+                        objects_s[ind] = objects[j].Clone();
+                        Console.WriteLine(ind + " " + j + " " + objects[j].mesh_number + " " + cnt_ind + " ");
+                        ind++;
+                        cnt_ind++;
+                        
+                    }
+                    //Console.WriteLine(j + " " + objects[j].mesh_number + " " + ind + " " + cnt_ind + " ");
+                }
+                Console.WriteLine("st_ind "+i+" "+ cnt_ind);
+                Console.WriteLine(st_ind);
+                loadModel(models[i], cnt_ind,st_ind);
+            }
+
+
+            var data = getDataFromObjs(objects_s);
+            initComputeShader = init_textures(data);
+            var resultData = objData.getData();
+            Console.WriteLine(toStringBuf(resultData, 32, "dataOUT"));
+
+            /*if (initComputeShader)
+            {
+                initComputeShader = init_textures(data);
+            }
+            else
+            {
+                objData.setData(data);
+            }*/
+            return objects_s;
+        }
+
+        public void loadModel(Model3d model,int count, int model_ind)
+        {
+            if (count!=0)
+            {
+                if (model.normale == null)
+                {
+                    model.normale = computeNormals(model.mesh);  
+                }
+                var objgl = new openGlobj(model.mesh, null, model.normale, model.texture, PrimitiveType.Triangles, 1, count);
+                objgl.modelind = model_ind;
+                buffersGl.add_obj(objgl.setBuffersObj());
+            } 
+        }
         float[] toFloat(Point3d_GL[] points)
         {
             var fl = new float[points.Length * 3];
@@ -1081,16 +1203,14 @@ namespace Graphic
         {            
             buffersGl.add_obj(new openGlobj(data_v, data_c, data_n,null,  tp));
         }
-        public int addSTL(float[] data_v, PrimitiveType tp, Point3d_GL trans, Point3d_GL rotate, float scale = 1,int count =1)
+        public int addSTL(float[] data_v, PrimitiveType tp,int count =1)
         {
             var data_n = computeNormals(data_v);
             var glObj = new openGlobj(data_v, null, data_n, null, tp,1,count);
-
-            glObj.trsc[0].scale = scale;
-            glObj.trsc[0].transl = trans;
-            glObj.trsc[0].rotate = rotate;       
+      
             return buffersGl.add_obj(glObj.setBuffersObj());
         }
+
        void add_buff_gl_id(float[] data_v, float[] data_c, float[] data_n, PrimitiveType tp,int id)
         {
             buffersGl.add_obj(new openGlobj(data_v, data_c, data_n, null,tp,id));

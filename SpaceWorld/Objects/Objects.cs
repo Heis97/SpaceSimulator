@@ -14,18 +14,37 @@ namespace Objects
         public float size;
         public Vertex3f pos;
         Vertex3f vel;
-        static int datalen = 8;
-        public ObjectMassGL(float _mass, float _size, Vertex3f _pos, Vertex3f _vel)
+        public Vertex3f posrot;
+        Vertex3f velrot;
+        public int mesh_number;
+        static int datalen = 32;
+        public ObjectMassGL(int _mesh_number,float _mass, float _size, Vertex3f _pos, Vertex3f _vel, Vertex3f _posrot , Vertex3f _velrot)
         {
+            mesh_number = _mesh_number;
             mass = _mass;
             size = _size;
             pos = _pos;
             vel = _vel;
+            posrot = _posrot;
+            velrot = _velrot;
         }
 
         public float[] getData()
         {
-            return new float[] { pos.x, pos.y, pos.z, mass, vel.x, vel.y, vel.z, size };
+            return new float[] { 
+                pos.x, pos.y, pos.z, mass,
+                vel.x, vel.y, vel.z, size,
+                posrot.x, posrot.y, posrot.z, 0, //поворот
+                velrot.x, velrot.y, velrot.z, 0, //поворот скорость
+                0, 0, 0, 0,//матрица
+                0, 0, 0, 0,//4
+                0, 0, 0, 0,//х
+                0, 0, 0, 0,//4
+                 };
+        }
+        public ObjectMassGL Clone()
+        {
+            return new ObjectMassGL(mesh_number, mass, size, pos, vel, posrot, velrot);
         }
         public ObjectMassGL setData(float[] data)
         {
@@ -37,11 +56,25 @@ namespace Objects
             vel.y = data[5];
             vel.z = data[6];
             size = data[7];
+
+            posrot.x = data[8];
+            posrot.y = data[9];
+            posrot.z = data[10];
+
+            velrot.x = data[12];
+            velrot.y = data[13];
+            velrot.z = data[14];
+           
             return this;
         }
         static public int getLength()
         {
             return datalen;
+        }
+
+        public override string ToString()
+        {
+            return pos.ToString();
         }
     }
     public class ObjectMass

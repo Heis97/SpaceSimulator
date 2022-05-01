@@ -19,11 +19,9 @@ namespace SpaceWorld
     public partial class Scene : Form
     {
         private GraphicGL GL1 = new GraphicGL();
-        static  int count = 20;
-        int[] obs = new int[count];
-        int obs_inst = 0;
-        int obs_izr = 0;
-        float[] _mass1;
+        static  int count = 100;
+        List<ObjectMassGL> objs;
+        Model3d[] models;
         public Scene()
         {
             InitializeComponent();
@@ -33,14 +31,42 @@ namespace SpaceWorld
 
         public void PreInitializeScene()
         {
-            var objs = new List<ObjectMassGL>();
-            objs.Add(new ObjectMassGL(3.3E+5f, kmToAe(7e6f), new Vertex3f(0, 0, 0), new Vertex3f(0, 0, 0)));
-            objs.Add(new ObjectMassGL(0.995f, kmToAe(1.27e4f), new Vertex3f(1.0f, 0, 0), new Vertex3f(0, 2E-7f, 0)));
-            objs.Add(new ObjectMassGL(kgToMe(7.3477e22f), kmToAe(7e3f), new Vertex3f(1f + kmToAe(3.8e5f), 0, 0), new Vertex3f(0, 2E-7f + kmToAe(1f), 0)));
-       
+            models = new Model3d[] { new Model3d(@"модели\cube1.obj"), new Model3d(@"модели\izr1.STL"), new Model3d(@"модели\Шар1.STL"),new Model3d(@"модели\cube_scene.stl"), };
+            objs = new List<ObjectMassGL>();
+            objs.Add(new ObjectMassGL(0 , //sun
+                3.3E+5f, kmToAe(7e6f), 
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 0, 0)));
+            objs.Add(new ObjectMassGL(0, //earth
+                0.995f, kmToAe(1.27e4f),
+                new Vertex3f(1.0f, 0, 0),
+                new Vertex3f(0, 2E-7f, 0),
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 0, 0)));
+            objs.Add(new ObjectMassGL(0 ,//moon
+                kgToMe(7.3477e22f), kmToAe(7e3f),
+                new Vertex3f(1f + kmToAe(3.8e5f), 0, 0),
+                new Vertex3f(0, 2E-7f + kmToAe(1f), 0),
+                new Vertex3f(20, 20, 0),
+                new Vertex3f(0, 0, 0)));
 
+            objs.Add(new ObjectMassGL(1,//izr
+                kgToMe(2e10f), kmToAe(1e-3f),
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(90, 260, 0),
+                new Vertex3f(0, 0, 0)));
+
+            objs.Add(new ObjectMassGL(0,//izr
+                kgToMe(2e10f), kmToAe(1e-3f),
+                new Vertex3f(-1.001f, 0, 0),
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(90, 260, 0),
+                new Vertex3f(0, 0, 0)));
             Random random = new Random();
-            for (int i = 0; i < obs.Length-3; i++)
+            for (int i = 0; i < count; i++)
              {
                  var posx = 2e-5f* random.Next(-10000, 10000);
                 var posy = 2e-5f * random.Next(-10000, 10000);
@@ -51,40 +77,18 @@ namespace SpaceWorld
                 var velz = 1e-9f * random.Next(-100, 100);
 
                  var mass =1e-5f * random.Next(1, 1000);
-                objs.Add(new ObjectMassGL(mass, kmToAe(1e2f), new Vertex3f(posx, posy, posz), new Vertex3f(velx, vely, velz)));
+                objs.Add(new ObjectMassGL(0,mass, kmToAe(1e6f), new Vertex3f(posx, posy, posz), new Vertex3f(velx, vely, velz), new Vertex3f(0, 0, 0), new Vertex3f(0, 0, 0)));
             }
             GL1.dataComputeShader = objs.ToArray();
-            // 0 - pos xyz , mass
-            // 1 - vel xyz , size
+
             GL1.addFrame(new Point3d_GL(0, 0, 0), new Point3d_GL(-1, 0, 0), new Point3d_GL(0, -1, 0), new Point3d_GL(0, 0, -1));
             GL1.addFrame(new Point3d_GL(0, 0, 0), new Point3d_GL(1, 0, 0), new Point3d_GL(0, 1, 0), new Point3d_GL(0, 0, 1));
-        }
-
-        public void InitializeScene()
-        {
-            var cube = new Model3d(@"модели\cube1.obj");
-            var izr = new Model3d(@"модели\izr1.STL");
-            var sphere = new Model3d(@"модели\Шар1.STL");
-            obs_inst = GL1.addSTL(cube.mesh, PrimitiveType.Triangles, new Point3d_GL(0, 0, 0), new Point3d_GL(0, 0, 0),0.001f, count);
-            obs_izr = GL1.addSTL(izr.mesh, PrimitiveType.Triangles, new Point3d_GL(1.001f, 0, 0), new Point3d_GL(90, 260, 0), kmToAe(1e-3f), 1);
         }
 
         #region gl_control
         private void glControl1_Render(object sender, GlControlEventArgs e)
         {
-            GL1.glControl_Render(sender, e);
-            if(GL1.dataComputeShader!=null)
-            {
-                if (GL1.dataComputeShader.Length>= obs.Length)
-                {
-                    for (int i = 0; i < obs.Length; i++)
-                    {
-                        GL1.buffersGl.setTransfObj(obs_inst, i, new Point3d_GL(GL1.dataComputeShader[i].pos), new Point3d_GL(20, 20, 0));
-                        GL1.buffersGl.setScale(obs_inst, i, GL1.dataComputeShader[i].size);
-                    }
-                }
-            }
-            //GL1.printDebug(richTextBox1);
+            GL1.glControl_Render(sender, e); 
         }
         private void glControl1_ContextCreated(object sender, GlControlEventArgs e)
         {
@@ -94,7 +98,7 @@ namespace SpaceWorld
             var h = send.Height;
             Console.WriteLine(w + " " + h);
             GL1.addMonitor(new Rectangle(0, 0, w, h), 0);
-            InitializeScene();
+            GL1.loadObjs(objs.ToArray(), models);
             GL1.SortObj();
             //GL1.printDebug(richTextBox1);
 

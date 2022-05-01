@@ -16,7 +16,7 @@ namespace Model
         public float[] normale;
         public TriangleGl[] triangles;
         public Point3d_GL center;
-        public Model3d(string _path, bool centering = true)
+        public Model3d(string _path, bool centering = true,bool textured = false)
         {
             path = _path;
             var name_list = path.Split('.');
@@ -38,16 +38,16 @@ namespace Model
             else if(format == "stl")
             {
                 mesh = parsingStl_GL4(path, out center1);
-                texture = new float[0];
-                normale = new float[0];
+                texture = null;
+                normale = null;
                 triangles = null;
                 center = center1;
             }
             else
             {
-                mesh = new float[0];
-                texture = new float[0];
-                normale = new float[0];
+                mesh = null;
+                texture = null;
+                normale = null;
                 triangles = null;
                 center = center1;
             }
@@ -55,16 +55,24 @@ namespace Model
             {
                 this.FrameToCenter();
             }
+            if(!textured)
+            {
+                texture = null;
+            }
             
         }
         public void FrameToCenter()
         {
-            for(int i=0; i<mesh.Length;i+=3)
+            if(mesh!=null)
             {
-                mesh[i] -= (float)center.x;
-                mesh[i+1] -= (float)center.y;
-                mesh[i+2] -= (float)center.z;
+                for (int i = 0; i < mesh.Length; i += 3)
+                {
+                    mesh[i] -= (float)center.x;
+                    mesh[i + 1] -= (float)center.y;
+                    mesh[i + 2] -= (float)center.z;
+                }
             }
+            
         }
 
         public Model3d InvertNormals()

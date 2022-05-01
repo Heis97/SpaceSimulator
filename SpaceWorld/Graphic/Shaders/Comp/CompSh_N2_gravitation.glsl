@@ -1,11 +1,15 @@
 ﻿#version 460 core
 
+
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 layout (rgba32f, binding = 0) uniform  image2D objdata;
 
-const float deltTime = 1;
+uniform vec3 targetCam;
+
+const float deltTime = 1000;
 const float G = 1.18656E-19;
+
 //1 - объект расчёта, 2 - влияющие на него другие объекты
 //масса в массах земли, расстояние в астрономических единицах
 vec3 compGravit(in vec3 pos1, in float mass1,in vec3 pos2,in float mass2)
@@ -24,6 +28,12 @@ void main()
 {
 	ivec2 ipos1 = ivec2(0, gl_GlobalInvocationID.y );
 	ivec2 ipos2 =  ivec2(1,gl_GlobalInvocationID.y);
+
+	ivec2 ipos4 =  ivec2(4,gl_GlobalInvocationID.y);
+	ivec2 ipos5 =  ivec2(5,gl_GlobalInvocationID.y);
+	ivec2 ipos6 =  ivec2(6,gl_GlobalInvocationID.y);
+	ivec2 ipos7 =  ivec2(7,gl_GlobalInvocationID.y);
+
 	vec3 acs3 = vec3(0,0,0);
 	vec4 pos1 = imageLoad(objdata,ipos1);
 	vec3 vel1 = imageLoad(objdata,ipos2).rgb;
@@ -44,9 +54,17 @@ void main()
 	
 	pos1.xyz += vel1*deltTime + (acs3*deltTime*deltTime)/2;
 	vel1 += acs3*deltTime;
-	//vel1 = vec3( imageSize(objdata).x,imageSize(objdata).y,);
+	
 	imageStore(objdata, ipos1, pos1);
 	imageStore(objdata, ipos2, vec4(vel1, size1));
-	//imageStore(objdata, ipos1, vec4(gl_GlobalInvocationID.x,1,2,3));
-	//imageStore(objdata, ipos2, vec4(gl_GlobalInvocationID.y,4,5,6));
+
+	imageStore(objdata, ipos4, vec4(size1,0,0,0));
+	imageStore(objdata, ipos5, vec4(0,size1,0,0));
+	imageStore(objdata, ipos6, vec4(0,0,size1,0));
+	imageStore(objdata, ipos7, vec4(pos1.xyz - targetCam,1));
+
+	/*imageStore(objdata, ipos4, vec4(size1,0,0,pos1.x-target.x));
+	imageStore(objdata, ipos5, vec4(0,size1,0,pos1.y-target.y));
+	imageStore(objdata, ipos6, vec4(0,0,size1,pos1.z-target.z));
+	imageStore(objdata, ipos7, vec4(0,0,0,1));*/
 }	
