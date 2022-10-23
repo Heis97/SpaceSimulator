@@ -44,7 +44,7 @@ namespace SpaceWorld
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0)));
             objs.Add(new ObjectMassGL(0, //earth
-                0.995f, kmToAe(1.27e4f),1* kmToAe(1.27e4f),
+                0.995f, 1 * kmToAe(1.27e4f),1* kmToAe(1.27e4f),
                 new Vertex3f(1.0f, 0, 0),
                 new Vertex3f(0, 2E-7f, 0),
                 new Vertex3f(0, 0, 0),
@@ -57,7 +57,7 @@ namespace SpaceWorld
                 new Vertex3f(0, 0, 0)));
 
             objs.Add(new ObjectMassGL(1,//izr
-                kgToMe(1e10f), kmToAe(1e-1f),1600f* kmToAe(1e-3f) ,
+                kgToMe(1e10f), kmToAe(7e6f), 1600f* kmToAe(1e-3f) ,
                 new Vertex3f(1.001f, 0, 0),
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(-PI/2, 0, PI),
@@ -160,9 +160,9 @@ namespace SpaceWorld
 
             //g.Clear(Color.White);
             g.DrawRectangle(pen1, 0, 0, 200, 100);
-
             glControl1.Update();
         }
+
         private void glControl1_ContextDestroying(object sender, GlControlEventArgs e)
         {
             GL1.glControl_ContextDestroying(sender, e);

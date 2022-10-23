@@ -97,6 +97,7 @@ vec4 draw(in float size,in vec3 pos,in vec3 _targetCam)
 		cho.y = 1;
 	}
 
+
 	imageStore(objdata, ipos4,vec4(cho.y,length(MouseLocGL-pos2dh.xy),(size/length(pos3d.xyz))+0.01 ,size/abs(pos3d.z)));
 	return(cho);
 }
@@ -137,9 +138,12 @@ void main()
 	
 	imageStore(objdata, ipos1, pos1);
 	imageStore(objdata, ipos2, vec4(vel1, size1));
+
 	vec3 targetC = imageLoad(objdata,ivec2(0, targetCamInd)).xyz;
-	setModelMatr(size1,pos1.xyz,rot1,targetC);	
-	vec4 choose = draw(rot1.w,pos1.xyz,targetC);
+	setModelMatr(rot1.w,pos1.xyz,rot1,targetC);	
+
+	vec4 choose = draw(size1,pos1.xyz,targetC);
+
 	imageStore(choosedata, ipos1, choose);
 	if(choose.y==1)
 	{
