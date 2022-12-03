@@ -19,7 +19,7 @@ namespace SpaceWorld
     public partial class Scene : Form
     {
         private GraphicGL GL1 = new GraphicGL();
-        static  int count = 3;
+        static  int count = 100;
         static float PI = 3.1415926535f;
         List<ObjectMassGL> objs;
         double fps = 0;
@@ -82,7 +82,7 @@ namespace SpaceWorld
                 var velz = 1e-9f * random.Next(-100, 100);
 
                  var mass =1e-5f * random.Next(1, 1000);
-                objs.Add(new ObjectMassGL(0,mass, kmToAe(1e6f),1 * kmToAe(1e6f), new Vertex3f(posx, posy, posz), new Vertex3f(velx, vely, velz), new Vertex3f(90, 0, 0), new Vertex3f(0, 0, 0)));
+                objs.Add(new ObjectMassGL(2,mass, kmToAe(1e6f),1 * kmToAe(1e6f), new Vertex3f(posx, posy, posz), new Vertex3f(velx, vely, velz), new Vertex3f(90, 0, 0), new Vertex3f(0, 0, 0)));
             }
 
             for (int i = 0; i < count/2; i++)
@@ -96,7 +96,7 @@ namespace SpaceWorld
                 var velz = 1e-9f * random.Next(-100, 100);
 
                 var mass = 1e-5f * random.Next(1, 1000);
-                objs.Add(new ObjectMassGL(2, mass, kmToAe(1e6f),2 * kmToAe(1e6f), new Vertex3f(posx, posy, posz), new Vertex3f(velx, vely, velz), new Vertex3f(0, 90, 0), new Vertex3f(0, 0, 0)));
+                objs.Add(new ObjectMassGL(0, mass, kmToAe(1e6f),2 * kmToAe(1e6f), new Vertex3f(posx, posy, posz), new Vertex3f(velx, vely, velz), new Vertex3f(0, 90, 0), new Vertex3f(0, 0, 0)));
             }
             GL1.dataComputeShader = objs.ToArray();
 
