@@ -90,13 +90,13 @@ vec4 draw(in float size,in vec3 pos,in vec3 _targetCam)
 	vec4 cho = vec4(0,0,0,0);
 	if(vis)
 	{
-		 cho.x = 1;
+		 cho.x = 1;//need for vis(1.in camera 2.size is same)
 	}
 	if(length(MouseLocGL-pos2dh.xy)<(size/length(pos3d.xyz))+0.01)
 	{
-		cho.y = 1;
+		cho.y = 1;//selected cursor
 	}
-
+	cho.x = 1;
 
 	imageStore(objdata, ipos4,vec4(cho.y,length(MouseLocGL-pos2dh.xy),(size/length(pos3d.xyz))+0.01 ,size/abs(pos3d.z)));
 	return(cho);
@@ -125,13 +125,6 @@ void main()
 			acs3 += compGravit(pos1.xyz,pos1.a,obj.rgb,obj.a);
 		}
 	}
-
-	/*if(ipos1.y!=0)      
-		{
-	ivec2 curP1 = ivec2(0,0);
-	vec4 obj = imageLoad(objdata,curP1);
-	acs3 += compGravit(pos1.xyz,pos1.a,obj.rgb,obj.a);
-	}*/
 
 	pos1.xyz += vel1*deltTime + (acs3*deltTime*deltTime)/2;
 	vel1 += acs3*deltTime;

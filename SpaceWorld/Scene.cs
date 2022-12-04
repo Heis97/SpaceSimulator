@@ -35,7 +35,12 @@ namespace SpaceWorld
 
         public void PreInitializeScene()
         {
-            models = new Model3d[] { new Model3d(@"модели\Шар1.STL") , new Model3d(@"модели\izr1.STL"), new Model3d(@"модели\cube1.obj"), new Model3d(@"модели\cube_scene.stl"), };
+            models = new Model3d[] 
+            {
+                new Model3d(@"модели\Шар1.STL") ,
+                new Model3d(@"модели\izr1.STL"),
+                new Model3d(@"модели\cube1.obj"),
+                new Model3d(@"модели\cube_scene.stl"), };
             objs = new List<ObjectMassGL>();
             objs.Add(new ObjectMassGL(0 , //sun
                 3.3E+5f, kmToAe(7e6f),2* kmToAe(7e6f), 
@@ -57,7 +62,7 @@ namespace SpaceWorld
                 new Vertex3f(0, 0, 0)));
 
             objs.Add(new ObjectMassGL(1,//izr
-                kgToMe(1e10f), kmToAe(7e6f), 1600f* kmToAe(1e-3f) ,
+                kgToMe(1e10f), kmToAe(1e-3f), 1600f* kmToAe(1e-3f) ,
                 new Vertex3f(1.001f, 0, 0),
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(-PI/2, 0, PI),
@@ -71,7 +76,7 @@ namespace SpaceWorld
                 new Vertex3f(-PI / 2, 0, PI),
                 new Vertex3f(0, 0, 0)));
             Random random = new Random();
-            for (int i = 0; i < count/2; i++)
+          /*  for (int i = 0; i < count/2; i++)
              {
                  var posx = 2e-5f* random.Next(-10000, 10000)+1f;
                 var posy = 2e-5f * random.Next(-10000, 10000);
@@ -97,7 +102,7 @@ namespace SpaceWorld
 
                 var mass = 1e-5f * random.Next(1, 1000);
                 objs.Add(new ObjectMassGL(0, mass, kmToAe(1e6f),2 * kmToAe(1e6f), new Vertex3f(posx, posy, posz), new Vertex3f(velx, vely, velz), new Vertex3f(0, 90, 0), new Vertex3f(0, 0, 0)));
-            }
+            }*/
             GL1.dataComputeShader = objs.ToArray();
 
             GL1.addFrame(new Point3d_GL(0, 0, 0), new Point3d_GL(-0.1, 0, 0), new Point3d_GL(0, -0.1, 0), new Point3d_GL(0, 0, -0.1));
@@ -132,7 +137,6 @@ namespace SpaceWorld
             GL1.loadObjs(objs.ToArray(), models);
             GL1.SortObj();
             //GL1.printDebug(richTextBox1);
-
         }
 
         

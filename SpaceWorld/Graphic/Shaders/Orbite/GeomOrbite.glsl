@@ -3,7 +3,7 @@ layout (lines, invocations = 1) in;
 layout (line_strip, max_vertices = 203) out;
 
 uniform mat4 VPs[4];
-uniform vec3 targetCamInd;
+uniform int targetCamInd;
 layout (rgba32f, binding = 0) uniform  image2D objData;
 layout (rgba32f, binding = 1) uniform  image2D posTimeData;
 layout (rgba32f, binding = 2) uniform  image2D choosedata;
@@ -33,9 +33,11 @@ void main()
 	objData, ivec2(0, targetCamInd)
 	).xyz;
 
+
 	if(select!=2)
 	{
 		gl_Position = VPs[0]* vec4(curPos.xyz-targetC, 1.0);
+
 
 		gl_Position.x+=0.01;
 		EmitVertex();
