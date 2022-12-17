@@ -98,7 +98,7 @@ vec4 draw(in float size,in vec3 pos,in vec3 _targetCam)
 	}
 	cho.x = 1;
 
-	imageStore(objdata, ipos4,vec4(cho.y,length(MouseLocGL-pos2dh.xy),(size/length(pos3d.xyz))+0.01 ,size/abs(pos3d.z)));
+	//imageStore(objdata, ipos4,vec4(cho.y,length(MouseLocGL-pos2dh.xy),(size/length(pos3d.xyz))+0.01 ,size/abs(pos3d.z)));
 	return(cho);
 }
 
@@ -107,6 +107,7 @@ void main()
 	ivec2 ipos1 = ivec2(0, gl_GlobalInvocationID.y );
 	ivec2 ipos2 =  ivec2(1,gl_GlobalInvocationID.y);
 	ivec2 ipos3 =  ivec2(2,gl_GlobalInvocationID.y);
+	ivec2 ipos4 =  ivec2(3,gl_GlobalInvocationID.y);
 
 	vec3 acs3 = vec3(0,0,0);
 	vec4 pos1 = imageLoad(objdata,ipos1);
@@ -114,6 +115,8 @@ void main()
 	float size1 = imageLoad(objdata,ipos2).a;
 
 	vec4 rot1 = imageLoad(objdata,ipos3);
+	vec4 velrot1 = imageLoad(objdata,ipos4);
+	float true_size = rot1.w;
 
 	for(int i=0; i< imageSize(objdata).y; i++)
 	{
@@ -128,12 +131,18 @@ void main()
 
 	pos1.xyz += vel1*deltTime + (acs3*deltTime*deltTime)/2;
 	vel1 += acs3*deltTime;
+
+	rot1.xyz+=velrot1.xyz*deltTime;
+
 	
 	imageStore(objdata, ipos1, pos1);
 	imageStore(objdata, ipos2, vec4(vel1, size1));
 
+	imageStore(objdata, ipos3,  vec4(rot1.xyz,true_size));
+	imageStore(objdata, ipos4, velrot1);
+
 	vec3 targetC = imageLoad(objdata,ivec2(0, targetCamInd)).xyz;
-	setModelMatr(rot1.w,pos1.xyz,rot1,targetC);	
+	setModelMatr(true_size,pos1.xyz,rot1,targetC);	
 
 	vec4 choose = draw(size1,pos1.xyz,targetC);
 

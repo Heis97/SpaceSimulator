@@ -42,12 +42,12 @@ namespace SpaceWorld
                 new Model3d(@"модели\cube1.obj"),
                 new Model3d(@"модели\cube_scene.stl"), };
             objs = new List<ObjectMassGL>();
-            objs.Add(new ObjectMassGL(0 , //sun
+            objs.Add(new ObjectMassGL(2 , //sun
                 3.3E+5f, kmToAe(7e6f),2* kmToAe(7e6f), 
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0),
-                new Vertex3f(0, 0, 0)));
+                new Vertex3f(0, 0, 0.000001f)));
             objs.Add(new ObjectMassGL(0, //earth
                 0.995f, 1 * kmToAe(1.27e4f),1* kmToAe(1.27e4f),
                 new Vertex3f(1.0f, 0, 0),
@@ -64,7 +64,7 @@ namespace SpaceWorld
             objs.Add(new ObjectMassGL(1,//izr
                 kgToMe(1e10f), kmToAe(1e-3f), 1600f* kmToAe(1e-3f) ,
                 new Vertex3f(1.001f, 0, 0),
-                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 2E-7f + kmToAe(1f), 0),
                 new Vertex3f(-PI/2, 0, PI),
                 new Vertex3f(0, 0, 0)));
 
@@ -72,7 +72,7 @@ namespace SpaceWorld
             objs.Add(new ObjectMassGL(1,//izr
                 kgToMe(1e10f), kmToAe(1e-3f), 1600f* kmToAe(1e-3f),
                 new Vertex3f(1.001f, kmToAe(1), 0),
-                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 2E-7f + kmToAe(1f), 0),
                 new Vertex3f(-PI / 2, 0, PI),
                 new Vertex3f(0, 0, 0)));
             Random random = new Random();

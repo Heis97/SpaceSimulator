@@ -674,7 +674,8 @@ namespace Graphic
                 load_vars_gl(idsCs, new openGlobj());
                 Gl.DispatchCompute(1, (uint)dataComputeShader.Length, 1);
                 Gl.MemoryBarrier(MemoryBarrierMask.ShaderImageAccessBarrierBit);                
-               // Console.WriteLine(toStringBuf(objData.getData(), 32, 4, "objD"));
+                //Console.WriteLine(toStringBuf(objData.getData(), 32, 4, "objD"));
+                //Console.WriteLine(toStringBuf(objData.getData(),4, 4, "objD"));
             }
         }
 
