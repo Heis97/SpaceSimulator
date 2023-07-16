@@ -12,19 +12,7 @@ uniform vec2 MouseLocGL;
 const float deltTime = 100;
 const float G = 1.18656E-19;
 
-//1 - объект расчёта, 2 - влияющие на него другие объекты
-//масса в массах земли, расстояние в астрономических единицах
-vec3 compGravit(in vec3 pos1, in float mass1,in vec3 pos2,in float mass2)
-{
-	float dist = distance(pos1,pos2);
-	if(dist<1.0E-9)
-	{
-		dist = 1.0E-9;
-	}
-	float a = (G*mass2)/(dist*dist);
-	vec3 a3 = ((pos2 - pos1)/dist)*a;
-	return(a3);
-}
+
 
 void setModelMatr(in float size,in vec3 pos,in vec4 rot,in vec3 _targetCam)
 {
@@ -102,6 +90,26 @@ vec4 draw(in float size,in vec3 pos,in vec3 _targetCam)
 	return(cho);
 }
 
+//1 - объект расчёта, 2 - влияющие на него другие объекты
+//масса в массах земли, расстояние в астрономических единицах
+vec3 compGravit(in vec3 pos1, in float mass1,in vec3 pos2,in float mass2,in float size1, out vec3 moment1)
+{
+	float dist = distance(pos1,pos2);
+	if(dist<1.0E-9)
+	{
+		dist = 1.0E-9;
+	}
+	float a = (G*mass2)/(dist*dist);
+	vec3 a3 = ((pos2 - pos1)/dist)*a;
+	
+	//центр масс полукруга y = 4*r/(3*pi)
+
+
+
+
+	return(a3);
+}
+
 void main() 
 {
 	ivec2 ipos1 = ivec2(0, gl_GlobalInvocationID.y );
@@ -116,6 +124,7 @@ void main()
 
 	vec4 rot1 = imageLoad(objdata,ipos3);
 	vec4 velrot1 = imageLoad(objdata,ipos4);
+	vec3 moment1 = vec3(0,0,0);
 	float true_size = rot1.w;
 
 	for(int i=0; i< imageSize(objdata).y; i++)
@@ -125,14 +134,18 @@ void main()
 		{
 			ivec2 curP1 = ivec2(0,i);
 			vec4 obj = imageLoad(objdata,curP1);
-			acs3 += compGravit(pos1.xyz,pos1.a,obj.rgb,obj.a);
+			vec3 moment_1_i = vec3(0,0,0);
+			acs3 += compGravit(pos1.xyz,pos1.a,obj.rgb,obj.a,size1,moment_1_i);
+			moment1+=moment_1_i;
 		}
 	}
 
 	pos1.xyz += vel1*deltTime + (acs3*deltTime*deltTime)/2;
 	vel1 += acs3*deltTime;
 
-	rot1.xyz+=velrot1.xyz*deltTime;
+	float J;
+	vec3 eps = moment1/J;
+	rot1.xyz+=velrot1.xyz*deltTime ;
 
 	
 	imageStore(objdata, ipos1, pos1);

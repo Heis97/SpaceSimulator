@@ -42,7 +42,7 @@ namespace SpaceWorld
                 new Model3d(@"модели\cube1.obj"),
                 new Model3d(@"модели\cube_scene.stl"), };
             objs = new List<ObjectMassGL>();
-            objs.Add(new ObjectMassGL(2 , //sun
+            objs.Add(new ObjectMassGL(0 , //sun
                 3.3E+5f, kmToAe(7e6f),2* kmToAe(7e6f), 
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0),
