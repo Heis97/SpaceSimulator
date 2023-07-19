@@ -127,16 +127,26 @@ void main()
 	vec3 moment1 = vec3(0,0,0);
 	float true_size = rot1.w;
 
+	int ind_center_obj = int(velrot1.w);
+	float max_gravit = 0;
+
 	for(int i=0; i< imageSize(objdata).y; i++)
 	{
-
 		if(ipos1.y!=i)      
 		{
 			ivec2 curP1 = ivec2(0,i);
 			vec4 obj = imageLoad(objdata,curP1);
 			vec3 moment_1_i = vec3(0,0,0);
-			acs3 += compGravit(pos1.xyz,pos1.a,obj.rgb,obj.a,size1,moment_1_i);
+			vec3 grav = compGravit(pos1.xyz,pos1.a,obj.rgb,obj.a,size1,moment_1_i);
+			acs3 += grav;
 			moment1+=moment_1_i;
+
+			if(pos1.a<obj.a)
+				if(max_gravit<length(grav))
+				{
+					max_gravit = length(grav);
+					ind_center_obj = i;
+				}
 		}
 	}
 
@@ -147,6 +157,8 @@ void main()
 	vec3 eps = moment1/J;
 	rot1.xyz+=velrot1.xyz*deltTime ;
 
+
+	velrot1.w = ind_center_obj;
 	
 	imageStore(objdata, ipos1, pos1);
 	imageStore(objdata, ipos2, vec4(vel1, size1));

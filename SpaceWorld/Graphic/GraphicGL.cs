@@ -602,6 +602,7 @@ namespace Graphic
             posTimeData = new TextureGL(1, orb_p_count, data.Length/len ,  PixelFormat.Rgba);
             chooseData = new TextureGL(2, 2, data.Length / len, PixelFormat.Rgba);
 
+
             obj_p_count = data.Length / len;
 
 
@@ -674,7 +675,7 @@ namespace Graphic
                 load_vars_gl(idsCs, new openGlobj());
                 Gl.DispatchCompute(1, (uint)dataComputeShader.Length, 1);
                 Gl.MemoryBarrier(MemoryBarrierMask.ShaderImageAccessBarrierBit);                
-                //Console.WriteLine(toStringBuf(objData.getData(), 32, 4, "objD"));
+                Console.WriteLine(toStringBuf(objData.getData(), 32, 4, "objD"));
                 //Console.WriteLine(toStringBuf(objData.getData(),4, 4, "objD"));
             }
         }

@@ -16,8 +16,6 @@ in VS_GS_INTERFACE
 void main() 
 {
 	gl_ViewportIndex = gl_InvocationID;
-
-
 	
 
 	ivec2 curP1 = ivec2(0,int(vs_out[0].ind));
@@ -28,6 +26,18 @@ void main()
 
 	vec4 curPos =vec4(imageLoad(objData,curP1).rgb, 1.0);
 	curPos.a = imageLoad(posTimeData,curP1).a;
+
+
+	int ind_center_obj =int(imageLoad(objData,ivec2(3,int(vs_out[0].ind))).w);
+
+	vec3 pos_center_obj = vec3(0);
+	if(ind_center_obj!=int(vs_out[0].ind))
+	{
+		vec3 pos_center_obj = imageLoad(
+		objData,ivec2(0,ind_center_obj)
+		).xyz;
+	}
+	
 
 	vec3 targetC = imageLoad(
 	objData, ivec2(0, targetCamInd)
@@ -86,20 +96,19 @@ void main()
 	  imageStore(posTimeData, curP2, curPos2);
 	}
 
+
+
 	for (int i = int(curPos.a); i < 199 ; i++)
 	{ 		
 		ivec2 curP = ivec2(i,int(vs_out[0].ind));
-		gl_Position =VPs[0]* vec4(imageLoad(posTimeData,curP).rgb-targetC, 1.0);
+		gl_Position =VPs[0]* vec4(imageLoad(posTimeData,curP).rgb-targetC+pos_center_obj, 1.0);
 		EmitVertex();		
 	}
 	for (int i = 1; i < int(curPos.a) ; i++)
 	{ 		
 		ivec2 curP = ivec2(i,int(vs_out[0].ind));
-		gl_Position =VPs[0]* vec4(imageLoad(posTimeData,curP).rgb-targetC, 1.0);
+		gl_Position =VPs[0]* vec4(imageLoad(posTimeData,curP).rgb-targetC+pos_center_obj, 1.0);
 		EmitVertex();	
-
-	}
-
-	
+	}	
 	EndPrimitive();	
 }

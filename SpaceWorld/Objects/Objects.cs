@@ -18,8 +18,9 @@ namespace Objects
         public Vertex3f posrot;
         Vertex3f velrot;
         public int mesh_number;
+        public int ind_center_obj;
         static int datalen = 32;
-        public ObjectMassGL(int _mesh_number,float _mass, float _size, float _true_size, Vertex3f _pos, Vertex3f _vel, Vertex3f _posrot , Vertex3f _velrot)
+        public ObjectMassGL(int _mesh_number,float _mass, float _size, float _true_size, Vertex3f _pos, Vertex3f _vel, Vertex3f _posrot , Vertex3f _velrot, int _ind_center_obj = 0)
         {
             mesh_number = _mesh_number;
             mass = _mass;
@@ -29,6 +30,8 @@ namespace Objects
             vel = _vel;
             posrot = _posrot;
             velrot = _velrot;
+            ind_center_obj = _ind_center_obj;
+
         }
 
         public float[] getData()
@@ -37,7 +40,7 @@ namespace Objects
                 pos.x, pos.y, pos.z, mass,
                 vel.x, vel.y, vel.z, size,
                 posrot.x, posrot.y, posrot.z, true_size, //поворот
-                velrot.x, velrot.y, velrot.z, 0, //поворот скорость
+                velrot.x, velrot.y, velrot.z, ind_center_obj, //поворот скорость
                 0, 0, 0, 0,//матрица
                 0, 0, 0, 0,//4
                 0, 0, 0, 0,//х
@@ -46,7 +49,7 @@ namespace Objects
         }
         public ObjectMassGL Clone()
         {
-            return new ObjectMassGL(mesh_number, mass, size, true_size, pos, vel, posrot, velrot);
+            return new ObjectMassGL(mesh_number, mass, size, true_size, pos, vel, posrot, velrot,ind_center_obj);
         }
         public ObjectMassGL setData(float[] data)
         {
@@ -66,7 +69,8 @@ namespace Objects
             velrot.x = data[12];
             velrot.y = data[13];
             velrot.z = data[14];
-           
+            ind_center_obj = (int)data[15];
+
             return this;
         }
         static public int getLength()
