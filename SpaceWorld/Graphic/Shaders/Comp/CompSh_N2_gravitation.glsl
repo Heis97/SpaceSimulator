@@ -5,11 +5,12 @@ layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 layout (rgba32f, binding = 0) uniform  image2D objdata;
 layout (rgba32f, binding = 2) uniform  image2D choosedata;
+layout (rgba32f, binding = 3) uniform  image2D debugdata;
 uniform int targetCamInd;
 uniform mat4 VPs[4];
 uniform mat4 Vs[4];
 uniform vec2 MouseLocGL;
-const float deltTime = 100;
+const float deltTime = 1000;
 const float G = 1.18656E-19;
 
 
@@ -92,7 +93,7 @@ vec4 draw(in float size,in vec3 pos,in vec3 _targetCam)
 
 //1 - объект расчёта, 2 - влияющие на него другие объекты
 //масса в массах земли, расстояние в астрономических единицах
-vec3 compGravit(in vec3 pos1, in float mass1,in vec3 pos2,in float mass2,in float size1, out vec3 moment1)
+vec3 compGravit(in vec3 pos1, in float mass1,in vec3 pos2,in float mass2,in float size1, out vec3 moment1,out float omega_2)
 {
 	float dist = distance(pos1,pos2);
 	if(dist<1.0E-9)
@@ -101,7 +102,7 @@ vec3 compGravit(in vec3 pos1, in float mass1,in vec3 pos2,in float mass2,in floa
 	}
 	float a = (G*mass2)/(dist*dist);
 	vec3 a3 = ((pos2 - pos1)/dist)*a;
-	
+	omega_2 =length( a3)/dist;
 	//центр масс полукруга y = 4*r/(3*pi)
 
 
@@ -128,7 +129,7 @@ void main()
 	float true_size = rot1.w;
 
 	int ind_center_obj = int(velrot1.w);
-	float max_gravit = 0;
+	float max_omega = 0;
 
 	for(int i=0; i< imageSize(objdata).y; i++)
 	{
@@ -137,16 +138,24 @@ void main()
 			ivec2 curP1 = ivec2(0,i);
 			vec4 obj = imageLoad(objdata,curP1);
 			vec3 moment_1_i = vec3(0,0,0);
-			vec3 grav = compGravit(pos1.xyz,pos1.a,obj.rgb,obj.a,size1,moment_1_i);
-			acs3 += grav;
+			float omega_2 = 0;
+			acs3 += compGravit(pos1.xyz,pos1.a,obj.rgb,obj.a,size1,moment_1_i,omega_2);
 			moment1+=moment_1_i;
 
 			if(pos1.a<obj.a)
-				if(max_gravit<length(grav))
+			{
+				if(omega_2 > max_omega)
 				{
-					max_gravit = length(grav);
+					max_omega = omega_2;
 					ind_center_obj = i;
 				}
+			}
+			//imageStore(debugdata,ivec2(ipos1.y,i),vec4(ipos1.y,i,length(grav),ind_center_obj));
+				
+		}
+		else
+		{
+			//imageStore(debugdata,ivec2(ipos1.y,i),vec4(0,0,0,0));
 		}
 	}
 

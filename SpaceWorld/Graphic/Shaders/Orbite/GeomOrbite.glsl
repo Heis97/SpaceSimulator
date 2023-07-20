@@ -33,7 +33,7 @@ void main()
 	vec3 pos_center_obj = vec3(0);
 	if(ind_center_obj!=int(vs_out[0].ind))
 	{
-		vec3 pos_center_obj = imageLoad(
+		pos_center_obj = imageLoad(
 		objData,ivec2(0,ind_center_obj)
 		).xyz;
 	}
@@ -101,13 +101,15 @@ void main()
 	for (int i = int(curPos.a); i < 199 ; i++)
 	{ 		
 		ivec2 curP = ivec2(i,int(vs_out[0].ind));
-		gl_Position =VPs[0]* vec4(imageLoad(posTimeData,curP).rgb-targetC+pos_center_obj, 1.0);
+		ivec2 curP_c = ivec2(i,int(ind_center_obj));
+		gl_Position =VPs[0]* vec4(imageLoad(posTimeData,curP).rgb-targetC-imageLoad(posTimeData,curP_c).rgb+pos_center_obj , 1.0);
 		EmitVertex();		
 	}
 	for (int i = 1; i < int(curPos.a) ; i++)
 	{ 		
 		ivec2 curP = ivec2(i,int(vs_out[0].ind));
-		gl_Position =VPs[0]* vec4(imageLoad(posTimeData,curP).rgb-targetC+pos_center_obj, 1.0);
+		ivec2 curP_c = ivec2(i,int(ind_center_obj));
+		gl_Position =VPs[0]* vec4(imageLoad(posTimeData,curP).rgb-targetC-imageLoad(posTimeData,curP_c).rgb+pos_center_obj , 1.0);
 		EmitVertex();	
 	}	
 	EndPrimitive();	

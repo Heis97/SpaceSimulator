@@ -206,7 +206,7 @@ namespace Graphic
 
         IDs BFSt = new IDs();
 
-        TextureGL posTimeData, chooseData, objData;
+        TextureGL posTimeData, chooseData, objData, debugData;
         public ObjectMassGL[] dataComputeShader = new ObjectMassGL[0];
         bool initComputeShader = false;
         public float[] resultComputeShader;
@@ -470,7 +470,6 @@ namespace Graphic
             #endregion
 
 
-
             /*var data = getDataFromObjs(dataComputeShader);
             if(!initComputeShader)
             {
@@ -601,7 +600,7 @@ namespace Graphic
             objData = new TextureGL(0, len/4, data.Length / len, PixelFormat.Rgba, data);
             posTimeData = new TextureGL(1, orb_p_count, data.Length/len ,  PixelFormat.Rgba);
             chooseData = new TextureGL(2, 2, data.Length / len, PixelFormat.Rgba);
-
+            debugData = new TextureGL(3, len / 4, data.Length / len, PixelFormat.Rgba, data);
 
             obj_p_count = data.Length / len;
 
@@ -675,7 +674,8 @@ namespace Graphic
                 load_vars_gl(idsCs, new openGlobj());
                 Gl.DispatchCompute(1, (uint)dataComputeShader.Length, 1);
                 Gl.MemoryBarrier(MemoryBarrierMask.ShaderImageAccessBarrierBit);                
-                Console.WriteLine(toStringBuf(objData.getData(), 32, 4, "objD"));
+                //Console.WriteLine(toStringBuf(objData.getData(), 32, 4, "objD"));
+                //Console.WriteLine(toStringBuf(debugData.getData(), 32, 4, "debugD"));
                 //Console.WriteLine(toStringBuf(objData.getData(),4, 4, "objD"));
             }
         }
