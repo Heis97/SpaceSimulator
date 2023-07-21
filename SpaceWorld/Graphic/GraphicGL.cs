@@ -137,6 +137,7 @@ namespace Graphic
     public class GraphicGL
     {
         #region vars
+        bool select_mouse = false;
         static float PI = 3.1415926535f;
         public int startGen = 0;
         public int saveImagesLen = 0;
@@ -562,13 +563,14 @@ namespace Graphic
                                 ind++;
                                 cnt_ind++;
 
-                                if(select[len_select * (glob_j + j)+1] ==1)
+                                if(select[len_select * (glob_j + j)+1] ==1  && select_mouse)
                                 {
                                     transRotZooms[0].target = new Vertex3f(
                                         select[len_select * (glob_j + j) + 5],
                                         select[len_select * (glob_j + j) + 6],
                                         select[len_select * (glob_j + j) + 7]);
                                     transRotZooms[0].target_ind = glob_j + j;
+
                                 }
                                 //select[len_select * (glob_j + j) + 2] = cnt_ind;
                                 //select[len_select * (glob_j + j) + 3] = model_num;
@@ -583,13 +585,13 @@ namespace Graphic
                 }
                 
             }
-
             for(int i=0; i< inv_ind.Count;i++)
             {
                 select[len_select * i + 4] = inv_ind[i];
             }
             //Console.WriteLine(toStringBuf(select, 8,4, "select"));
             chooseData.setData(select);
+            select_mouse = false;
         }
 
         private bool init_textures(float[] data)
@@ -940,23 +942,14 @@ namespace Graphic
 
 
         public void glControl_MouseDown(object sender, MouseEventArgs e)
-        {           
-            switch(modeGL)
+        {
+            lastPos = e.Location;
+            if (e.Button == MouseButtons.Left)
             {
-                case modeGL.View:
-                    lastPos = e.Location;
-                    break;
-                case modeGL.Paint:
-                    if (e.Button == MouseButtons.Left)
-                    {
-                        pointsPaint.Add(curPointPaint);
-                        
-                    }
-                    else if (e.Button == MouseButtons.Right)
-                    {
-                        pointsPaint.Clear();
-                    }
-                    break;
+                select_mouse = true;
+            }
+            else if (e.Button == MouseButtons.Right)
+            {
             }
         }
         public void glControl_MouseMove(object sender, MouseEventArgs e)

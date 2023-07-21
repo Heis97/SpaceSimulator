@@ -10,7 +10,7 @@ uniform int targetCamInd;
 uniform mat4 VPs[4];
 uniform mat4 Vs[4];
 uniform vec2 MouseLocGL;
-const float deltTime = 1000;
+const float deltTime = 10;
 const float G = 1.18656E-19;
 
 

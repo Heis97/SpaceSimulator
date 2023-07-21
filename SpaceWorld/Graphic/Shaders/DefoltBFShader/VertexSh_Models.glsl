@@ -16,6 +16,7 @@ uniform sampler2D textureSample;
 uniform int textureVis;
 uniform vec3 colorOne;
 uniform int stind;
+uniform int targetCamInd;
 
 out VS_FS_INTERFACE
 {
@@ -44,6 +45,11 @@ vec3 select(in int _ind)
 }
 void main() 
 {
+
+	vec3 targetC = imageLoad(
+	objdata, ivec2(0, targetCamInd)
+	).xyz;
+
 	int ind = stind + gl_InstanceID;
 	ind = int(imageLoad(choosedata,ivec2(1,ind)).x);
 
@@ -53,7 +59,7 @@ void main()
 
 	vec3 Position_camera = (Vs[0] * Position_world).xyz;
 	vec3 EyeDirection_camera = vec3(0,0,0) - Position_camera;
-	vec3 LightPosition_camera = ( Vs[0] * vec4(LightPosition_world,1)).xyz;
+	vec3 LightPosition_camera =(  Vs[0] * vec4(LightPosition_world,1)).xyz;
 		
 	vec3 LightDirection_world = Position_world.xyz - LightPosition_world;
 	vec3 LightDirection_camera = LightPosition_camera + EyeDirection_camera;

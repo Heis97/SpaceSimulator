@@ -12,6 +12,10 @@ in VS_GS_INTERFACE
 	float ind;
 }vs_out[];
 
+out GS_FS_INTERFACE
+{
+	vec3 _color;
+};
 
 void main() 
 {
@@ -27,18 +31,13 @@ void main()
 	vec4 curPos =vec4(imageLoad(objData,curP1).rgb, 1.0);
 	curPos.a = imageLoad(posTimeData,curP1).a;
 
-
-	int ind_center_obj =int(imageLoad(objData,ivec2(3,int(vs_out[0].ind))).w);
-
-	vec3 pos_center_obj = vec3(0);
-	if(ind_center_obj!=int(vs_out[0].ind))
-	{
-		pos_center_obj = imageLoad(
-		objData,ivec2(0,ind_center_obj)
-		).xyz;
-	}
 	
-
+	_color = vec3(0.8,0,0);
+	
+	if(select==1)
+	{
+		_color = vec3(0,0.8,0);
+	}
 	vec3 targetC = imageLoad(
 	objData, ivec2(0, targetCamInd)
 	).xyz;
@@ -96,7 +95,16 @@ void main()
 	  imageStore(posTimeData, curP2, curPos2);
 	}
 
+	//for local orbit
+	int ind_center_obj =int(imageLoad(objData,ivec2(3,int(vs_out[0].ind))).w);
 
+	vec3 pos_center_obj = vec3(0);
+	if(ind_center_obj!=int(vs_out[0].ind))
+	{
+		pos_center_obj = imageLoad(
+		objData,ivec2(0,ind_center_obj)
+		).xyz;
+	}
 
 	for (int i = int(curPos.a); i < 199 ; i++)
 	{ 		
