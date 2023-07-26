@@ -10,7 +10,7 @@ uniform int targetCamInd;
 uniform mat4 VPs[4];
 uniform mat4 Vs[4];
 uniform vec2 MouseLocGL;
-const float deltTime = 10;
+const float deltTime = 1;
 const float G = 1.18656E-19;
 
 
@@ -37,6 +37,8 @@ void setModelMatr(in float size,in vec3 pos,in vec4 rot,in vec3 _targetCam)
 	imageStore(objdata, ipos6, size*vec4(AD * E + B * F,-AD * F + B * E,A * C,0));
 	imageStore(objdata, ipos7, vec4(pos - _targetCam,1));
 }
+
+
 
 vec4 draw(in float size,in vec3 pos,in vec3 _targetCam)
 {
@@ -129,6 +131,7 @@ void main()
 	float true_size = rot1.w;
 
 	int ind_center_obj = int(velrot1.w);
+	int ind_center_obj_old = ind_center_obj;
 	float max_omega = 0;
 
 	for(int i=0; i< imageSize(objdata).y; i++)
@@ -158,7 +161,10 @@ void main()
 			//imageStore(debugdata,ivec2(ipos1.y,i),vec4(0,0,0,0));
 		}
 	}
-
+	if(ind_center_obj_old != ind_center_obj)
+	{
+		//пересчёт из одной системы координат в другую
+	}
 	pos1.xyz += vel1*deltTime + (acs3*deltTime*deltTime)/2;
 	vel1 += acs3*deltTime;
 

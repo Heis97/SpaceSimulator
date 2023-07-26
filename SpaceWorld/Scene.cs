@@ -29,7 +29,9 @@ namespace SpaceWorld
         //загрузка всех косм объектов вблизи
         //учёт гравитации только ближайш
         //простеший ии 
-        //вычисление локальных координат для адекватного перемещения вблизи
+        //вычисление локальных координат для адекватного перемещения вблизи, другие единицы счисления
+        //вращение
+
 
         private GraphicGL GL1 = new GraphicGL();
         static  int count = 1000;
@@ -77,7 +79,7 @@ namespace SpaceWorld
             objs.Add(new ObjectMassGL(1,//izr
                 kgToMe(1e10f), kmToAe(1e-3f), kmToAe(1e-3f) ,
                 new Vertex3f(1.001f, 0, 0),
-                new Vertex3f(0, 2E-7f + kmToAe(1f), 0),
+                new Vertex3f(  0 , 2E-7f + kmToAe(1f), 0),
                 new Vertex3f(-PI/2, 0, PI),
                 new Vertex3f(0, 0, 0), 0));
 
@@ -85,7 +87,7 @@ namespace SpaceWorld
             objs.Add(new ObjectMassGL(1,//izr
                 kgToMe(1e10f), kmToAe(1e-3f), kmToAe(1e-3f),
                 new Vertex3f(1.001f, kmToAe(1), 0),
-                new Vertex3f(0, 2E-7f + kmToAe(1f), 0),
+                new Vertex3f(0, 2E-7f + kmToAe(1.00f), 0),
                 new Vertex3f(-PI / 2, 0, PI),
                 new Vertex3f(0, 0, 0), 0));
             Random random = new Random();
