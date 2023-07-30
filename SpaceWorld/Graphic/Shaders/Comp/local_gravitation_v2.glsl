@@ -14,6 +14,14 @@ const float deltTime = 100;
 const float G = 1.18656E-19;
 
 
+struct Root
+{
+	int[10] root_to_zero;
+	vec3[10] root_to_zero_offs;
+	int root_len;
+
+};
+
 
 void setModelMatr(in float size,in vec3 pos,in vec4 rot)
 {
@@ -106,18 +114,35 @@ vec3 compGravit(in vec3 pos1, in float mass1,in vec3 pos2,in float mass2,in floa
 	return(a3);
 }
 
-vec4 comp_pos_in_local(int[10] root_to_zero,vec3[10] root_to_zero_offs,int root_len, int ind,int ind_local)
+vec4 comp_pos_in_local(Root root, int ind,int ind_local)
 {
 	vec4 obj = imageLoad(objdata,ivec2(0,ind));
 	vec3 loc_pos = obj.xyz;
-	for(int i=0; i<root_len || ind_local != root_to_zero[i]; i++)
+	for(int i=0; i<root.root_len || ind_local != root.root_to_zero[i]; i++)
 	{
-		loc_pos-=root_to_zero_offs[i];
-		
+		loc_pos -= root.root_to_zero_offs[i];
+		//imageStore(debugdata,ivec2(i,gl_GlobalInvocationID.y),vec4(root.root_to_zero[0],root.root_to_zero_offs[0]));
+
 	}
 	return(vec4(loc_pos,obj.w));
 }
 
+Root comp_root(vec3 pos, int local_ind)
+{
+	int[10] _root_to_zero = int[](local_ind,-1,-1,-1,-1,-1,-1,-1,-1,-1);
+	vec3[10] _root_to_zero_offs = vec3[](pos ,vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0));
+	int _root_len = 1;
+	//imageStore(debugdata,ivec2(0,gl_GlobalInvocationID.y),vec4(local_ind ,pos));
+	while(_root_len<10 && _root_to_zero[_root_len-1]!=0)
+	{
+		_root_to_zero[_root_len] =int(imageLoad(objdata,ivec2(3,_root_to_zero[_root_len-1])).w);
+		_root_to_zero_offs[_root_len] = imageLoad(objdata,ivec2(0,_root_to_zero[_root_len-1])).xyz;
+		//imageStore(debugdata,ivec2(_root_len,gl_GlobalInvocationID.y),vec4(_root_to_zero[_root_len],_root_to_zero_offs[_root_len]));
+		_root_len+=1;		
+	}
+	//imageStore(debugdata,ivec2(3,gl_GlobalInvocationID.y),vec4(_root_len,_root_len,_root_len,_root_len));
+	return (Root(_root_to_zero,_root_to_zero_offs,_root_len));
+}
 void main() 
 {
 	ivec2 ipos1 = ivec2(0, gl_GlobalInvocationID.y );
@@ -140,19 +165,8 @@ void main()
 	float max_omega = 0;
 	//------------------------root ind for local-------------------------
 	
-	int[10] root_to_zero = int[](ind_center_obj,-1,-1,-1,-1,-1,-1,-1,-1,-1);
-	vec3[10] root_to_zero_offs = vec3[](pos1.xyz ,vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0));
-	int root_len = 1;
-	//imageStore(debugdata,ivec2(0,gl_GlobalInvocationID.y),vec4(ind_center_obj ,pos1.xyz));
-	while(root_len<10 && root_to_zero[root_len-1]!=0)
-	{
-		root_to_zero[root_len] =int(imageLoad(objdata,ivec2(3,root_to_zero[root_len-1])).w);
-		root_to_zero_offs[root_len] =imageLoad(objdata,ivec2(0,root_to_zero[root_len-1])).xyz;
-		//imageStore(debugdata,ivec2(root_len,gl_GlobalInvocationID.y),vec4(root_to_zero[root_len],root_to_zero_offs[root_len]));
-		root_len+=1;		
-	}
-	
-	
+	Root root_cur = comp_root(pos1.xyz,ind_center_obj);
+
 	//--------------------------------------------------------
 	for(int i=0; i< imageSize(objdata).y; i++)
 	{
@@ -160,8 +174,8 @@ void main()
 		if(ipos1.y!=i)      
 		{
 
-			int ind_local =int( imageLoad(objdata,ivec2(3,i)).w);
-			vec4 obj = comp_pos_in_local(root_to_zero,root_to_zero_offs,root_len, i,ind_local);
+			int ind_local =int(imageLoad(objdata,ivec2(3,i)).w);
+			vec4 obj = comp_pos_in_local(root_cur, i,ind_local);
 			imageStore(debugdata,ivec2(i,gl_GlobalInvocationID.y),obj);
 			vec3 moment_1_i = vec3(0,0,0);
 			float omega_2 = 0;
