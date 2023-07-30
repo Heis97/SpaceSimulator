@@ -437,7 +437,7 @@ namespace Graphic
 
             BFSt.programID = createShader(VertBFStat, null, FragmBF);
 
-            var ComputeSourceGL = assembCode(new string[] { @"Graphic\Shaders\Comp\CompSh_N2_gravitation.glsl" });
+            var ComputeSourceGL = assembCode(new string[] { @"Graphic\Shaders\Comp\local_gravitation_v1.glsl" });
 
             idsCs.programID = createShaderCompute(ComputeSourceGL);
 
@@ -565,10 +565,10 @@ namespace Graphic
 
                                 if(select[len_select * (glob_j + j)+1] ==1  && select_mouse)
                                 {
-                                    transRotZooms[0].target = new Vertex3f(
+                                    /*transRotZooms[0].target = new Vertex3f(
                                         select[len_select * (glob_j + j) + 5],
                                         select[len_select * (glob_j + j) + 6],
-                                        select[len_select * (glob_j + j) + 7]);
+                                        select[len_select * (glob_j + j) + 7]);*/
                                     transRotZooms[0].target_ind = glob_j + j;
 
                                 }
@@ -677,7 +677,7 @@ namespace Graphic
                 Gl.DispatchCompute(1, (uint)dataComputeShader.Length, 1);
                 Gl.MemoryBarrier(MemoryBarrierMask.ShaderImageAccessBarrierBit);                
                 //Console.WriteLine(toStringBuf(objData.getData(), 32, 4, "objD"));
-                //Console.WriteLine(toStringBuf(debugData.getData(), 32, 4, "debugD"));
+                Console.WriteLine(toStringBuf(debugData.getData(), 32, 4, "debugD"));
                 //Console.WriteLine(toStringBuf(objData.getData(),4, 4, "objD"));
             }
         }

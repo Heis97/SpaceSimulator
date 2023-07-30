@@ -31,7 +31,8 @@ namespace SpaceWorld
         //простеший ии 
         //вычисление локальных координат для адекватного перемещения вблизи, другие единицы счисления
         //вращение
-
+        //фильтрация по массе/соотношению масс/ранжировка по силе притяжения при решение о расчёте гравит
+        //столкновения
 
         private GraphicGL GL1 = new GraphicGL();
         static  int count = 1000;
@@ -57,41 +58,43 @@ namespace SpaceWorld
                 new Model3d(@"модели\cube1.obj"),
                 new Model3d(@"модели\cube_scene.stl"), };
             objs = new List<ObjectMassGL>();
-            objs.Add(new ObjectMassGL(0 , //sun
-                3.3E+5f, kmToAe(7e6f),2* kmToAe(7e6f), 
+            objs.Add(new ObjectMassGL(0 , //sun 0
+                3.3E+5f, kmToAe(7e6f), 0.001f * 2 * kmToAe(7e6f), 
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0.000001f),0));
-            objs.Add(new ObjectMassGL(0, //earth
+            objs.Add(new ObjectMassGL(0, //earth 1
                 0.995f, 1 * kmToAe(1.27e4f),1* kmToAe(1.27e4f),
                 new Vertex3f(1.0f, 0, 0),
                 new Vertex3f(0, 2E-7f, 0),
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0), 0));
-            objs.Add(new ObjectMassGL(0 ,//moon
+            objs.Add(new ObjectMassGL(0 ,//moon 2
                 kgToMe(7.3477e22f), kmToAe(7e3f),1* kmToAe(7e3f),
-                new Vertex3f(1f + kmToAe(3.8e5f), 0, 0),
-                new Vertex3f(0, 2E-7f + kmToAe(1f), 0),
+                new Vertex3f(kmToAe(3.8e5f), 0, 0),
+                new Vertex3f(0, kmToAe(1f), 0),
                 new Vertex3f(20, 20, 0),
-                new Vertex3f(0, 0, 0), 0));
+                new Vertex3f(0, 0, 0), 1));
 
-            objs.Add(new ObjectMassGL(1,//izr
+            objs.Add(new ObjectMassGL(1,//izr 3
                 kgToMe(1e10f), kmToAe(1e-3f), kmToAe(1e-3f) ,
-                new Vertex3f(1.001f, 0, 0),
-                new Vertex3f(  0 , 2E-7f + kmToAe(1f), 0),
+                new Vertex3f(kmToAe(3e3f), 0, 0),
+                new Vertex3f(  0 , kmToAe(2f), 0),
                 new Vertex3f(-PI/2, 0, PI),
-                new Vertex3f(0, 0, 0), 0));
+                new Vertex3f(0, 0, 0), 1));
 
 
-            objs.Add(new ObjectMassGL(1,//izr
+            objs.Add(new ObjectMassGL(1,//izr 4
                 kgToMe(1e10f), kmToAe(1e-3f), kmToAe(1e-3f),
-                new Vertex3f(1.001f, kmToAe(1), 0),
-                new Vertex3f(0, 2E-7f + kmToAe(1.00f), 0),
+                new Vertex3f(kmToAe(1e3f), kmToAe(1), 0),
+                new Vertex3f(0, kmToAe(2.00f), 0),
                 new Vertex3f(-PI / 2, 0, PI),
-                new Vertex3f(0, 0, 0), 0));
-            Random random = new Random();
-           /* for (int i = 0; i < count/2; i++)
+                new Vertex3f(0, 0, 0), 2));
+
+
+            /*Random random = new Random();
+            for (int i = 0; i < count/2; i++)
              {
                  var posx = 2e-5f* random.Next(-10000, 10000)+1f;
                 var posy = 2e-5f * random.Next(-10000, 10000);
