@@ -110,11 +110,13 @@ vec4 comp_pos_in_local(int[10] root_to_zero,vec3[10] root_to_zero_offs,int root_
 {
 	vec4 obj = imageLoad(objdata,ivec2(0,ind));
 	vec3 loc_pos = obj.xyz;
-	for(int i=0; i<root_len || ind_local != root_to_zero[i]; i++)
+	int i = 0;
+	while( i<root_len && ind_local != root_to_zero[i] )
 	{
 		loc_pos-=root_to_zero_offs[i];
-		
+		i++;
 	}
+	loc_pos-=root_to_zero_offs[i];
 	return(vec4(loc_pos,obj.w));
 }
 

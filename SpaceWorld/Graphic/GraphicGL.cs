@@ -437,7 +437,7 @@ namespace Graphic
 
             BFSt.programID = createShader(VertBFStat, null, FragmBF);
 
-            var ComputeSourceGL = assembCode(new string[] { @"Graphic\Shaders\Comp\local_gravitation_v1.glsl" });
+            var ComputeSourceGL = assembCode(new string[] { @"Graphic\Shaders\Comp\local_gravitation_v2.glsl" });
 
             idsCs.programID = createShaderCompute(ComputeSourceGL);
 
