@@ -48,40 +48,73 @@ namespace SpaceWorld
             glControl1.MouseWheel += GlControl1_MouseWheel;
             PreInitializeScene();
         }
-
-        public void PreInitializeScene()
+        List<ObjectMassGL> load_test_objs()
         {
-            models = new Model3d[] 
-            {
-                new Model3d(@"модели\Шар1.STL") ,
-                new Model3d(@"модели\izr1.STL"),
-                new Model3d(@"модели\cube1.obj"),
-                new Model3d(@"модели\cube_scene.stl"), };
-            objs = new List<ObjectMassGL>();
-            objs.Add(new ObjectMassGL(0 , //sun 0
-                3.3E+5f, kmToAe(7e6f), 0.001f * 2 * kmToAe(7e6f), 
+            var objs = new List<ObjectMassGL>();
+            objs.Add(new ObjectMassGL(0, //sun 0
+                3.3E+5f, kmToAe(7e6f), 0.001f * 2 * kmToAe(7e6f),
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0),
-                new Vertex3f(0, 0, 0.000001f),0));
+                new Vertex3f(0, 0, 0.000001f), 0));
             objs.Add(new ObjectMassGL(0, //earth 1
-                0.995f, 1 * kmToAe(1.27e4f),1* kmToAe(1.27e4f),
+                1e-1f, 10 * kmToAe(1.27e4f), 10 * kmToAe(1.27e4f),
                 new Vertex3f(1.0f, 0, 0),
                 new Vertex3f(0, 2E-7f, 0),
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0), 0));
-            objs.Add(new ObjectMassGL(0 ,//moon 2
-                kgToMe(7.3477e22f), kmToAe(7e3f),1* kmToAe(7e3f),
+            objs.Add(new ObjectMassGL(0,//moon 2
+                1e-2f, 1 * kmToAe(1.27e4f), 1 * kmToAe(1.27e4f),
+                new Vertex3f(0.2f, 0, 0),
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 0, 0), 1));
+
+            objs.Add(new ObjectMassGL(0,//izr 3
+                1e-3f, 0.1f * kmToAe(1.27e4f), 0.1f * kmToAe(1.27e4f),
+                new Vertex3f(0.04f, 0, 0),
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 0, 0), 2));
+
+
+            objs.Add(new ObjectMassGL(0,//ven 4
+                1e-1f, 10 * kmToAe(1.27e4f), 10 * kmToAe(1.27e4f),
+                new Vertex3f(-1f, 0, 0),
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 0, 0), 0));
+
+            return objs;
+        }
+
+        List<ObjectMassGL> load_solar_sys()
+        {
+            var objs = new List<ObjectMassGL>();
+            objs.Add(new ObjectMassGL(0, //sun 0
+                3.3E+5f, kmToAe(7e6f), 0.001f * 2 * kmToAe(7e6f),
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 0, 0.000001f), 0));
+            objs.Add(new ObjectMassGL(0, //earth 1
+                0.995f, 1 * kmToAe(1.27e4f), 1 * kmToAe(1.27e4f),
+                new Vertex3f(1.0f, 0, 0),
+                new Vertex3f(0, kmToAe(30), 0),
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 0, 0), 0));
+            objs.Add(new ObjectMassGL(0,//moon 2
+                kgToMe(7.3477e22f), kmToAe(7e3f), 1 * kmToAe(7e3f),
                 new Vertex3f(kmToAe(3.8e5f), 0, 0),
                 new Vertex3f(0, kmToAe(1f), 0),
                 new Vertex3f(20, 20, 0),
                 new Vertex3f(0, 0, 0), 1));
 
             objs.Add(new ObjectMassGL(1,//izr 3
-                kgToMe(1e10f), kmToAe(1e-3f), kmToAe(1e-3f) ,
-                new Vertex3f(kmToAe(3e3f), 0, 0),
-                new Vertex3f(  0 , kmToAe(2f), 0),
-                new Vertex3f(-PI/2, 0, PI),
+                kgToMe(1e10f), kmToAe(1e-3f), kmToAe(1e-3f),
+                new Vertex3f(0.001f, 0, 0),
+                new Vertex3f(0, kmToAe(1f), 0),
+                new Vertex3f(-PI / 2, 0, PI),
                 new Vertex3f(0, 0, 0), 1));
 
 
@@ -92,8 +125,62 @@ namespace SpaceWorld
                 new Vertex3f(-PI / 2, 0, PI),
                 new Vertex3f(0, 0, 0), 2));
 
+            return objs;
+        }
 
-            /*Random random = new Random();
+        List<ObjectMassGL> load_solar_sys_abs()
+        {
+            var  objs = new List<ObjectMassGL>();
+            objs.Add(new ObjectMassGL(0, //sun
+                3.3E+5f, kmToAe(7e6f), 2 * kmToAe(7e6f),
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 0, 0.000001f), 0));
+            objs.Add(new ObjectMassGL(0, //earth
+                0.995f, 1 * kmToAe(1.27e4f), 1 * kmToAe(1.27e4f),
+                new Vertex3f(1.0f, 0, 0),
+                new Vertex3f(0, 2E-7f, 0),
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 0, 0), 0));
+            objs.Add(new ObjectMassGL(0,//moon
+                kgToMe(7.3477e22f), kmToAe(7e3f), 1 * kmToAe(7e3f),
+                new Vertex3f(1f + kmToAe(3.8e5f), 0, 0),
+                new Vertex3f(0, 2E-7f + kmToAe(1f), 0),
+                new Vertex3f(0, 0, 0),
+                new Vertex3f(0, 0, 0), 0));
+
+            objs.Add(new ObjectMassGL(1,//izr
+                kgToMe(1e10f), kmToAe(1e-3f), kmToAe(1e-3f),
+                new Vertex3f(1.001f, 0, 0),
+                new Vertex3f(0, 2E-7f + kmToAe(1f), 0),
+                new Vertex3f(-PI / 2, 0, PI),
+                new Vertex3f(0, 0, 0), 0));
+
+
+            objs.Add(new ObjectMassGL(1,//izr
+                kgToMe(1e10f), kmToAe(1e-3f), kmToAe(1e-3f),
+                new Vertex3f(1.001f, kmToAe(1), 0),
+                new Vertex3f(0, 2E-7f + kmToAe(1.00f), 0),
+                new Vertex3f(-PI / 2, 0, PI),
+                new Vertex3f(0, 0, 0), 0));
+
+            return objs;
+        }
+        public void PreInitializeScene()
+        {
+            models = new Model3d[] 
+            {
+                new Model3d(@"модели\Шар1.STL") ,
+                new Model3d(@"модели\izr1.STL"),
+                new Model3d(@"модели\cube1.obj"),
+                new Model3d(@"модели\cube_scene.stl"), };
+
+
+            //objs = load_test_objs();
+            //objs = load_solar_sys_abs();
+            objs = load_solar_sys();
+           /* Random();
             for (int i = 0; i < count/2; i++)
              {
                  var posx = 2e-5f* random.Next(-10000, 10000)+1f;
@@ -123,8 +210,8 @@ namespace SpaceWorld
             }*/
             GL1.dataComputeShader = objs.ToArray();
 
-            GL1.addFrame(new Point3d_GL(0, 0, 0), new Point3d_GL(-0.1, 0, 0), new Point3d_GL(0, -0.1, 0), new Point3d_GL(0, 0, -0.1));
-            GL1.addFrame(new Point3d_GL(0, 0, 0), new Point3d_GL(0.1, 0, 0), new Point3d_GL(0, 0.1, 0), new Point3d_GL(0, 0, 0.1));
+           // GL1.addFrame(new Point3d_GL(0, 0, 0), new Point3d_GL(-0.1, 0, 0), new Point3d_GL(0, -0.1, 0), new Point3d_GL(0, 0, -0.1));
+            //GL1.addFrame(new Point3d_GL(0, 0, 0), new Point3d_GL(0.1, 0, 0), new Point3d_GL(0, 0.1, 0), new Point3d_GL(0, 0, 0.1));
         }
 
         #region gl_control

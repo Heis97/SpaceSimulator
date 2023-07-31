@@ -1,6 +1,5 @@
 ﻿#version 460 core
 
-
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 layout (rgba32f, binding = 0) uniform  image2D objdata;
@@ -10,7 +9,7 @@ uniform int targetCamInd;
 uniform mat4 VPs[4];
 uniform mat4 Vs[4];
 uniform vec2 MouseLocGL;
-const float deltTime = 100;
+const float deltTime = 10000;
 const float G = 1.18656E-19;
 
 
@@ -128,6 +127,19 @@ vec4 comp_pos_in_local(Root root, int ind,int ind_local)
 	return(vec4(loc_pos,obj.w));
 }
 
+bool check_in_root(Root root, int ind)
+{
+	for(int i=0; i< 10;i++)//len_arr
+	{
+		if(ind == root.root_to_zero[i])
+		{
+			return(true);
+		}
+	}
+
+	return(false);
+}
+
 Root comp_root(vec3 pos, int local_ind)
 {
 	int[10] _root_to_zero = int[](local_ind,-1,-1,-1,-1,-1,-1,-1,-1,-1);
@@ -167,21 +179,26 @@ void main()
 	//------------------------root ind for local-------------------------
 	
 	Root root_cur = comp_root(pos1.xyz,ind_center_obj);
-
+	imageStore(debugdata,ivec2(5,gl_GlobalInvocationID.y),vec4(root_cur.root_to_zero[0],root_cur.root_to_zero_offs[0]));
+	imageStore(debugdata,ivec2(6,gl_GlobalInvocationID.y),vec4(root_cur.root_to_zero[1],root_cur.root_to_zero_offs[1]));
+	imageStore(debugdata,ivec2(7,gl_GlobalInvocationID.y),vec4(root_cur.root_to_zero[2],root_cur.root_to_zero_offs[2]));
 	//--------------------------------------------------------
 	for(int i=0; i< imageSize(objdata).y; i++)
 	{
+		int ind_local =int(imageLoad(objdata,ivec2(3,i)).w);
 	
-		if(ipos1.y!=i)      
+		//if(ipos1.y!=i && check_in_root(root_cur,ind_local))
+		if(ipos1.y!=i && i==ind_center_obj)
 		{
 
-			int ind_local =int(imageLoad(objdata,ivec2(3,i)).w);
 			vec4 obj = comp_pos_in_local(root_cur, i,ind_local);
-			imageStore(debugdata,ivec2(i,gl_GlobalInvocationID.y),obj);
+			//imageStore(debugdata,ivec2(i,gl_GlobalInvocationID.y),vec4(obj.xyz,999));
 			vec3 moment_1_i = vec3(0,0,0);
 			float omega_2 = 0;
+			vec3 acs = compGravit(vec3(0),pos1.w,obj.xyz,obj.w,size1,moment_1_i,omega_2);
+			acs3 += acs;
+			//imageStore(debugdata,ivec2(i,gl_GlobalInvocationID.y),vec4(acs,999));
 
-			acs3 += compGravit(pos1.xyz,pos1.w,obj.xyz,obj.w,size1,moment_1_i,omega_2);
 			moment1+=moment_1_i;
 
 			if(pos1.a<obj.a)
@@ -226,9 +243,10 @@ void main()
 
 	vec3 pos_cur_in_cam = comp_pos_in_local(root_cam,int( gl_GlobalInvocationID.y), ind_center_obj).xyz;
 
-	//vec3 targetC = imageLoad(objdata,ivec2(0, targetCamInd)).xyz;
+
+	imageStore(debugdata,ivec2(0,gl_GlobalInvocationID.y),vec4(pos_cur_in_cam,999));
 	setModelMatr(true_size,pos_cur_in_cam ,rot1);	
-	vec4 choose = draw(size1,pos_cur_in_cam );
+	vec4 choose = draw(size1,pos_cur_in_cam);
 	imageStore(choosedata, ipos1, choose);
 
 

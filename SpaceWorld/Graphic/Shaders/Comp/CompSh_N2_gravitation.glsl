@@ -10,7 +10,7 @@ uniform int targetCamInd;
 uniform mat4 VPs[4];
 uniform mat4 Vs[4];
 uniform vec2 MouseLocGL;
-const float deltTime = 1;
+const float deltTime = 10000;
 const float G = 1.18656E-19;
 
 
@@ -142,7 +142,9 @@ void main()
 			vec4 obj = imageLoad(objdata,curP1);
 			vec3 moment_1_i = vec3(0,0,0);
 			float omega_2 = 0;
-			acs3 += compGravit(pos1.xyz,pos1.a,obj.rgb,obj.a,size1,moment_1_i,omega_2);
+			vec3 acs = compGravit(pos1.xyz,pos1.w,obj.xyz,obj.w,size1,moment_1_i,omega_2);
+			acs3 += acs;
+			imageStore(debugdata,ivec2(i,gl_GlobalInvocationID.y),vec4(pos1.xyz,999));
 			moment1+=moment_1_i;
 
 			if(pos1.a<obj.a)

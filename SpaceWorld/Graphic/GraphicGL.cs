@@ -305,6 +305,7 @@ namespace Graphic
         }
         IDs chooseShader(openGlobj opgl_obj)
         {
+           // Console.WriteLine("_____________________-");
             var ids = new IDs();  
             if (opgl_obj.tp==PrimitiveType.Triangles)
             {
@@ -313,10 +314,12 @@ namespace Graphic
                     if (opgl_obj.colortex)
                     {
                         ids = BFOneC;
+                       // Console.WriteLine("BFOneC");
                     }
                     else
                     {
                         ids = BFOne;
+                        //Console.WriteLine("BFOne");
                     }
                     
                 }
@@ -325,16 +328,19 @@ namespace Graphic
                     if (opgl_obj.colortex)
                     {
                         ids = BFC;
+                       // Console.WriteLine("BFC");
                     }
                     else
                     {
                         ids = BF;
+                        //Console.WriteLine("BF");
                     }
                 }
             }
             else
             {
                 ids = BFSt;
+                //Console.WriteLine("BFSt");
             }
             
             return ids;
@@ -438,6 +444,7 @@ namespace Graphic
             BFSt.programID = createShader(VertBFStat, null, FragmBF);
 
             var ComputeSourceGL = assembCode(new string[] { @"Graphic\Shaders\Comp\local_gravitation_v2.glsl" });
+            //var ComputeSourceGL = assembCode(new string[] { @"Graphic\Shaders\Comp\CompSh_N2_gravitation.glsl" });
 
             idsCs.programID = createShaderCompute(ComputeSourceGL);
 

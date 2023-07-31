@@ -207,6 +207,9 @@
     <None Include="Graphic\Shaders\Orbite\FragmOrbite.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Graphic\Shaders\Orbite\GeomOrbite_abs.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Graphic\Shaders\Orbite\GeomOrbite.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

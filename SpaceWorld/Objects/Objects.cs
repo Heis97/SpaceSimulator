@@ -41,10 +41,10 @@ namespace Objects
                 vel.x, vel.y, vel.z, size,
                 posrot.x, posrot.y, posrot.z, true_size, //поворот
                 velrot.x, velrot.y, velrot.z, ind_center_obj, //поворот скорость
-                0, 0, 0, 0,//матрица
-                0, 0, 0, 0,//4
-                0, 0, 0, 0,//х
-                0, 0, 0, 0,//4
+                1, 0, 0, 0,//матрица
+                0, 1, 0, 0,//4
+                0, 0, 1, 0,//х
+                0, 0, 0, 1,//4
                  };
         }
         public ObjectMassGL Clone()

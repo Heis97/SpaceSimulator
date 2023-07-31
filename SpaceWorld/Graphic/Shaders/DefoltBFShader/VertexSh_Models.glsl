@@ -5,6 +5,7 @@ layout(location = 1) in vec3 _Normal_model;
 
 layout (rgba32f, binding = 0) uniform  image2D objdata;
 layout (rgba32f, binding = 2) uniform  image2D choosedata;
+layout (rgba32f, binding = 3) uniform  image2D debugdata;
 uniform vec3 LightPosition_world;
 uniform mat4 VPs[4];
 uniform mat4 Vs[4];
@@ -46,14 +47,11 @@ vec3 select(in int _ind)
 void main() 
 {
 
-	vec3 targetC = imageLoad(
-	objdata, ivec2(0, targetCamInd)
-	).xyz;
-
 	int ind = stind + gl_InstanceID;
 	ind = int(imageLoad(choosedata,ivec2(1,ind)).x);
 
 	vec4 Position_world = modelMatr(ind)*vec4(_Position_model,1);
+	//imageStore(debugdata,ivec2(1,ind),vec4(Position_world.xyz,888));
 	vec3 Normal_world = normalize((modelMatr(ind)*vec4(_Normal_model,0)).xyz);
 	gl_Position = VPs[0] * Position_world;
 
