@@ -265,12 +265,18 @@ namespace Graphic
                     U.x * V.y - U.y * V.x
                 );
         }
-        public Matrix4x4f[] getVPmatrix()
+        public Matrix4x4f[] getVPmatrix(bool far_area = false)
         {
-
+            var near = 1e-1f;
+            var far = 1e4f;
+            if (far_area)
+            {
+                near = 1e4f;
+                far = 1e9f;
+            }
             if (viewType_ == viewType.Perspective)
             {
-                var _Pm = Matrix4x4f.Perspective(53f, (float)rect.Width / rect.Height, -(float)zoom* 1e-1f, -(float)zoom *1e4f);
+                var _Pm = Matrix4x4f.Perspective(53f, (float)rect.Width / rect.Height, -(float)zoom* near, -(float)zoom *far);
                 var _Vm = Matrix4x4f.Translated(0, 0, (float)zoom) *
                     Matrix4x4f.RotatedX((float)xRot) *
                     Matrix4x4f.RotatedY((float)yRot) *

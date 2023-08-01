@@ -234,7 +234,7 @@ namespace Graphic
                     transRotZooms[i].rect.Width,
                     transRotZooms[i].rect.Height);
                
-                var retM = transRotZooms[i].getVPmatrix();               
+                var retM = transRotZooms[i].getVPmatrix(true);               
                 VPs[i] = retM[2];
                 Vs[i] = retM[1];
                 Ps[i] = retM[0];
@@ -263,6 +263,33 @@ namespace Graphic
                     foreach (var opglObj in buffersGl.objs_dynamic)
                     {
                         
+                        renderGlobj(opglObj);
+                    }
+                }
+            }
+            //--------------------------------------------------
+            for (int i = 0; i < transRotZooms.Count; i++)
+            {
+                Gl.ViewportIndexed((uint)i,
+                    transRotZooms[i].rect.X,
+                    transRotZooms[i].rect.Y,
+                    transRotZooms[i].rect.Width,
+                    transRotZooms[i].rect.Height);
+
+                var retM = transRotZooms[i].getVPmatrix();
+                VPs[i] = retM[2];
+                Vs[i] = retM[1];
+                Ps[i] = retM[0];
+
+            }
+
+            if (buffersGl.objs_static != null)
+            {
+                if (buffersGl.objs_static.Count != 0)
+                {
+                    foreach (var opglObj in buffersGl.objs_static)
+                    {
+
                         renderGlobj(opglObj);
                     }
                 }

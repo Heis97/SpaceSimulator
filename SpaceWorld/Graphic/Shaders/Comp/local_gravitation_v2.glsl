@@ -9,7 +9,7 @@ uniform int targetCamInd;
 uniform mat4 VPs[4];
 uniform mat4 Vs[4];
 uniform vec2 MouseLocGL;
-const float deltTime = 10000;
+const float deltTime = 100;
 const float G = 1.18656E-19;
 
 
@@ -79,6 +79,7 @@ vec4 draw(in float size,in vec3 pos)
 
 	
 	vec4 cho = vec4(0,0,0,0);
+	//vis =true;
 	if(vis)
 	{
 		 cho.x = 1;//need for vis(1.in camera 2.size is same)
