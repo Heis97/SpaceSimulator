@@ -79,7 +79,7 @@ vec4 draw(in float size,in vec3 pos)
 
 	
 	vec4 cho = vec4(0,0,0,0);
-	//vis =true;
+	vis =true;
 	if(vis)
 	{
 		 cho.x = 1;//need for vis(1.in camera 2.size is same)
@@ -126,6 +126,17 @@ vec4 comp_pos_in_local(Root root, int ind,int ind_local)
 	}
 	loc_pos-=root.root_to_zero_offs[i];
 	return(vec4(loc_pos,obj.w));
+}
+
+vec4 comp_pos_in_local_relat(Root root_dest, int ind_dest, Root root_rel, int ind_rel)
+{
+	int i_st = 0;
+	while(root_dest.root_to_zero[i_st]!=root_rel.root_to_zero[i_st])
+	{
+		i_st++;
+	}
+	
+	return(vec4(0));
 }
 
 bool check_in_root(Root root, int ind)

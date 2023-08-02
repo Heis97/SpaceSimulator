@@ -22,7 +22,7 @@ void main()
 	gl_ViewportIndex = gl_InvocationID;
 	
 
-	ivec2 curP1 = ivec2(7,int(vs_out[0].ind));
+	ivec2 curP1 = ivec2(0,int(vs_out[0].ind));
 	
 
 	float select = imageLoad(choosedata,curP1).y;
@@ -99,7 +99,7 @@ void main()
 	if(ind_center_obj!=int(vs_out[0].ind))
 	{
 		pos_center_obj = imageLoad(
-		objData,ivec2(7,ind_center_obj)
+		objData,ivec2(0,ind_center_obj)
 		).xyz;
 	}
 
@@ -107,14 +107,14 @@ void main()
 	{ 		
 		ivec2 curP = ivec2(i,int(vs_out[0].ind));
 		ivec2 curP_c = ivec2(i,int(ind_center_obj));
-		gl_Position =VPs[0]* vec4(imageLoad(posTimeData,curP).rgb-imageLoad(posTimeData,curP_c).rgb , 1.0);
+		gl_Position =VPs[0]* vec4(imageLoad(posTimeData,curP).rgb+pos_center_obj , 1.0);
 		EmitVertex();		
 	}
 	for (int i = 1; i < int(curPos.a) ; i++)
 	{ 		
 		ivec2 curP = ivec2(i,int(vs_out[0].ind));
 		ivec2 curP_c = ivec2(i,int(ind_center_obj));
-		gl_Position =VPs[0]* vec4(imageLoad(posTimeData,curP).rgb-imageLoad(posTimeData,curP_c).rgb , 1.0);
+		gl_Position =VPs[0]* vec4(imageLoad(posTimeData,curP).rgb+pos_center_obj , 1.0);
 		EmitVertex();	
 	}	
 	EndPrimitive();	

@@ -294,7 +294,17 @@ namespace Graphic
                     }
                 }
             }
+            if (buffersGl.objs_dynamic != null)
+            {
+                if (buffersGl.objs_dynamic.Count != 0)
+                {
+                    foreach (var opglObj in buffersGl.objs_dynamic)
+                    {
 
+                        renderGlobj(opglObj);
+                    }
+                }
+            }
             rendercout++;
             //drawGravMap();
             drawOrbit();
