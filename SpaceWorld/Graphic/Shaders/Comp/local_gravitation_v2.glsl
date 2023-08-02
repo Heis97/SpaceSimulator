@@ -135,8 +135,13 @@ vec4 comp_pos_in_local_relat(Root root_dest, int ind_dest, Root root_rel, int in
 	{
 		i_st++;
 	}
-	
-	return(vec4(0));
+	i_st = 0;
+	int ind_local = 0;
+	//int ind_local =int(imageLoad(objdata,ivec2(3,i_st)).w);
+	vec4 pos_dest_com = comp_pos_in_local(root_dest,i_st,ind_local);
+	vec4 pos_rel_com = comp_pos_in_local(root_rel,i_st,ind_local);
+
+	return(pos_rel_com-pos_dest_com);
 }
 
 bool check_in_root(Root root, int ind)
@@ -151,6 +156,8 @@ bool check_in_root(Root root, int ind)
 
 	return(false);
 }
+
+
 
 Root comp_root(vec3 pos, int local_ind)
 {
@@ -253,8 +260,8 @@ void main()
 	int ind_loc_cam = int(imageLoad(objdata,ivec2(3, targetCamInd)).w);
 	Root root_cam = comp_root(pos_cam.xyz,ind_loc_cam);
 
-	vec3 pos_cur_in_cam = comp_pos_in_local(root_cam,int( gl_GlobalInvocationID.y), ind_center_obj).xyz;
-
+	//vec3 pos_cur_in_cam = comp_pos_in_local(root_cam,int( gl_GlobalInvocationID.y), ind_center_obj).xyz;
+	vec3 pos_cur_in_cam = comp_pos_in_local_relat(root_cur, int( gl_GlobalInvocationID.y), root_cam, targetCamInd).xyz;
 
 	imageStore(debugdata,ivec2(0,gl_GlobalInvocationID.y),vec4(pos_cur_in_cam,999));
 	setModelMatr(true_size,pos_cur_in_cam ,rot1);	

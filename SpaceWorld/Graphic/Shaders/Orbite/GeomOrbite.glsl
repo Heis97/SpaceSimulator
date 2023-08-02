@@ -22,7 +22,7 @@ void main()
 	gl_ViewportIndex = gl_InvocationID;
 	
 
-	ivec2 curP1 = ivec2(0,int(vs_out[0].ind));
+	ivec2 curP1 = ivec2(7,int(vs_out[0].ind));
 	
 
 	float select = imageLoad(choosedata,curP1).y;
