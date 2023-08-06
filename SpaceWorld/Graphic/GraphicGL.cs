@@ -5,7 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.UI;
@@ -416,6 +416,7 @@ namespace Graphic
             useBuffers(idsOrb);
             load_vars_gl(idsOrb, new openGlobj());
             Gl.DrawArrays(PrimitiveType.Lines, 0, 2*obj_p_count);
+            Console.WriteLine(toStringBuf(posTimeData.getData(), 800, 4, "postimeD"));
         }
         void drawGravMap()
         {

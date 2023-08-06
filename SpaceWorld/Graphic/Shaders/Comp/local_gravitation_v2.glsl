@@ -9,7 +9,7 @@ uniform int targetCamInd;
 uniform mat4 VPs[4];
 uniform mat4 Vs[4];
 uniform vec2 MouseLocGL;
-const float deltTime = 100;
+const float deltTime = 1000;
 const float G = 1.18656E-19;
 
 
@@ -198,9 +198,9 @@ void main()
 	//------------------------root ind for local-------------------------
 	
 	Root root_cur = comp_root(pos1.xyz,ind_center_obj);
-	imageStore(debugdata,ivec2(5,gl_GlobalInvocationID.y),vec4(root_cur.root_to_zero[0],root_cur.root_to_zero_offs[0]));
-	imageStore(debugdata,ivec2(6,gl_GlobalInvocationID.y),vec4(root_cur.root_to_zero[1],root_cur.root_to_zero_offs[1]));
-	imageStore(debugdata,ivec2(7,gl_GlobalInvocationID.y),vec4(root_cur.root_to_zero[2],root_cur.root_to_zero_offs[2]));
+	//imageStore(debugdata,ivec2(5,gl_GlobalInvocationID.y),vec4(root_cur.root_to_zero[0],root_cur.root_to_zero_offs[0]));
+	//imageStore(debugdata,ivec2(6,gl_GlobalInvocationID.y),vec4(root_cur.root_to_zero[1],root_cur.root_to_zero_offs[1]));
+	//imageStore(debugdata,ivec2(7,gl_GlobalInvocationID.y),vec4(root_cur.root_to_zero[2],root_cur.root_to_zero_offs[2]));
 	//--------------------------------------------------------
 	for(int i=0; i< imageSize(objdata).y; i++)
 	{
@@ -240,6 +240,18 @@ void main()
 	{
 		//пересчёт из одной системы координат в другую
 	}
+	vec4 pos_cam = imageLoad(objdata,ivec2(0, targetCamInd));
+	int ind_loc_cam = int(imageLoad(objdata,ivec2(3, targetCamInd)).w);
+	Root root_cam = comp_root(pos_cam.xyz,ind_loc_cam);
+
+	//vec3 pos_cur_in_cam = comp_pos_in_local(root_cam,int( gl_GlobalInvocationID.y), ind_center_obj).xyz;
+	vec3 pos_cur_in_cam = comp_pos_in_local_relat(root_cur, int( gl_GlobalInvocationID.y), root_cam, targetCamInd).xyz;
+
+	//imageStore(debugdata,ivec2(0,gl_GlobalInvocationID.y),vec4(pos_cur_in_cam,999));
+	setModelMatr(true_size,pos_cur_in_cam ,rot1);	
+	vec4 choose = draw(size1,pos_cur_in_cam);
+	imageStore(choosedata, ipos1, choose);
+	//------------------------------------------------------
 	pos1.xyz += vel1*deltTime + (acs3*deltTime*deltTime)/2;
 	vel1 += acs3*deltTime;
 
@@ -256,17 +268,7 @@ void main()
 	imageStore(objdata, ipos3,  vec4(rot1.xyz,true_size));
 	imageStore(objdata, ipos4, velrot1);
 
-	vec4 pos_cam = imageLoad(objdata,ivec2(0, targetCamInd));
-	int ind_loc_cam = int(imageLoad(objdata,ivec2(3, targetCamInd)).w);
-	Root root_cam = comp_root(pos_cam.xyz,ind_loc_cam);
-
-	//vec3 pos_cur_in_cam = comp_pos_in_local(root_cam,int( gl_GlobalInvocationID.y), ind_center_obj).xyz;
-	vec3 pos_cur_in_cam = comp_pos_in_local_relat(root_cur, int( gl_GlobalInvocationID.y), root_cam, targetCamInd).xyz;
-
-	imageStore(debugdata,ivec2(0,gl_GlobalInvocationID.y),vec4(pos_cur_in_cam,999));
-	setModelMatr(true_size,pos_cur_in_cam ,rot1);	
-	vec4 choose = draw(size1,pos_cur_in_cam);
-	imageStore(choosedata, ipos1, choose);
+	
 
 
 }	

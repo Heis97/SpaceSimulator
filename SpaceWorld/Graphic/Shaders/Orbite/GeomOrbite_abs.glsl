@@ -17,6 +17,7 @@ out GS_FS_INTERFACE
 	vec3 _color;
 };
 
+
 void main() 
 {
 	gl_ViewportIndex = gl_InvocationID;

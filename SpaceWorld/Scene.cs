@@ -93,7 +93,7 @@ namespace SpaceWorld
         {
             var objs = new List<ObjectMassGL>();
             objs.Add(new ObjectMassGL(0, //sun 0
-                3.3E+5f, kmToAe(7e6f), 0.01f * 2 * kmToAe(7e6f),
+                3.3E+5f, kmToAe(7e6f), 0.001f * 2 * kmToAe(7e6f),
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0),
@@ -105,23 +105,23 @@ namespace SpaceWorld
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0), 0));
             objs.Add(new ObjectMassGL(0,//moon 2
-                kgToMe(7.3477e22f), kmToAe(7e3f), 1 * kmToAe(7e3f),
+                kgToMe(7.3477e22f), kmToAe(1e-3f), 1 * kmToAe(7e3f),
                 new Vertex3f(kmToAe(3.8e5f), 0, 0),
                 new Vertex3f(0, kmToAe(1f), 0),
                 new Vertex3f(20, 20, 0),
                 new Vertex3f(0, 0, 0), 1));
 
             objs.Add(new ObjectMassGL(1,//izr 3
-                kgToMe(1e10f), kmToAe(1e3f), kmToAe(1e-3f),
+                kgToMe(1e10f), kmToAe(1e-3f), kmToAe(1e-3f),
                 new Vertex3f(-kmToAe(3.8e5f), 0, 0),
-                new Vertex3f(0, kmToAe(1f), 0),
+                new Vertex3f(0, kmToAe(1.001f), kmToAe(0f)),
                 new Vertex3f(-PI / 2, 0, PI),
                 new Vertex3f(0, 0, 0), 1));
 
 
             objs.Add(new ObjectMassGL(1,//izr 4
                kgToMe(1e10f), kmToAe(1e-3f), kmToAe(1e-3f),
-               new Vertex3f(-kmToAe(3.8e5f), kmToAe(1), 0),
+               new Vertex3f(-kmToAe(3.8e5f), kmToAe(2f), 0),
                new Vertex3f(0, kmToAe(1f), 0),
                new Vertex3f(-PI / 2, 0, PI),
                new Vertex3f(0, 0, 0), 1));
