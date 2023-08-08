@@ -36,7 +36,7 @@ namespace SpaceWorld
         //выч лок коорд, учёт всех гравит
 
         private GraphicGL GL1 = new GraphicGL();
-        static  int count = 1000;
+        static  int count = 10000;
         static float PI = 3.1415926535f;
         List<ObjectMassGL> objs;
         double fps = 0;
@@ -57,26 +57,26 @@ namespace SpaceWorld
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0),
-                new Vertex3f(0, 0, 0.000001f), 0));
+                new Vertex3f(0, 0, 0.000001f)));
             objs.Add(new ObjectMassGL(0, //earth 1
                 1e-1f, 10 * kmToAe(1.27e4f), 10 * kmToAe(1.27e4f),
                 new Vertex3f(1.0f, 0, 0),
                 new Vertex3f(0, 2E-7f, 0),
                 new Vertex3f(0, 0, 0),
-                new Vertex3f(0, 0, 0), 0));
+                new Vertex3f(0, 0, 0)));
             objs.Add(new ObjectMassGL(0,//moon 2
                 1e-2f, 1 * kmToAe(1.27e4f), 1 * kmToAe(1.27e4f),
                 new Vertex3f(0.2f, 0, 0),
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0),
-                new Vertex3f(0, 0, 0), 1));
+                new Vertex3f(0, 0, 0)));
 
             objs.Add(new ObjectMassGL(0,//izr 3
                 1e-3f, 0.1f * kmToAe(1.27e4f), 0.1f * kmToAe(1.27e4f),
                 new Vertex3f(0.04f, 0, 0),
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0),
-                new Vertex3f(0, 0, 0), 2));
+                new Vertex3f(0, 0, 0)));
 
 
             objs.Add(new ObjectMassGL(0,//ven 4
@@ -84,11 +84,43 @@ namespace SpaceWorld
                 new Vertex3f(-1f, 0, 0),
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0),
-                new Vertex3f(0, 0, 0), 0));
+                new Vertex3f(0, 0, 0)));
 
             return objs;
         }
+        List<ObjectMassGL> add_random_objs(int count)
+        {
+            var random = new Random();
+            var objs = new List<ObjectMassGL>();
+            for (int i = 0; i < count / 2; i++)
+            {
+                var posx = 2e-5f * random.Next(-10000, 10000) + 1f;
+                var posy = 2e-5f * random.Next(-10000, 10000);
+                var posz = 2e-5f * random.Next(-10000, 10000);
 
+                var velx = 1e-9f * random.Next(-100, 100);
+                var vely = 1e-9f * random.Next(-100, 100);
+                var velz = 1e-9f * random.Next(-100, 100);
+
+                var mass = 1e-5f * random.Next(1, 1000);
+                objs.Add(new ObjectMassGL(2, mass, kmToAe(1e6f), 1 * kmToAe(1e6f), new Vertex3f(posx, posy, posz), new Vertex3f(velx, vely, velz), new Vertex3f(90, 0, 0), new Vertex3f(0, 0, 0)));
+            }
+
+            for (int i = 0; i < count / 2; i++)
+            {
+                var posx = 2e-5f * random.Next(-10000, 10000);
+                var posy = 2e-5f * random.Next(-10000, 10000);
+                var posz = 2e-5f * random.Next(-10000, 10000);
+
+                var velx = 1e-9f * random.Next(-100, 100);
+                var vely = 1e-9f * random.Next(-100, 100);
+                var velz = 1e-9f * random.Next(-100, 100);
+
+                var mass = 1e-5f * random.Next(1, 1000);
+                objs.Add(new ObjectMassGL(2, mass, kmToAe(1e6f), 2 * kmToAe(1e6f), new Vertex3f(posx, posy, posz), new Vertex3f(velx, vely, velz), new Vertex3f(0, 90, 0), new Vertex3f(0, 0, 0)));
+            }
+            return objs;
+        }
         List<ObjectMassGL> load_solar_sys()
         {
             var objs = new List<ObjectMassGL>();
@@ -97,26 +129,30 @@ namespace SpaceWorld
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0),
-                new Vertex3f(0, 0, 0.000001f), 0));
+                new Vertex3f(0, 0, 0.000001f),
+                new Vertex4f(0, 0, 0,0)));
             objs.Add(new ObjectMassGL(0, //earth 1
                 0.995f, 1 * kmToAe(1.27e4f), 1 * kmToAe(1.27e4f),
                 new Vertex3f(1.0f, 0, 0),
                 new Vertex3f(0, kmToAe(30), 0),
                 new Vertex3f(0, 0, 0),
-                new Vertex3f(0, 0, 0), 0));
+                new Vertex3f(0, 0, 0),
+                new Vertex4f(0, 0, 0, 0)));
             objs.Add(new ObjectMassGL(0,//moon 2
                 kgToMe(7.3477e22f), kmToAe(1e-3f), 1 * kmToAe(7e3f),
                 new Vertex3f(kmToAe(3.8e5f), 0, 0),
                 new Vertex3f(0, kmToAe(1f), 0),
                 new Vertex3f(20, 20, 0),
-                new Vertex3f(0, 0, 0), 1));
+                new Vertex3f(0, 0, 0),
+                new Vertex4f(1, 0, 0, 0)));
 
             objs.Add(new ObjectMassGL(1,//izr 3
                 kgToMe(1e10f), kmToAe(1e-3f), kmToAe(1e-3f),
                 new Vertex3f(-kmToAe(3.8e5f), 0, 0),
                 new Vertex3f(0, kmToAe(1.001f), kmToAe(0f)),
                 new Vertex3f(-PI / 2, 0, PI),
-                new Vertex3f(0, 0, 0), 1));
+                new Vertex3f(0, 0, 0),
+                new Vertex4f(1, 0, 0, 0)));
 
 
             objs.Add(new ObjectMassGL(1,//izr 4
@@ -124,7 +160,8 @@ namespace SpaceWorld
                new Vertex3f(-kmToAe(3.8e5f), kmToAe(2f), 0),
                new Vertex3f(0, kmToAe(1f), 0),
                new Vertex3f(-PI / 2, 0, PI),
-               new Vertex3f(0, 0, 0), 1));
+               new Vertex3f(0, 0, 0),
+               new Vertex4f(1, 0, 0, 0)));
 
             return objs;
         }
@@ -137,26 +174,26 @@ namespace SpaceWorld
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0),
-                new Vertex3f(0, 0, 0.000001f), 0));
+                new Vertex3f(0, 0, 0.000001f)));
             objs.Add(new ObjectMassGL(0, //earth
                 0.995f, 1 * kmToAe(1.27e4f), 1 * kmToAe(1.27e4f),
                 new Vertex3f(1.0f, 0, 0),
                 new Vertex3f(0, 2E-7f, 0),
                 new Vertex3f(0, 0, 0),
-                new Vertex3f(0, 0, 0), 0));
+                new Vertex3f(0, 0, 0)));
             objs.Add(new ObjectMassGL(0,//moon
                 kgToMe(7.3477e22f), kmToAe(7e3f), 1 * kmToAe(7e3f),
                 new Vertex3f(1f + kmToAe(3.8e5f), 0, 0),
                 new Vertex3f(0, 2E-7f + kmToAe(1f), 0),
                 new Vertex3f(0, 0, 0),
-                new Vertex3f(0, 0, 0), 0));
+                new Vertex3f(0, 0, 0)));
 
             objs.Add(new ObjectMassGL(1,//izr
                 kgToMe(1e10f), kmToAe(1e-3f), kmToAe(1e-3f),
                 new Vertex3f(1.001f, 0, 0),
                 new Vertex3f(0, 2E-7f + kmToAe(1f), 0),
                 new Vertex3f(-PI / 2, 0, PI),
-                new Vertex3f(0, 0, 0), 0));
+                new Vertex3f(0, 0, 0)));
 
 
             objs.Add(new ObjectMassGL(1,//izr
@@ -164,7 +201,7 @@ namespace SpaceWorld
                 new Vertex3f(1.001f, kmToAe(1), 0),
                 new Vertex3f(0, 2E-7f + kmToAe(1.00f), 0),
                 new Vertex3f(-PI / 2, 0, PI),
-                new Vertex3f(0, 0, 0), 0));
+                new Vertex3f(0, 0, 0)));
 
             return objs;
         }
@@ -181,34 +218,7 @@ namespace SpaceWorld
             //objs = load_test_objs();
             //objs = load_solar_sys_abs();
             objs = load_solar_sys();
-           /* Random();
-            for (int i = 0; i < count/2; i++)
-             {
-                 var posx = 2e-5f* random.Next(-10000, 10000)+1f;
-                var posy = 2e-5f * random.Next(-10000, 10000);
-                var posz = 2e-5f * random.Next(-10000, 10000);
-
-                var velx = 1e-9f * random.Next(-100, 100);
-                var vely = 1e-9f * random.Next(-100, 100);
-                var velz = 1e-9f * random.Next(-100, 100);
-
-                 var mass =1e-5f * random.Next(1, 1000);
-                objs.Add(new ObjectMassGL(2,mass, kmToAe(1e6f),1 * kmToAe(1e6f), new Vertex3f(posx, posy, posz), new Vertex3f(velx, vely, velz), new Vertex3f(90, 0, 0), new Vertex3f(0, 0, 0)));
-            }
-
-            for (int i = 0; i < count/2; i++)
-            {
-                var posx = 2e-5f * random.Next(-10000, 10000);
-                var posy = 2e-5f * random.Next(-10000, 10000);
-                var posz = 2e-5f * random.Next(-10000, 10000);
-
-                var velx = 1e-9f * random.Next(-100, 100);
-                var vely = 1e-9f * random.Next(-100, 100);
-                var velz = 1e-9f * random.Next(-100, 100);
-
-                var mass = 1e-5f * random.Next(1, 1000);
-                objs.Add(new ObjectMassGL(0, mass, kmToAe(1e6f),2 * kmToAe(1e6f), new Vertex3f(posx, posy, posz), new Vertex3f(velx, vely, velz), new Vertex3f(0, 90, 0), new Vertex3f(0, 0, 0)));
-            }*/
+            objs.AddRange(add_random_objs(count));
             GL1.dataComputeShader = objs.ToArray();
 
            // GL1.addFrame(new Point3d_GL(0, 0, 0), new Point3d_GL(-0.1, 0, 0), new Point3d_GL(0, -0.1, 0), new Point3d_GL(0, 0, -0.1));

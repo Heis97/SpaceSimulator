@@ -416,7 +416,7 @@ namespace Graphic
             useBuffers(idsOrb);
             load_vars_gl(idsOrb, new openGlobj());
             Gl.DrawArrays(PrimitiveType.Lines, 0, 2*obj_p_count);
-            Console.WriteLine(toStringBuf(posTimeData.getData(), 800, 4, "postimeD"));
+            //Console.WriteLine(toStringBuf(posTimeData.getData(), 800, 4, "postimeD"));
         }
         void drawGravMap()
         {
@@ -721,8 +721,8 @@ namespace Graphic
                 load_vars_gl(idsCs, new openGlobj());
                 Gl.DispatchCompute(1, (uint)dataComputeShader.Length, 1);
                 Gl.MemoryBarrier(MemoryBarrierMask.ShaderImageAccessBarrierBit);                
-                //Console.WriteLine(toStringBuf(objData.getData(), 32, 4, "objD"));
-                Console.WriteLine(toStringBuf(debugData.getData(), 32, 4, "debugD"));
+                //Console.WriteLine(toStringBuf(objData.getData(), 48, 4, "objD"));
+                //Console.WriteLine(toStringBuf(debugData.getData(), 48, 4, "debugD"));
                 //Console.WriteLine(toStringBuf(objData.getData(),4, 4, "objD"));
             }
         }

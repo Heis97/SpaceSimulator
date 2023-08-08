@@ -62,7 +62,7 @@ Root comp_root(vec3 pos, int local_ind)
 	//imageStore(debugdata,ivec2(0,gl_GlobalInvocationID.y),vec4(local_ind ,pos));
 	while(_root_len<10 && _root_to_zero[_root_len-1]!=0)
 	{
-		_root_to_zero[_root_len] =int(imageLoad(objdata,ivec2(3,_root_to_zero[_root_len-1])).w);
+		_root_to_zero[_root_len] =int(imageLoad(objdata,ivec2(8,_root_to_zero[_root_len-1])).x);
 		_root_to_zero_offs[_root_len] = imageLoad(objdata,ivec2(0,_root_to_zero[_root_len-1])).xyz;
 		//imageStore(debugdata,ivec2(_root_len,gl_GlobalInvocationID.y),vec4(_root_to_zero[_root_len],_root_to_zero_offs[_root_len]));
 		_root_len+=1;		
@@ -151,11 +151,11 @@ void main()
 	}
 
 	//for local orbit
-	int ind_center_obj =int(imageLoad(objdata,ivec2(3,int(vs_out[0].ind))).w);
+	int ind_center_obj =int(imageLoad(objdata,ivec2(8,int(vs_out[0].ind))).x);
 	Root root_cur = comp_root(curPos.xyz,ind_center_obj);
 
 	vec4 pos_cam = imageLoad(objdata,ivec2(0, targetCamInd));
-	int ind_loc_cam = int(imageLoad(objdata,ivec2(3, targetCamInd)).w);
+	int ind_loc_cam = int(imageLoad(objdata,ivec2(8, targetCamInd)).x);
 	Root root_cam = comp_root(pos_cam.xyz,ind_loc_cam);
 
 	vec3 pos_cur_in_cam = comp_pos_in_local_relat(root_cur, int( vs_out[0].ind), root_cam, targetCamInd).xyz;
