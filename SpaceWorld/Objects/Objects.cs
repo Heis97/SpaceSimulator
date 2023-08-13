@@ -46,7 +46,7 @@ namespace Objects
                 pos.x, pos.y, pos.z, mass,
                 vel.x, vel.y, vel.z, size,
                 posrot.x, posrot.y, posrot.z, true_size, //поворот
-                velrot.x, velrot.y, velrot.z, 0, //поворот скорость
+                velrot.x, velrot.y, velrot.z, 0, //поворот скорость,root is comp
                 1, 0, 0, 0,//матрица
                 0, 1, 0, 0,//4
                 0, 0, 1, 0,//х

@@ -32,6 +32,10 @@ namespace SpaceWorld
         //вращение
         //фильтрация по массе/соотношению масс/ранжировка по силе притяжения при решение о расчёте гравит
         //столкновения
+        //лок сист коорд вдали от осн тел
+        //пересч при переходе между ЛСК
+        //отображ эллипса орбиты
+        //отсеч тел для 2х рендеров
 
         //выч лок коорд, учёт всех гравит
 
@@ -218,7 +222,7 @@ namespace SpaceWorld
             //objs = load_test_objs();
             //objs = load_solar_sys_abs();
             objs = load_solar_sys();
-            objs.AddRange(add_random_objs(count));
+            //objs.AddRange(add_random_objs(count));
             GL1.dataComputeShader = objs.ToArray();
 
            // GL1.addFrame(new Point3d_GL(0, 0, 0), new Point3d_GL(-0.1, 0, 0), new Point3d_GL(0, -0.1, 0), new Point3d_GL(0, 0, -0.1));

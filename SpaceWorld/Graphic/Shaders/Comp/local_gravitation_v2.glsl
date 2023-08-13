@@ -9,7 +9,7 @@ uniform int targetCamInd;
 uniform mat4 VPs[4];
 uniform mat4 Vs[4];
 uniform vec2 MouseLocGL;
-const float deltTime = 1000;
+const float deltTime = 1;
 const float G = 1.18656E-19;
 
 
@@ -21,6 +21,31 @@ struct Root
 
 };
 
+Root load_root(int i,vec3 pos)
+{
+	vec4 root_inf1 = imageLoad(objdata, ivec2(8,i));
+	vec4 root_inf2 = imageLoad(objdata, ivec2(9,i));
+	int[10] _root_to_zero = int[](int(root_inf1.y),int(root_inf1.y),int(root_inf2.x),int(root_inf2.y),int(root_inf2.z),int(root_inf2.w),-1,-1,-1,-1);
+	vec3[10] _root_to_zero_offs = vec3[](pos ,vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0));
+	int _root_len = int(root_inf1.y);
+	//imageStore(debugdata,ivec2(0,gl_GlobalInvocationID.y),vec4(local_ind ,pos));
+	for(int ir=0;ir<_root_len && _root_to_zero[_root_len-1]!=0;ir++)
+	{
+		_root_to_zero_offs[_root_len] = imageLoad(objdata,ivec2(0,_root_to_zero[ir-1])).xyz;
+		//imageStore(debugdata,ivec2(_root_len,gl_GlobalInvocationID.y),vec4(_root_to_zero[_root_len],_root_to_zero_offs[_root_len]));		
+	}
+	//imageStore(debugdata,ivec2(3,gl_GlobalInvocationID.y),vec4(_root_len,_root_len,_root_len,_root_len));
+	return (Root(_root_to_zero,_root_to_zero_offs,_root_len));
+
+}
+
+void save_root(Root root, int i)
+{
+	vec4 root_inf1 = vec4(root.root_to_zero[0],root.root_len,root.root_to_zero[0],root.root_to_zero[1]);
+	vec4 root_inf2 = vec4(root.root_to_zero[2],root.root_to_zero[3],root.root_to_zero[4],root.root_to_zero[5]);
+	imageStore(objdata, ivec2(8,i), root_inf1);
+	imageStore(objdata, ivec2(9,i), root_inf2);
+}
 
 void setModelMatr(in float size,in vec3 pos,in vec4 rot)
 {
@@ -198,8 +223,18 @@ void main()
 	int ind_center_obj_old = ind_center_obj;
 	float max_omega = 0;
 	//------------------------root ind for local-------------------------
+	Root root_cur;
+	if(velrot1.w!=1)
+	{
+		root_cur = comp_root(pos1.xyz,ind_center_obj);
+		save_root(root_cur,int(gl_GlobalInvocationID.y));
+		velrot1.w = 1;
+	}
+	else
+	{
+		root_cur = load_root(int(gl_GlobalInvocationID.y),pos1.xyz);
+	}
 	
-	Root root_cur = comp_root(pos1.xyz,ind_center_obj);
 	//imageStore(debugdata,ivec2(5,gl_GlobalInvocationID.y),vec4(root_cur.root_to_zero[0],root_cur.root_to_zero_offs[0]));
 	//imageStore(debugdata,ivec2(6,gl_GlobalInvocationID.y),vec4(root_cur.root_to_zero[1],root_cur.root_to_zero_offs[1]));
 	//imageStore(debugdata,ivec2(7,gl_GlobalInvocationID.y),vec4(root_cur.root_to_zero[2],root_cur.root_to_zero_offs[2]));
@@ -260,9 +295,6 @@ void main()
 	float J;
 	vec3 eps = moment1/J;
 	rot1.xyz+=velrot1.xyz*deltTime ;
-
-
-	//velrot1.w = ind_center_obj;
 	
 	imageStore(objdata, ipos1, pos1);
 	imageStore(objdata, ipos2, vec4(vel1, size1));
