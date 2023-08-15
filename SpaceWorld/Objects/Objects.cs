@@ -79,6 +79,8 @@ namespace Objects
             velrot.y = data[13];
             velrot.z = data[14];
 
+            root_inf1.x = data[32];
+
             return this;
         }
         static public int getLength()

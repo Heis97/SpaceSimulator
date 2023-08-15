@@ -167,6 +167,14 @@ namespace SpaceWorld
                new Vertex3f(0, 0, 0),
                new Vertex4f(1, 0, 0, 0)));
 
+            objs.Add(new ObjectMassGL(1,//izr 5
+               kgToMe(1e10f), kmToAe(1e-3f), kmToAe(1e-3f),
+               new Vertex3f(-kmToAe(1.4e4f), kmToAe(1f), 0),
+               new Vertex3f(0, kmToAe(0.65f), 0),
+               new Vertex3f(-PI / 2, 0, PI),
+               new Vertex3f(0, 0, 0),
+               new Vertex4f(2, 0, 0, 0)));
+
             return objs;
         }
 

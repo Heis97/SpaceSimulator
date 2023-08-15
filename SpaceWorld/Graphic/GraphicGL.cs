@@ -137,6 +137,7 @@ namespace Graphic
     public class GraphicGL
     {
         #region vars
+        public int time_speed = 1;
         bool select_mouse = false;
         static float PI = 3.1415926535f;
         public int startGen = 0;
@@ -307,8 +308,12 @@ namespace Graphic
             }
             rendercout++;
             //drawGravMap();
-            drawOrbit();
-            gpuCompute();
+            for(int i=0; i<time_speed; i++)
+            {
+                drawOrbit();
+                gpuCompute();
+            }
+            
             selectViewObj();
         }
         IDs chooseShaderGeom(openGlobj opgl_obj)
@@ -721,9 +726,8 @@ namespace Graphic
                 load_vars_gl(idsCs, new openGlobj());
                 Gl.DispatchCompute(1, (uint)dataComputeShader.Length, 1);
                 Gl.MemoryBarrier(MemoryBarrierMask.ShaderImageAccessBarrierBit);                
-                //Console.WriteLine(toStringBuf(objData.getData(), 48, 4, "objD"));
-                //Console.WriteLine(toStringBuf(debugData.getData(), 48, 4, "debugD"));
-                //Console.WriteLine(toStringBuf(objData.getData(),4, 4, "objD"));
+                //Console.WriteLine(toStringBuf(objData.getData(), 44, 4, "objD"));
+                //Console.WriteLine(toStringBuf(debugData.getData(), 44, 4, "debugD"));
             }
         }
 
