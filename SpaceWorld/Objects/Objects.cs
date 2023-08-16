@@ -37,13 +37,14 @@ namespace Objects
             root_inf1 = _root_inf1;
             root_inf2 = _root_inf2;
             root_inf3 = _root_inf3;
+
           
         }
 
         public float[] getData()
         {
             return new float[] { 
-                pos.x, pos.y, pos.z, mass,
+                pos.x, pos.y, pos.z, root_inf1.x,
                 vel.x, vel.y, vel.z, size,
                 posrot.x, posrot.y, posrot.z, true_size, //поворот
                 velrot.x, velrot.y, velrot.z, 0, //поворот скорость,root is comp
@@ -51,9 +52,10 @@ namespace Objects
                 0, 1, 0, 0,//4
                 0, 0, 1, 0,//х
                 0, 0, 0, 1,//4
-                root_inf1.x, root_inf1.y, root_inf1.z,root_inf1.w,//ind_loc_obj,root_count, ind0,ind1,
+                mass, root_inf1.y, root_inf1.z,root_inf1.w,//ind_loc_obj,root_count, ind0,ind1,
                 root_inf2.x, root_inf2.y, root_inf2.z,root_inf2.w,//ind2,ind3,ind4,ind5,
                 root_inf3.x, root_inf3.y, root_inf3.z,root_inf3.w,
+
                  };
         }
         public ObjectMassGL Clone()
@@ -65,7 +67,7 @@ namespace Objects
             pos.x = data[0];
             pos.y = data[1];
             pos.z = data[2];
-            mass = data[3];
+            mass = data[32];
             vel.x = data[4];
             vel.y = data[5];
             vel.z = data[6];
@@ -79,7 +81,7 @@ namespace Objects
             velrot.y = data[13];
             velrot.z = data[14];
 
-            root_inf1.x = data[32];
+            root_inf1.x = data[3];
 
             return this;
         }

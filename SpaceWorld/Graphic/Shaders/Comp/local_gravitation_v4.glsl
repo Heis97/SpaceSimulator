@@ -9,30 +9,30 @@ uniform int targetCamInd;
 uniform mat4 VPs[4];
 uniform mat4 Vs[4];
 uniform vec2 MouseLocGL;
-const float deltTime = 1;
+const float deltTime = 1000;
 const float G = 1.18656E-19;
 const float G_2 = 6.6743e-11;
 
 struct Root
 {
 	int[10] root_to_zero;
-	vec4[10] root_to_zero_offs;
+	vec3[10] root_to_zero_offs;
 	int root_len;
 
 };
 
-Root load_root(int i,vec4 pos)
+Root load_root(int i,vec3 pos)
 {
 	vec4 root_inf1 = imageLoad(objdata, ivec2(8,i));
 	vec4 root_inf2 = imageLoad(objdata, ivec2(9,i));
 	int[10] _root_to_zero = int[](int(root_inf1.z),int(root_inf1.w),int(root_inf2.x),int(root_inf2.y),int(root_inf2.z),int(root_inf2.w),-1,-1,-1,-1);
-	vec4[10] _root_to_zero_offs = vec4[](pos ,vec4(0),vec4(0),vec4(0),vec4(0),vec4(0),vec4(0),vec4(0),vec4(0),vec4(0));
+	vec3[10] _root_to_zero_offs = vec3[](pos ,vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0));
 	int _root_len = int(root_inf1.y);
 	//int ir = 1;
 	//imageStore(debugdata,ivec2(0,gl_GlobalInvocationID.y),vec4(local_ind ,pos));
 	for(int ir=1;ir<=_root_len&& _root_to_zero[ir-1]!=0;ir++)
 	{
-		_root_to_zero_offs[ir] = imageLoad(objdata,ivec2(0,_root_to_zero[ir-1]));
+		_root_to_zero_offs[ir] = imageLoad(objdata,ivec2(0,_root_to_zero[ir-1])).xyz;
 		//imageStore(debugdata,ivec2(ir-1,gl_GlobalInvocationID.y),vec4(_root_to_zero_offs[_root_len],777));
 		//imageStore(debugdata,ivec2(_root_len,gl_GlobalInvocationID.y),vec4(_root_to_zero[_root_len],_root_to_zero_offs[_root_len]));		
 	}
@@ -144,16 +144,14 @@ vec3 compGravit(in vec3 pos1, in float mass1,in vec3 pos2,in float mass2,in floa
 vec4 comp_pos_in_local(Root root, int ind,int ind_local)
 {
 	vec4 obj = imageLoad(objdata,ivec2(0,ind));
-
-	vec3 loc_pos = obj.xyz*pow(10e6,obj.w);
+	vec3 loc_pos = obj.xyz;
 	int i = 0;
 	while( i<root.root_len && ind_local != root.root_to_zero[i] )
 	{
-
-		loc_pos-=root.root_to_zero_offs[i].xyz*pow(10e6,root.root_to_zero_offs[i].w);
+		loc_pos-=root.root_to_zero_offs[i];
 		i++;
 	}
-	loc_pos-=root.root_to_zero_offs[i].xyz*pow(10e6,root.root_to_zero_offs[i].w);;
+	loc_pos-=root.root_to_zero_offs[i];
 	return(vec4(loc_pos,obj.w));
 }
 
@@ -188,16 +186,16 @@ bool check_in_root(Root root, int ind)
 
 
 
-Root comp_root(vec4 pos, int local_ind)
+Root comp_root(vec3 pos, int local_ind)
 {
 	int[10] _root_to_zero = int[](local_ind,-1,-1,-1,-1,-1,-1,-1,-1,-1);
-	vec4[10] _root_to_zero_offs = vec4[](pos ,vec4(0),vec4(0),vec4(0),vec4(0),vec4(0),vec4(0),vec4(0),vec4(0),vec4(0));
+	vec3[10] _root_to_zero_offs = vec3[](pos ,vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0));
 	int _root_len = 1;
 	//imageStore(debugdata,ivec2(0,gl_GlobalInvocationID.y),vec4(local_ind ,pos));
 	while(_root_len<10 && _root_to_zero[_root_len-1]!=0)
 	{
 		_root_to_zero[_root_len] =int(imageLoad(objdata,ivec2(8,_root_to_zero[_root_len-1])).z);
-		_root_to_zero_offs[_root_len] = imageLoad(objdata,ivec2(0,_root_to_zero[_root_len-1]));
+		_root_to_zero_offs[_root_len] = imageLoad(objdata,ivec2(0,_root_to_zero[_root_len-1])).xyz;
 		//imageStore(debugdata,ivec2(_root_len,gl_GlobalInvocationID.y),vec4(_root_to_zero[_root_len],_root_to_zero_offs[_root_len]));
 		_root_len+=1;		
 	}
@@ -233,14 +231,14 @@ void main()
 	Root root_cur;
 	if(velrot1.w!=1)
 	{
-		root_cur = comp_root(pos1,ind_center_obj);
+		root_cur = comp_root(pos1.xyz,ind_center_obj);
 		save_root(root_cur,int(gl_GlobalInvocationID.y),mass_cur);
 		velrot1.w = 1;
 	}
 	else
 	{
 		//root_cur = comp_root(pos1.xyz,ind_center_obj);
-		root_cur = load_root(int(gl_GlobalInvocationID.y),pos1);
+		root_cur = load_root(int(gl_GlobalInvocationID.y),pos1.xyz);
 	}
 
 	//--------------------------------------------------------
@@ -286,7 +284,7 @@ void main()
 	}
 	vec4 pos_cam = imageLoad(objdata,ivec2(0, targetCamInd));
 	//int ind_loc_cam = int(imageLoad(objdata,ivec2(8, targetCamInd)).x);
-	Root root_cam = load_root(targetCamInd,pos_cam);
+	Root root_cam = load_root(targetCamInd,pos_cam.xyz);
 
 	//vec3 pos_cur_in_cam = comp_pos_in_local(root_cam,int( gl_GlobalInvocationID.y), ind_center_obj).xyz;
 	vec3 pos_cur_in_cam = comp_pos_in_local_relat(root_cur, int( gl_GlobalInvocationID.y), root_cam, targetCamInd).xyz;

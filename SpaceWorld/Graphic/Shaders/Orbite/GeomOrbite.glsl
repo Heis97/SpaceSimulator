@@ -20,22 +20,22 @@ out GS_FS_INTERFACE
 struct Root
 {
 	int[10] root_to_zero;
-	vec3[10] root_to_zero_offs;
+	vec4[10] root_to_zero_offs;
 	int root_len;
 
 };
-Root load_root(int i,vec3 pos)
+Root load_root(int i,vec4 pos)
 {
 	vec4 root_inf1 = imageLoad(objdata, ivec2(8,i));
 	vec4 root_inf2 = imageLoad(objdata, ivec2(9,i));
 	int[10] _root_to_zero = int[](int(root_inf1.z),int(root_inf1.w),int(root_inf2.x),int(root_inf2.y),int(root_inf2.z),int(root_inf2.w),-1,-1,-1,-1);
-	vec3[10] _root_to_zero_offs = vec3[](pos ,vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0));
+	vec4[10] _root_to_zero_offs = vec4[](pos ,vec4(0),vec4(0),vec4(0),vec4(0),vec4(0),vec4(0),vec4(0),vec4(0),vec4(0));
 	int _root_len = int(root_inf1.y);
-	int ir = 1;
+	//int ir = 1;
 	//imageStore(debugdata,ivec2(0,gl_GlobalInvocationID.y),vec4(local_ind ,pos));
-	for(ir=1;ir<=_root_len&& _root_to_zero[ir-1]!=0;ir++)
+	for(int ir=1;ir<=_root_len&& _root_to_zero[ir-1]!=0;ir++)
 	{
-		_root_to_zero_offs[ir] = imageLoad(objdata,ivec2(0,_root_to_zero[ir-1])).xyz;
+		_root_to_zero_offs[ir] = imageLoad(objdata,ivec2(0,_root_to_zero[ir-1]));
 		//imageStore(debugdata,ivec2(ir-1,gl_GlobalInvocationID.y),vec4(_root_to_zero_offs[_root_len],777));
 		//imageStore(debugdata,ivec2(_root_len,gl_GlobalInvocationID.y),vec4(_root_to_zero[_root_len],_root_to_zero_offs[_root_len]));		
 	}
@@ -46,14 +46,16 @@ Root load_root(int i,vec3 pos)
 vec4 comp_pos_in_local(Root root, int ind,int ind_local)
 {
 	vec4 obj = imageLoad(objdata,ivec2(0,ind));
-	vec3 loc_pos = obj.xyz;
+
+	vec3 loc_pos = obj.xyz*pow(10e6,obj.w);
 	int i = 0;
 	while( i<root.root_len && ind_local != root.root_to_zero[i] )
 	{
-		loc_pos-=root.root_to_zero_offs[i];
+
+		loc_pos-=root.root_to_zero_offs[i].xyz*pow(10e6,root.root_to_zero_offs[i].w);
 		i++;
 	}
-	loc_pos-=root.root_to_zero_offs[i];
+	loc_pos-=root.root_to_zero_offs[i].xyz*pow(10e6,root.root_to_zero_offs[i].w);;
 	return(vec4(loc_pos,obj.w));
 }
 
@@ -73,23 +75,6 @@ vec4 comp_pos_in_local_relat(Root root_dest, int ind_dest, Root root_rel, int in
 	return(pos_rel_com-pos_dest_com);
 }
 
-Root comp_root(vec3 pos, int local_ind)
-{
-	int[10] _root_to_zero = int[](local_ind,-1,-1,-1,-1,-1,-1,-1,-1,-1);
-	vec3[10] _root_to_zero_offs = vec3[](pos ,vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0),vec3(0));
-	int _root_len = 1;
-	//imageStore(debugdata,ivec2(0,gl_GlobalInvocationID.y),vec4(local_ind ,pos));
-	while(_root_len<10 && _root_to_zero[_root_len-1]!=0)
-	{
-		_root_to_zero[_root_len] =int(imageLoad(objdata,ivec2(8,_root_to_zero[_root_len-1])).x);
-		_root_to_zero_offs[_root_len] = imageLoad(objdata,ivec2(0,_root_to_zero[_root_len-1])).xyz;
-		//imageStore(debugdata,ivec2(_root_len,gl_GlobalInvocationID.y),vec4(_root_to_zero[_root_len],_root_to_zero_offs[_root_len]));
-		_root_len+=1;		
-	}
-	//imageStore(debugdata,ivec2(3,gl_GlobalInvocationID.y),vec4(_root_len,_root_len,_root_len,_root_len));
-	return (Root(_root_to_zero,_root_to_zero_offs,_root_len));
-}
-
 void main() 
 {
 	gl_ViewportIndex = gl_InvocationID;
@@ -101,8 +86,8 @@ void main()
 
 	float select = imageLoad(choosedata,curP1).y;
 	
-
-	vec4 curPos =vec4(imageLoad(objdata,curP1).xyz, 1.0);
+	vec4 pos_cur = imageLoad(objdata,curP1);
+	vec4 curPos =vec4(pos_cur.xyz, 1.0);
 	curPos.a = imageLoad(posTimeData,curP1).a;
 
 	vec4 curPos_cam =vec4(imageLoad(objdata,curP_cam).rgb, 1.0);
@@ -171,11 +156,11 @@ void main()
 
 	//for local orbit
 	//int ind_center_obj =int(imageLoad(objdata,ivec2(8,int(vs_out[0].ind))).x);
-	Root root_cur = load_root(int(vs_out[0].ind),curPos.xyz); 
+	Root root_cur = load_root(int(vs_out[0].ind),pos_cur ); 
 
 	vec4 pos_cam = imageLoad(objdata,ivec2(0, targetCamInd));
 	//int ind_loc_cam = int(imageLoad(objdata,ivec2(8, targetCamInd)).x);
-	Root root_cam = load_root(targetCamInd,pos_cam.xyz);
+	Root root_cam = load_root(targetCamInd,pos_cam);
 
 	vec3 pos_cur_in_cam = comp_pos_in_local_relat(root_cur, int( vs_out[0].ind), root_cam, targetCamInd).xyz;
 
