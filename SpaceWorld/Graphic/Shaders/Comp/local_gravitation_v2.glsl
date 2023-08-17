@@ -145,15 +145,15 @@ vec4 comp_pos_in_local(Root root, int ind,int ind_local)
 {
 	vec4 obj = imageLoad(objdata,ivec2(0,ind));
 
-	vec3 loc_pos = obj.xyz*pow(10e6,obj.w);
+	vec3 loc_pos = obj.xyz*pow(1e6,obj.w-1);
 	int i = 0;
 	while( i<root.root_len && ind_local != root.root_to_zero[i] )
 	{
 
-		loc_pos-=root.root_to_zero_offs[i].xyz*pow(10e6,root.root_to_zero_offs[i].w);
+		loc_pos-=root.root_to_zero_offs[i].xyz*pow(1e6,root.root_to_zero_offs[i].w-1);
 		i++;
 	}
-	loc_pos-=root.root_to_zero_offs[i].xyz*pow(10e6,root.root_to_zero_offs[i].w);;
+	loc_pos-=root.root_to_zero_offs[i].xyz*pow(1e6,root.root_to_zero_offs[i].w-1);;
 	return(vec4(loc_pos,obj.w));
 }
 
@@ -291,7 +291,8 @@ void main()
 	//vec3 pos_cur_in_cam = comp_pos_in_local(root_cam,int( gl_GlobalInvocationID.y), ind_center_obj).xyz;
 	vec3 pos_cur_in_cam = comp_pos_in_local_relat(root_cur, int( gl_GlobalInvocationID.y), root_cam, targetCamInd).xyz;
 
-	//imageStore(debugdata,ivec2(0,gl_GlobalInvocationID.y),vec4(pos_cur_in_cam,999));
+	imageStore(debugdata,ivec2(0,gl_GlobalInvocationID.y),vec4(pos_cur_in_cam,999));
+
 	setModelMatr(true_size,pos_cur_in_cam ,rot1);	
 	vec4 choose = draw(size1,pos_cur_in_cam);
 	imageStore(choosedata, ipos1, choose);

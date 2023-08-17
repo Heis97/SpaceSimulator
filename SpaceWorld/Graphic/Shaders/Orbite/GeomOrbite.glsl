@@ -101,29 +101,29 @@ void main()
 		_color = vec3(0,0.8,0);
 	}
 
-
+	float dim_cont = 1;
 	if(select!=2)
 	{
 		gl_Position = VPs[0]* vec4(curPos_cam.xyz, 1.0);
 
 
-		gl_Position.x+=0.01;
+		gl_Position.x+=dim_cont;
 		EmitVertex();
 
-		gl_Position.y+=0.01;
-		gl_Position.x-=0.01;
+		gl_Position.y+=dim_cont;
+		gl_Position.x-=dim_cont;
 		EmitVertex();
 
-		gl_Position.y-=0.01;
-		gl_Position.x-=0.01;
+		gl_Position.y-=dim_cont;
+		gl_Position.x-=dim_cont;
 		EmitVertex();
 
-		gl_Position.y-=0.01;
-		gl_Position.x+=0.01;
+		gl_Position.y-=dim_cont;
+		gl_Position.x+=dim_cont;
 		EmitVertex();
 
-		gl_Position.y+=0.01;
-		gl_Position.x+=0.01;
+		gl_Position.y+=dim_cont;
+		gl_Position.x+=dim_cont;
 		EmitVertex();
 		EndPrimitive();	
 	}

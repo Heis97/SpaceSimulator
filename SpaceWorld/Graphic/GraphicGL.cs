@@ -137,7 +137,7 @@ namespace Graphic
     public class GraphicGL
     {
         #region vars
-        public int time_speed = 100;
+        public int time_speed = 1;
         bool select_mouse = false;
         static float PI = 3.1415926535f;
         public int startGen = 0;
@@ -727,7 +727,7 @@ namespace Graphic
                 Gl.DispatchCompute(1, (uint)dataComputeShader.Length, 1);
                 Gl.MemoryBarrier(MemoryBarrierMask.ShaderImageAccessBarrierBit);                
                 //Console.WriteLine(toStringBuf(objData.getData(), 44, 4, "objD"));
-               // Console.WriteLine(toStringBuf(debugData.getData(), 44, 4, "debugD"));
+                Console.WriteLine(toStringBuf(debugData.getData(), 44, 4, "debugD"));
             }
         }
 
