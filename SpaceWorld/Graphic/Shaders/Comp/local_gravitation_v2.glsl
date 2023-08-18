@@ -9,9 +9,9 @@ uniform int targetCamInd;
 uniform mat4 VPs[4];
 uniform mat4 Vs[4];
 uniform vec2 MouseLocGL;
-const float deltTime = 1;
+const float deltTime = 1000;
 const float G = 1.18656E-19;
-const float G_2 = 6.6743e-11;
+const float G_kme6_Me = 1.117e-12;
 
 struct Root
 {
@@ -130,7 +130,7 @@ vec3 compGravit(in vec3 pos1, in float mass1,in vec3 pos2,in float mass2,in floa
 	{
 		dist = 1.0E-9;
 	}
-	float a = (G*mass2)/(dist*dist);
+	float a = (G_kme6_Me*mass2)/(dist*dist);
 	vec3 a3 = ((pos2 - pos1)/dist)*a;
 	omega_2 =length( a3)/dist;
 	//центр масс полукруга y = 4*r/(3*pi)
