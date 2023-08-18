@@ -717,6 +717,7 @@ namespace Graphic
             Gl.Uniform1i(ids.stindID, 1, openGlobj.stind);
 
             Gl.Uniform3f(ids.targetCamID, 1, transRotZooms[0].target);
+            transRotZooms[0].target_ind = 1;
             Gl.Uniform1i(ids.targetCamIndID, 1, transRotZooms[0].target_ind);
         }
         void gpuCompute()

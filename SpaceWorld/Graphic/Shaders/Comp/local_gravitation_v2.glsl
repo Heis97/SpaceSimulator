@@ -9,7 +9,7 @@ uniform int targetCamInd;
 uniform mat4 VPs[4];
 uniform mat4 Vs[4];
 uniform vec2 MouseLocGL;
-const float deltTime = 1000;
+const float deltTime = 10000;
 const float G = 1.18656E-19;
 const float G_kme6_Me = 3.986E-13;
 const float G_km_Me = 398622.2969393f;
@@ -125,16 +125,16 @@ vec4 draw(in float size,in vec3 pos)
 
 //1 - объект расчёта, 2 - влияющие на него другие объекты
 //масса в массах земли, расстояние в астрономических единицах
-vec3 compGravit(in vec4 pos1, in float mass1,in vec3 pos2,in float mass2,in float size1, out vec3 moment1,out float omega_2)
+vec3 compGravit(in vec4 pos1, in float mass1,in vec4 pos2,in float mass2,in float size1, out vec3 moment1,out float omega_2)
 {
 	int unit = int(pos1.w);
-	float dist = distance(pos1.xyz,pos2);
+	float dist = distance(pos1.xyz,pos2.xyz);
 	if(dist<1.0E-9)
 	{
 		dist = 1.0E-9;
 	}
 	float a = (Gc[unit]*mass2)/(dist*dist);
-	vec3 a3 = ((pos2 - pos1.xyz)/dist)*a;
+	vec3 a3 = ((pos2.xyz - pos1.xyz)/dist)*a;
 	omega_2 =length( a3)/dist;
 	//центр масс полукруга y = 4*r/(3*pi)
 
@@ -254,7 +254,7 @@ void main()
 			//imageStore(debugdata,ivec2(1,gl_GlobalInvocationID.y),vec4(obj.xyz,888));
 			vec3 moment_1_i = vec3(0,0,0);
 			float omega_2 = 0;
-			vec3 acs = compGravit(pos1,mass_cur,obj.xyz,mass_i,size1,moment_1_i,omega_2);
+			vec3 acs = compGravit(pos1,mass_cur,obj,mass_i,size1,moment_1_i,omega_2);
 			acs3 += acs;
 			//imageStore(debugdata,ivec2(0,gl_GlobalInvocationID.y),vec4(acs,999));
 

@@ -214,7 +214,7 @@ namespace SpaceWorld
             objs.Add(new ObjectMassGL(0,//moon 2
                 kgToMe(7.3477e22f), 0.3e4f * 1e-6f,  0.3e4f * 1e-6f,
                 new Vertex3f(0.38f, 0, 0),
-                new Vertex3f(0, 1f * 1e-6f, 0),
+                new Vertex3f(0, 0.5f * 1e-6f, 0),
                 new Vertex3f(20, 20, 0),
                 new Vertex3f(0, 0, 0),
                 new Vertex4f(1, 0, 1, 0)));
@@ -222,7 +222,7 @@ namespace SpaceWorld
             objs.Add(new ObjectMassGL(0,//moon 2a
                kgToMe(7.3477e22f), 0.3e4f * 1e-6f, 0.3e4f * 1e-6f,
                new Vertex3f(-0.38f * 1e6f, 0, 0),
-               new Vertex3f(0, 1f, 0),
+               new Vertex3f(0, 0.5f * 1f, 0),
                new Vertex3f(20, 20, 0),
                new Vertex3f(0, 0, 0),
                new Vertex4f(0, 0, 1, 0)));
