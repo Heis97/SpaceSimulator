@@ -11,7 +11,9 @@ uniform mat4 Vs[4];
 uniform vec2 MouseLocGL;
 const float deltTime = 1000;
 const float G = 1.18656E-19;
-const float G_kme6_Me = 1.117e-12;
+const float G_kme6_Me = 3.986E-13;
+const float G_km_Me = 398622.2969393f;
+float[2] Gc = float[](G_km_Me,G_kme6_Me);
 
 struct Root
 {
@@ -123,15 +125,16 @@ vec4 draw(in float size,in vec3 pos)
 
 //1 - объект расчёта, 2 - влияющие на него другие объекты
 //масса в массах земли, расстояние в астрономических единицах
-vec3 compGravit(in vec3 pos1, in float mass1,in vec3 pos2,in float mass2,in float size1, out vec3 moment1,out float omega_2)
+vec3 compGravit(in vec4 pos1, in float mass1,in vec3 pos2,in float mass2,in float size1, out vec3 moment1,out float omega_2)
 {
-	float dist = distance(pos1,pos2);
+	int unit = int(pos1.w);
+	float dist = distance(pos1.xyz,pos2);
 	if(dist<1.0E-9)
 	{
 		dist = 1.0E-9;
 	}
-	float a = (G_kme6_Me*mass2)/(dist*dist);
-	vec3 a3 = ((pos2 - pos1)/dist)*a;
+	float a = (Gc[unit]*mass2)/(dist*dist);
+	vec3 a3 = ((pos2 - pos1.xyz)/dist)*a;
 	omega_2 =length( a3)/dist;
 	//центр масс полукруга y = 4*r/(3*pi)
 
@@ -144,19 +147,24 @@ vec3 compGravit(in vec3 pos1, in float mass1,in vec3 pos2,in float mass2,in floa
 vec4 comp_pos_in_local(Root root, int ind,int ind_local)
 {
 	vec4 obj = imageLoad(objdata,ivec2(0,ind));
-
-	vec3 loc_pos = obj.xyz*pow(1e6,obj.w-1);
+	float units_root = root.root_to_zero_offs[0].w;
+	vec3 loc_pos = obj.xyz*pow(1e6,obj.w-units_root);
 	int i = 0;
 	while( i<root.root_len && ind_local != root.root_to_zero[i] )
 	{
 
-		loc_pos-=root.root_to_zero_offs[i].xyz*pow(1e6,root.root_to_zero_offs[i].w-1);
+		loc_pos-=root.root_to_zero_offs[i].xyz*pow(1e6,root.root_to_zero_offs[i].w-units_root);
 		i++;
 	}
-	loc_pos-=root.root_to_zero_offs[i].xyz*pow(1e6,root.root_to_zero_offs[i].w-1);;
+	loc_pos-=root.root_to_zero_offs[i].xyz*pow(1e6,root.root_to_zero_offs[i].w-units_root);;
 	return(vec4(loc_pos,obj.w));
 }
-
+Root change_pos_unit(Root root, int new_unit)
+{
+	vec4 old_pos = root.root_to_zero_offs[0];
+	root.root_to_zero_offs[0] = vec4(old_pos.xyz*pow(1e6,old_pos.w- new_unit), new_unit);
+	return(root);
+}
 vec4 comp_pos_in_local_relat(Root root_dest, int ind_dest, Root root_rel, int ind_rel)
 {
 	int i_st = 0;
@@ -167,23 +175,11 @@ vec4 comp_pos_in_local_relat(Root root_dest, int ind_dest, Root root_rel, int in
 	i_st = 0;
 	int ind_local = 0;
 	//int ind_local =int(imageLoad(objdata,ivec2(3,i_st)).w);
+	root_dest = change_pos_unit(root_dest,int(root_rel.root_to_zero_offs[0].w));
 	vec4 pos_dest_com = comp_pos_in_local(root_dest,i_st,ind_local);
 	vec4 pos_rel_com = comp_pos_in_local(root_rel,i_st,ind_local);
 
 	return(pos_rel_com-pos_dest_com);
-}
-
-bool check_in_root(Root root, int ind)
-{
-	for(int i=0; i< 10;i++)//len_arr
-	{
-		if(ind == root.root_to_zero[i])
-		{
-			return(true);
-		}
-	}
-
-	return(false);
 }
 
 
@@ -247,7 +243,7 @@ void main()
 	for(int i=0; i< imageSize(objdata).y; i++)
 	{
 		vec4 pos_inf = imageLoad(objdata,ivec2(8,i));
-		int ind_local =int(pos_inf .z);
+		int ind_local =int(pos_inf.z);
 		float mass_i = pos_inf.x;
 		//if(ipos1.y!=i && check_in_root(root_cur,ind_local))
 		if(ipos1.y!=i && i==ind_center_obj)
@@ -255,12 +251,12 @@ void main()
 
 			vec4 obj = comp_pos_in_local(root_cur, i,ind_local);
 			
-			//imageStore(debugdata,ivec2(i,gl_GlobalInvocationID.y),vec4(obj.xyz,999));
+			//imageStore(debugdata,ivec2(1,gl_GlobalInvocationID.y),vec4(obj.xyz,888));
 			vec3 moment_1_i = vec3(0,0,0);
 			float omega_2 = 0;
-			vec3 acs = compGravit(vec3(0),mass_cur,obj.xyz,mass_i,size1,moment_1_i,omega_2);
+			vec3 acs = compGravit(pos1,mass_cur,obj.xyz,mass_i,size1,moment_1_i,omega_2);
 			acs3 += acs;
-			//imageStore(debugdata,ivec2(i,gl_GlobalInvocationID.y),vec4(acs,999));
+			//imageStore(debugdata,ivec2(0,gl_GlobalInvocationID.y),vec4(acs,999));
 
 			moment1+=moment_1_i;
 
@@ -291,7 +287,7 @@ void main()
 	//vec3 pos_cur_in_cam = comp_pos_in_local(root_cam,int( gl_GlobalInvocationID.y), ind_center_obj).xyz;
 	vec3 pos_cur_in_cam = comp_pos_in_local_relat(root_cur, int( gl_GlobalInvocationID.y), root_cam, targetCamInd).xyz;
 
-	imageStore(debugdata,ivec2(0,gl_GlobalInvocationID.y),vec4(pos_cur_in_cam,999));
+	imageStore(debugdata,ivec2(0,gl_GlobalInvocationID.y),vec4(pos_cur_in_cam,777));
 
 	setModelMatr(true_size,pos_cur_in_cam ,rot1);	
 	vec4 choose = draw(size1,pos_cur_in_cam);

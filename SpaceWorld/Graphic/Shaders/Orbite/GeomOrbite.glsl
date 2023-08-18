@@ -43,20 +43,27 @@ Root load_root(int i,vec4 pos)
 	return (Root(_root_to_zero,_root_to_zero_offs,_root_len));
 
 }
+
 vec4 comp_pos_in_local(Root root, int ind,int ind_local)
 {
 	vec4 obj = imageLoad(objdata,ivec2(0,ind));
-
-	vec3 loc_pos = obj.xyz*pow(10e6,obj.w);
+	float units_root = root.root_to_zero_offs[0].w;
+	vec3 loc_pos = obj.xyz*pow(1e6,obj.w-units_root);
 	int i = 0;
 	while( i<root.root_len && ind_local != root.root_to_zero[i] )
 	{
 
-		loc_pos-=root.root_to_zero_offs[i].xyz*pow(10e6,root.root_to_zero_offs[i].w);
+		loc_pos-=root.root_to_zero_offs[i].xyz*pow(1e6,root.root_to_zero_offs[i].w-units_root);
 		i++;
 	}
-	loc_pos-=root.root_to_zero_offs[i].xyz*pow(10e6,root.root_to_zero_offs[i].w);;
+	loc_pos-=root.root_to_zero_offs[i].xyz*pow(1e6,root.root_to_zero_offs[i].w-units_root);;
 	return(vec4(loc_pos,obj.w));
+}
+Root change_pos_unit(Root root, int new_unit)
+{
+	vec4 old_pos = root.root_to_zero_offs[0];
+	root.root_to_zero_offs[0] = vec4(old_pos.xyz*pow(1e6,old_pos.w- new_unit), new_unit);
+	return(root);
 }
 
 vec4 comp_pos_in_local_relat(Root root_dest, int ind_dest, Root root_rel, int ind_rel)
@@ -69,6 +76,7 @@ vec4 comp_pos_in_local_relat(Root root_dest, int ind_dest, Root root_rel, int in
 	i_st = 0;
 	int ind_local = 0;
 	//int ind_local =int(imageLoad(objdata,ivec2(3,i_st)).w);
+	root_dest = change_pos_unit(root_dest,int(root_rel.root_to_zero_offs[0].w));
 	vec4 pos_dest_com = comp_pos_in_local(root_dest,i_st,ind_local);
 	vec4 pos_rel_com = comp_pos_in_local(root_rel,i_st,ind_local);
 

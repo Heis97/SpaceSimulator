@@ -51,7 +51,24 @@ namespace SpaceWorld
             InitializeComponent();
             glControl1.MouseWheel += GlControl1_MouseWheel;
             PreInitializeScene();
-            
+            grav_const_comp();
+        }
+
+        void grav_const_comp()
+        {
+            double g_def = 6.674184e-11;
+            double e_m = 5.9726e24f;
+            double a_e = 1.5e11;
+            double g_1 = g_def / ((a_e * a_e * a_e) / e_m);
+            Console.WriteLine("G1: " + g_1);
+
+            double a_e2 = 1e9;
+            double g_12 = g_def / ((a_e2 * a_e2 * a_e2) / e_m);
+            Console.WriteLine("G2: " + g_12);
+
+            a_e2 = 1e3;
+            double g_13 = g_def / ((a_e2 * a_e2 * a_e2) / e_m);
+            Console.WriteLine("G3: " + g_13);
         }
         List<ObjectMassGL> load_test_objs()
         {
@@ -196,13 +213,21 @@ namespace SpaceWorld
                 new Vertex4f(1, 0, 0, 0)));
             objs.Add(new ObjectMassGL(0,//moon 2
                 kgToMe(7.3477e22f), 0.3e4f * 1e-6f,  0.3e4f * 1e-6f,
-                new Vertex3f(0.38e6f, 0, 0),
-                new Vertex3f(0, 1f, 0),
+                new Vertex3f(0.38f, 0, 0),
+                new Vertex3f(0, 1f * 1e-6f, 0),
                 new Vertex3f(20, 20, 0),
                 new Vertex3f(0, 0, 0),
-                new Vertex4f(0, 0, 1, 0)));
+                new Vertex4f(1, 0, 1, 0)));
 
-            objs.Add(new ObjectMassGL(1,//izr 3
+            objs.Add(new ObjectMassGL(0,//moon 2a
+               kgToMe(7.3477e22f), 0.3e4f * 1e-6f, 0.3e4f * 1e-6f,
+               new Vertex3f(-0.38f * 1e6f, 0, 0),
+               new Vertex3f(0, 1f, 0),
+               new Vertex3f(20, 20, 0),
+               new Vertex3f(0, 0, 0),
+               new Vertex4f(0, 0, 1, 0)));
+
+            /*objs.Add(new ObjectMassGL(1,//izr 3
                 kgToMe(1e10f), 1e-3f * 1e-6f, 1e-3f* 1e-6f,
                 new Vertex3f(-0.38e6f, 0, 0),
                 new Vertex3f(0, 1.001f, 0),
@@ -211,7 +236,7 @@ namespace SpaceWorld
                 new Vertex4f(0, 0, 1, 0)));
 
 
-           /* objs.Add(new ObjectMassGL(1,//izr 4
+            objs.Add(new ObjectMassGL(1,//izr 4
                kgToMe(1e10f), 1e-3f * 1e-6f, 1e-3f,
                new Vertex3f(-3.8e5f, kmToAe(2f), 0),
                new Vertex3f(0, 1f, 0),
