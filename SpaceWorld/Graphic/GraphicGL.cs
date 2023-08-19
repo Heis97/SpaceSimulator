@@ -421,7 +421,7 @@ namespace Graphic
             useBuffers(idsOrb);
             load_vars_gl(idsOrb, new openGlobj());
             Gl.DrawArrays(PrimitiveType.Lines, 0, 2*obj_p_count);
-            //Console.WriteLine(toStringBuf(posTimeData.getData(), 800, 4, "postimeD"));
+            Console.WriteLine(toStringBuf(posTimeData.getData(), 800, 4, "postimeD"));
         }
         void drawGravMap()
         {
@@ -717,7 +717,8 @@ namespace Graphic
             Gl.Uniform1i(ids.stindID, 1, openGlobj.stind);
 
             Gl.Uniform3f(ids.targetCamID, 1, transRotZooms[0].target);
-            transRotZooms[0].target_ind = 1;
+            if(transRotZooms[0].target_ind==0) transRotZooms[0].target_ind = 2;
+
             Gl.Uniform1i(ids.targetCamIndID, 1, transRotZooms[0].target_ind);
         }
         void gpuCompute()

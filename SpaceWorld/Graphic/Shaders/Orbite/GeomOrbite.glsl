@@ -59,6 +59,22 @@ vec4 comp_pos_in_local(Root root, int ind,int ind_local)
 	loc_pos-=root.root_to_zero_offs[i].xyz*pow(1e6,root.root_to_zero_offs[i].w-units_root);;
 	return(vec4(loc_pos,obj.w));
 }
+/*
+vec4 comp_pos_in_local(Root root, int ind,int ind_local)
+{
+	vec4 obj = imageLoad(objdata,ivec2(0,ind));
+	float units_root = 1;
+	vec3 loc_pos = obj.xyz*pow(1e6,obj.w-units_root);
+	int i = 0;
+	while( i<root.root_len && ind_local != root.root_to_zero[i] )
+	{
+
+		loc_pos-=root.root_to_zero_offs[i].xyz*pow(1e6,root.root_to_zero_offs[i].w-units_root);
+		i++;
+	}
+	loc_pos-=root.root_to_zero_offs[i].xyz*pow(1e6,root.root_to_zero_offs[i].w-units_root);;
+	return(vec4(loc_pos,obj.w));
+}*/
 Root change_pos_unit(Root root, int new_unit)
 {
 	vec4 old_pos = root.root_to_zero_offs[0];
@@ -170,23 +186,24 @@ void main()
 	//int ind_loc_cam = int(imageLoad(objdata,ivec2(8, targetCamInd)).x);
 	Root root_cam = load_root(targetCamInd,pos_cam);
 
-	vec3 pos_cur_in_cam = comp_pos_in_local_relat(root_cur, int( vs_out[0].ind), root_cam, targetCamInd).xyz;
-
-	//imageStore(debugdata,ivec2(0,vs_out[0].ind),vec4(pos_cur_in_cam,777));
-	//imageStore(debugdata,ivec2(1,vs_out[0].ind),vec4(curPos_cam.xyz,888));
+	vec3 pos_cur_in_cam = (comp_pos_in_local_relat(root_cur, int( vs_out[0].ind), root_cam, targetCamInd).xyz);
+	imageStore(debugdata,ivec2(5,vs_out[0].ind),vec4(pos_cur_in_cam,123));
+	imageStore(debugdata,ivec2(6,vs_out[0].ind),vec4(pos_cur.xyw,111));
+	imageStore(debugdata,ivec2(7,vs_out[0].ind),vec4(pos_cam.xyw,222));
+	//imageStore(debugdata,ivec2(8,vs_out[0].ind),vec4(pos_cam.xyw,333));
 	//------------------------------------------------------------------------------------------------------------------
 	for (int i = int(curPos.a); i < 199 ; i++)
 	{ 		
 		ivec2 curP_c = ivec2(i,int(vs_out[0].ind));
-		vec3 pos_cam_off = imageLoad(posTimeData,curP_c).xyz - curPos.xyz;
-		gl_Position =VPs[0]* vec4(pos_cur_in_cam+pos_cam_off , 1.0);
+		vec3 pos_cam_off = imageLoad(posTimeData,curP_c).xyz - pos_cur.xyz;
+		gl_Position =VPs[0]* vec4((pos_cur_in_cam +pos_cam_off*pow(1e6,pos_cur.w-pos_cam.w)), 1.0);
 		EmitVertex();		
 	}
 	for (int i = 1; i < int(curPos.a) ; i++)
 	{ 		
 		ivec2 curP_c = ivec2(i,int(vs_out[0].ind));
 		vec3 pos_cam_off = imageLoad(posTimeData,curP_c).xyz - curPos.xyz;
-		gl_Position =VPs[0]* vec4(pos_cur_in_cam+pos_cam_off , 1.0);
+		gl_Position =VPs[0]* vec4((pos_cur_in_cam +pos_cam_off*pow(1e6,pos_cur.w-pos_cam.w)) , 1.0);
 		EmitVertex();	
 	}	
 	EndPrimitive();	

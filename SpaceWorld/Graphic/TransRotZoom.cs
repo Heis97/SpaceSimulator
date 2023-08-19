@@ -72,7 +72,7 @@ namespace Graphic
 
         public TransRotZoom(Rectangle _rect, int _id)
         {
-            zoom = -1e-1;//-1e-1;
+            zoom = -1e1;//-1e-1;
             xRot = 0;
             yRot = 0;
             zRot = 0;

@@ -38,6 +38,7 @@ namespace SpaceWorld
         //отсеч тел для 2х рендеров
 
         //выч лок коорд, учёт всех гравит
+        //ументшить кол-во обращений к памяти draworbit
 
         private GraphicGL GL1 = new GraphicGL();
         static float PI = 3.1415926535f;
@@ -198,7 +199,7 @@ namespace SpaceWorld
         {
             var objs = new List<ObjectMassGL>();
             objs.Add(new ObjectMassGL(0, //sun 0
-                3.3E+5f, 1.4f, 1.4f,
+                3.3E+5f, 1.4f , 1.4f ,
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0),
                 new Vertex3f(0, 0, 0),
@@ -214,22 +215,14 @@ namespace SpaceWorld
             objs.Add(new ObjectMassGL(0,//moon 2
                 kgToMe(7.3477e22f), 0.3e4f * 1e-6f,  0.3e4f * 1e-6f,
                 new Vertex3f(0.38f, 0, 0),
-                new Vertex3f(0, 0.5f * 1e-6f, 0),
+                new Vertex3f(0, 1f * 1e-6f, 0),
                 new Vertex3f(20, 20, 0),
                 new Vertex3f(0, 0, 0),
                 new Vertex4f(1, 0, 1, 0)));
 
-            objs.Add(new ObjectMassGL(0,//moon 2a
-               kgToMe(7.3477e22f), 0.3e4f * 1e-6f, 0.3e4f * 1e-6f,
-               new Vertex3f(-0.38f * 1e6f, 0, 0),
-               new Vertex3f(0, 0.5f * 1f, 0),
-               new Vertex3f(20, 20, 0),
-               new Vertex3f(0, 0, 0),
-               new Vertex4f(0, 0, 1, 0)));
-
-            /*objs.Add(new ObjectMassGL(1,//izr 3
-                kgToMe(1e10f), 1e-3f * 1e-6f, 1e-3f* 1e-6f,
-                new Vertex3f(-0.38e6f, 0, 0),
+            objs.Add(new ObjectMassGL(1,//izr 3
+                kgToMe(1e10f), 1e-3f , 1e-3f,
+                new Vertex3f(-0.38f*1e6f, 0, 0),
                 new Vertex3f(0, 1.001f, 0),
                 new Vertex3f(-PI / 2, 0, PI),
                 new Vertex3f(0, 0, 0),
@@ -237,20 +230,27 @@ namespace SpaceWorld
 
 
             objs.Add(new ObjectMassGL(1,//izr 4
-               kgToMe(1e10f), 1e-3f * 1e-6f, 1e-3f,
-               new Vertex3f(-3.8e5f, kmToAe(2f), 0),
+               kgToMe(1e10f), 1e-3f , 1e-3f,
+               new Vertex3f(-0.38f * 1e6f, 2, 0),
                new Vertex3f(0, 1f, 0),
                new Vertex3f(-PI / 2, 0, PI),
                new Vertex3f(0, 0, 0),
                new Vertex4f(0, 0, 1, 0)));
 
             objs.Add(new ObjectMassGL(1,//izr 5
-               kgToMe(1e10f), 1e-3f*1e-6f,1e-3f,
+               kgToMe(1e10f), 1e-3f,1e-3f,
                new Vertex3f(-1.4e4f, 1f, 0),
                new Vertex3f(0, 0.65f, 0),
                new Vertex3f(-PI / 2, 0, PI),
                new Vertex3f(0, 0, 0),
-               new Vertex4f(0, 0, 2, 0)));*/
+               new Vertex4f(0, 0, 2, 0)));
+            objs.Add(new ObjectMassGL(1,//izr 6
+               kgToMe(1e10f), 1e-3f , 1e-3f,
+               new Vertex3f(-1.4e4f, 1f, 0),
+               new Vertex3f(0, 0.6501f, 0),
+               new Vertex3f(-PI / 2, 0, PI),
+               new Vertex3f(0, 0, 0),
+               new Vertex4f(0, 0, 2, 0)));
 
             return objs;
         }
@@ -361,7 +361,7 @@ namespace SpaceWorld
             //objs.AddRange(add_random_objs(count));
             GL1.dataComputeShader = objs.ToArray();
 
-            GL1.addFrame(new Point3d_GL(0, 0, 0), new Point3d_GL(100, 0, 0), new Point3d_GL(0, 100, 0), new Point3d_GL(0, 0, 100));
+            //GL1.addFrame(new Point3d_GL(0, 0, 0), new Point3d_GL(100000, 0, 0), new Point3d_GL(0, 100000, 0), new Point3d_GL(0, 0, 100000));
             //GL1.addFrame(new Point3d_GL(0, 0, 0), new Point3d_GL(0.1, 0, 0), new Point3d_GL(0, 0.1, 0), new Point3d_GL(0, 0, 0.1));
         }
 
