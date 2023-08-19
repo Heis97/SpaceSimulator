@@ -8,6 +8,7 @@ layout (rgba32f, binding = 0) uniform  image2D objdata;
 layout (rgba32f, binding = 1) uniform  image2D posTimeData;
 layout (rgba32f, binding = 2) uniform  image2D choosedata;
 layout (rgba32f, binding = 3) uniform  image2D debugdata;
+const float degr_dist = 1e3;
 in VS_GS_INTERFACE
 {
 	float ind;
@@ -48,15 +49,15 @@ vec4 comp_pos_in_local(Root root, int ind,int ind_local)
 {
 	vec4 obj = imageLoad(objdata,ivec2(0,ind));
 	float units_root = root.root_to_zero_offs[0].w;
-	vec3 loc_pos = obj.xyz*pow(1e6,obj.w-units_root);
+	vec3 loc_pos = obj.xyz*pow(degr_dist ,obj.w-units_root);
 	int i = 0;
 	while( i<root.root_len && ind_local != root.root_to_zero[i] )
 	{
 
-		loc_pos-=root.root_to_zero_offs[i].xyz*pow(1e6,root.root_to_zero_offs[i].w-units_root);
+		loc_pos-=root.root_to_zero_offs[i].xyz*pow(degr_dist ,root.root_to_zero_offs[i].w-units_root);
 		i++;
 	}
-	loc_pos-=root.root_to_zero_offs[i].xyz*pow(1e6,root.root_to_zero_offs[i].w-units_root);;
+	loc_pos-=root.root_to_zero_offs[i].xyz*pow(degr_dist ,root.root_to_zero_offs[i].w-units_root);;
 	return(vec4(loc_pos,obj.w));
 }
 /*
@@ -78,7 +79,7 @@ vec4 comp_pos_in_local(Root root, int ind,int ind_local)
 Root change_pos_unit(Root root, int new_unit)
 {
 	vec4 old_pos = root.root_to_zero_offs[0];
-	root.root_to_zero_offs[0] = vec4(old_pos.xyz*pow(1e6,old_pos.w- new_unit), new_unit);
+	root.root_to_zero_offs[0] = vec4(old_pos.xyz*pow(degr_dist ,old_pos.w- new_unit), new_unit);
 	return(root);
 }
 
@@ -196,14 +197,14 @@ void main()
 	{ 		
 		ivec2 curP_c = ivec2(i,int(vs_out[0].ind));
 		vec3 pos_cam_off = imageLoad(posTimeData,curP_c).xyz - pos_cur.xyz;
-		gl_Position =VPs[0]* vec4((pos_cur_in_cam +pos_cam_off*pow(1e6,pos_cur.w-pos_cam.w)), 1.0);
+		gl_Position =VPs[0]* vec4((pos_cur_in_cam +pos_cam_off*pow(degr_dist ,pos_cur.w-pos_cam.w)), 1.0);
 		EmitVertex();		
 	}
 	for (int i = 1; i < int(curPos.a) ; i++)
 	{ 		
 		ivec2 curP_c = ivec2(i,int(vs_out[0].ind));
 		vec3 pos_cam_off = imageLoad(posTimeData,curP_c).xyz - curPos.xyz;
-		gl_Position =VPs[0]* vec4((pos_cur_in_cam +pos_cam_off*pow(1e6,pos_cur.w-pos_cam.w)) , 1.0);
+		gl_Position =VPs[0]* vec4((pos_cur_in_cam +pos_cam_off*pow(degr_dist ,pos_cur.w-pos_cam.w)) , 1.0);
 		EmitVertex();	
 	}	
 	EndPrimitive();	

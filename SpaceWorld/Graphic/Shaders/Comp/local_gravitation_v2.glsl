@@ -9,11 +9,13 @@ uniform int targetCamInd;
 uniform mat4 VPs[4];
 uniform mat4 Vs[4];
 uniform vec2 MouseLocGL;
-const float deltTime = 10;
+const float deltTime = 1;
 const float G = 1.18656E-19;
 const float G_kme6_Me = 3.986E-13;
+const float G_kme3_Me = 0.000398622296939f;
 const float G_km_Me = 398622.2969393f;
-float[2] Gc = float[](G_km_Me,G_kme6_Me);
+const float degr_dist = 1e3;
+float[2] Gc = float[](G_kme3_Me,G_kme6_Me);
 
 struct Root
 {
@@ -147,21 +149,21 @@ vec4 comp_pos_in_local(Root root, int ind,int ind_local)
 {
 	vec4 obj = imageLoad(objdata,ivec2(0,ind));
 	float units_root = root.root_to_zero_offs[0].w;
-	vec3 loc_pos = obj.xyz*pow(1e6,obj.w-units_root);
+	vec3 loc_pos = obj.xyz*pow(degr_dist,obj.w-units_root);
 	int i = 0;
 	while( i<root.root_len && ind_local != root.root_to_zero[i] )
 	{
 
-		loc_pos-=root.root_to_zero_offs[i].xyz*pow(1e6,root.root_to_zero_offs[i].w-units_root);
+		loc_pos-=root.root_to_zero_offs[i].xyz*pow(degr_dist,root.root_to_zero_offs[i].w-units_root);
 		i++;
 	}
-	loc_pos-=root.root_to_zero_offs[i].xyz*pow(1e6,root.root_to_zero_offs[i].w-units_root);;
+	loc_pos-=root.root_to_zero_offs[i].xyz*pow(degr_dist,root.root_to_zero_offs[i].w-units_root);;
 	return(vec4(loc_pos,obj.w));
 }
 Root change_pos_unit(Root root, int new_unit)
 {
 	vec4 old_pos = root.root_to_zero_offs[0];
-	root.root_to_zero_offs[0] = vec4(old_pos.xyz*pow(1e6,old_pos.w- new_unit), new_unit);
+	root.root_to_zero_offs[0] = vec4(old_pos.xyz*pow(degr_dist,old_pos.w- new_unit), new_unit);
 	return(root);
 }
 vec4 comp_pos_in_local_relat(Root root_dest, int ind_dest, Root root_rel, int ind_rel)
@@ -288,9 +290,9 @@ void main()
 
 	imageStore(debugdata,ivec2(0,gl_GlobalInvocationID.y),vec4(pos_cur_in_cam));
 
-	float true_size_dyn = true_size*pow(1e6,pos1.w-pos_cam.w);
+	float true_size_dyn = true_size*pow(degr_dist,pos1.w-pos_cam.w);
 	setModelMatr(true_size_dyn,pos_cur_in_cam ,rot1);	
-	vec4 choose = draw(size1*pow(1e6,pos1.w-pos_cam.w),pos_cur_in_cam.xyz);
+	vec4 choose = draw(size1*pow(degr_dist,pos1.w-pos_cam.w),pos_cur_in_cam.xyz);
 	imageStore(choosedata, ipos1, choose);
 	//------------------------------------------------------
 	pos1.xyz += vel1*deltTime + (acs3*deltTime*deltTime)/2;
