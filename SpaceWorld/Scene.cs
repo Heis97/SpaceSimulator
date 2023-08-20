@@ -40,6 +40,8 @@ namespace SpaceWorld
         //выч лок коорд, учёт всех гравит
         //ументшить кол-во обращений к памяти draworbit
 
+        //позиция как 4 инт32, вопрос с умножением. Сравнить с децимал на цп.(дляя локальн и абс)
+
         private GraphicGL GL1 = new GraphicGL();
         static float PI = 3.1415926535f;
         List<ObjectMassGL> objs;
